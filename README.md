@@ -814,14 +814,15 @@ The following example concatenates "161"+fc_ofc_no + fc_no
 
 **Validations**
 
-Field Name	Type	Description
-type	string	REQUIRED. Type of validation.
-severity	string	OPTIONAL. Severity of the validation result.
-args	list	OPTIONAL. List of arguments for expectations.
+	Field Name	Type	Description
+	type	string	REQUIRED. Type of validation.
+	severity	string	OPTIONAL. Severity of the validation result.
+	args	list	OPTIONAL. List of arguments for expectations.
+
 The 'severity' parameter accepts one of 'blocker', 'critical' and 'warning' value. These values defines what actions needs to be taken after receiving validation result.
-'blocker' defines we exit out of the application after getting column value that fails validation.
-'critical' removes the rows of the data corresponding to column values that fails validation.
-'warning' just displays column values that fails validation.
+	1. 'blocker' defines we exit out of the application after getting column value that fails validation.
+	2. 'critical' removes the rows of the data corresponding to column values that fails validation.
+	3. 'warning' just displays column values that fails validation.
 
 **Available validations:**
 
@@ -829,12 +830,14 @@ The 'severity' parameter accepts one of 'blocker', 'critical' and 'warning' valu
 
 These are the validations that are part of great_expectations library.
 expect_column_values_to_not_be_null
+
 Validate whether all column values are not null.
 	validations:
 	  - type: expect_column_values_to_not_be_null
 	    severity: "warning"
 
-expect_column_values_to_match_regex_list
+**expect_column_values_to_match_regex_list**
+
 Expect the column entries to be strings that can be matched to either any of or all of a list of regular expressions.
 	validations:
 	  - type: expect_column_values_to_match_regex_list
@@ -842,7 +845,8 @@ Expect the column entries to be strings that can be matched to either any of or 
 	    args: [["^[0-9]*[.][0-9]+$"],any]
 'args' takes the list of all regular expressions that is needed to check against column values, there is also optional parameter (any, all) that decides whether to match all the regex or just any one of them.
 
-expect_column_values_to_match_strftime_format
+**expect_column_values_to_match_strftime_format**
+
 Expect column entries to be strings representing a date or time with a given format.
 	validations:
 	  - type: expect_column_values_to_match_strftime_format
@@ -850,7 +854,7 @@ Expect column entries to be strings representing a date or time with a given for
 	    args: ["%Y-%m-%d"]
 'args' takes a strftime format string to use for matching column values.
 
-expect_column_values_to_be_between
+**expect_column_values_to_be_between**
 Expect column entries to be between a minimum value and a maximum value.
 	validations:
 	  - type: expect_column_values_to_be_between
@@ -860,13 +864,13 @@ Expect column entries to be between a minimum value and a maximum value.
 'min_value' takes minimum value for a column entry.
 'max_value' takes maximum value for a column entry.
 
-expect_column_values_to_be_unique
+**expect_column_values_to_be_unique**
 Expect each column value to be unique. This expectation detects duplicates. All duplicated values are counted as exceptions.
 	validations:
 	  - type: expect_column_values_to_be_unique
 	    severity: "warning"
 
-expect_column_value_lengths_to_equal
+**expect_column_value_lengths_to_equal**
 Expect column entries to be strings with length equal to the provided value. This expectation only works for string-type values. Invoking it on ints or floats will raise a TypeError.
 	validations:
 	  - type: expect_column_value_lengths_to_equal
@@ -874,9 +878,9 @@ Expect column entries to be strings with length equal to the provided value. Thi
 	    args: [8]
 'args' takes the expected value for a column entry length.
 
-Custom Validations
+**Custom Validations**
 These are the expectations that are not present in great_expectations library.
-expect_column_to_contain_values
+**expect_column_to_contain_values**
 Expect column entries to contain the provided value.
 	validations:
 	  - type: expect_column_to_contain_values
@@ -884,7 +888,7 @@ Expect column entries to contain the provided value.
 	    args: [["XUSD0000", "ABC1234F"]]
 'args' takes the list of expected values to check its presence in the column.
 
-expect_column_values_to_be_of_type
+**expect_column_values_to_be_of_type**
 Expect column entries to be parseable (type casted) to provided type.
 	validations:
 	  - type: expect_column_values_to_be_of_type
@@ -892,7 +896,7 @@ Expect column entries to be parseable (type casted) to provided type.
 	    args: ["float"]
 'args' takes a string representing the data type that each column should have as entries. Valid data types include 'str', 'int', 'float'.
 
-expect_column_to_be_present_in
+**expect_column_to_be_present_in**
 Expects all column values to be present in all columns of sources provided.
 	validations:
 	  - type: expect_column_to_be_present_in
