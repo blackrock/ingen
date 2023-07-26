@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ORDERS SYSTEM "orders.dtd">
+<ORDERS ASOF_DATE="11/12/2021" CREATE_DATE="11/12/2021">
+    <ORDER>
+        <ASSIGNED_TO>NEAREST_SHOP</ASSIGNED_TO>
+        <ORDER_ID>0924802</ORDER_ID>
+        <ORD_DETAIL_set SIZE="1">
+            <ORD_DETAIL>
+                <MODIFIED_TIME>11/11/2021 9:37:59.690</MODIFIED_TIME>
+                <QUANTITY>2</QUANTITY>
+                <ITEM_NAME>Bread</ITEM_NAME>
+            </ORD_DETAIL>
+        </ORD_DETAIL_set>
+        <ORD_NUM>412109268</ORD_NUM>
+    </ORDER>
+    <ORDER>
+        <ASSIGNED_TO id="1">SECOND_NEAREST_SHOP</ASSIGNED_TO>
+        <ORDER_ID>0924803</ORDER_ID>
+        <ORD_DETAIL_set SIZE="1">
+            <ORD_DETAIL>
+                <MODIFIED_TIME>11/11/2021 9:46:39.553</MODIFIED_TIME>
+                <QUANTITY>1</QUANTITY>
+                <ITEM_NAME>Milk</ITEM_NAME>
+                <VERSION>1</VERSION>
+            </ORD_DETAIL>
+        </ORD_DETAIL_set>
+    </ORDER>
+</ORDERS>

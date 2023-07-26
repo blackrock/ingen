@@ -1,0 +1,19 @@
+[
+  {
+    "id": "proposal_id_111",
+    "cash_allocation": 20000,
+    "positions": [
+      {
+        "id": "88877701000000BLANK",
+        "cusip": "USD0000",
+        "marketValue": 6920.2,
+        "quantity": 6920.2,
+        "posInfo": {
+          "client_id": "000000BLANK",
+          "pos_id": "88877701000000BLANK",
+          "SLEEVE_ID": "ABC"
+        }
+      }
+    ]
+  }
+]

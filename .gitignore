@@ -1,0 +1,16 @@
+/build
+/build-meta
+/.coverage
+/.idea/**
+/dist
+/.vscode/**
+/htmlcov
+/htmldocs
+/pkg_version.txt
+/.pytest_cache
+/.settings
+/venv
+**/__pycache__
+uwsgi_dev.ini
+/output/**
+.DS_Store

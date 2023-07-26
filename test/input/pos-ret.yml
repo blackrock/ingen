@@ -1,0 +1,63 @@
+interfaces:
+  positions:
+    sources: [ 'pos_query' ]
+    output:
+      type: file
+      props:
+        delimiter: ','
+        path: ../output/positions.csv
+    columns:
+      - id: "start_date"
+        name: "START DATE"
+        formatters:
+          - type: date
+            format: "%m/%d/%y"
+      - id: "stop_date"
+        name: "STOP DATE"
+        formatters:
+          - type: date
+            format: "%m/%d/%y"
+      - id: "fund"
+        name: "PORTFOLIO"
+      - id: "status"
+        name: "STATUS"
+      - id: "face"
+        name: "FACE VALUE"
+        formatters:
+          - type: float
+            format: '${:,.2f}'
+  account:
+    sources: [ pos_query ]
+    output:
+      type: file
+      props:
+        delimiter: ','
+        path: ../output/accounts.csv
+    columns:
+      - id: "start_date"
+        name: "START DATE"
+        formatters:
+          - type: date
+            format: "%m/%d/%y"
+      - id: "stop_date"
+        name: "STOP DATE"
+        formatters:
+          - type: date
+            format: "%m/%d/%y"
+      - id: "fund"
+        name: "PORTFOLIO"
+      - id: "status"
+        name: "STATUS"
+      - id: "face"
+        name: "FACE VALUE"
+        formatters:
+          - type: float
+            format: '${:,.2f}'
+sources:
+  - id: pos_query
+    type: file
+    file_type: csv
+    columns: [start_date, stop_date, fund, status, face]
+
+
+

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ORDERS SYSTEM "orders.dtd">
+<ORDERS ASOF_DATE="11/24/2021" CREATE_DATE="11/24/2021" RECORDS="9">
+    <ORDER>
+        <ASSIGNED_TO>NEAREST_SHOP</ASSIGNED_TO>
+        <CURRENCY>USD</CURRENCY>
+        <ORDER_ID>9248050</ORDER_ID>
+        <ORD_DETAIL_set SIZE="1">
+            <ORD_DETAIL>
+                <MODIFIED_BY>USER</MODIFIED_BY>
+                <MODIFIED_TIME>11/24/2021 10:24:17.413</MODIFIED_TIME>
+                <ITEM_NAME>Bread</ITEM_NAME>
+                <QUANTITY>1</QUANTITY>
+            </ORD_DETAIL>
+        </ORD_DETAIL_set>
+    </ORDER>
+    <ORDER>
+        <ASSIGNED_TO>NEAREST_SHOP</ASSIGNED_TO>
+        <CURRENCY>USD</CURRENCY>
+        <ORDER_ID>9248020</ORDER_ID>
+        <ORD_DETAIL_set SIZE="2">
+            <ORD_DETAIL>
+                <MODIFIED_BY>USER</MODIFIED_BY>
+                <MODIFIED_TIME>11/24/2021 11:52:07.256</MODIFIED_TIME>
+                <ITEM_NAME>Milk</ITEM_NAME>
+                <QUANTITY>1</QUANTITY>
+            </ORD_DETAIL>
+            <ORD_DETAIL>
+                <MODIFIED_BY>USER</MODIFIED_BY>
+                <MODIFIED_TIME>11/24/2021 11:52:07.256</MODIFIED_TIME>
+                <ITEM_NAME>Coke</ITEM_NAME>
+                <QUANTITY>3</QUANTITY>
+            </ORD_DETAIL>
+        </ORD_DETAIL_set>
+    </ORDER>
+    <ORDER>
+        <ASSIGNED_TO>NEAREST_SHOP</ASSIGNED_TO>
+        <CURRENCY>USD</CURRENCY>
+        <ORDER_ID>9248060</ORDER_ID>
+        <ORD_DETAIL_set SIZE="1">
+            <ORD_DETAIL>
+                <MODIFIED_BY>USER</MODIFIED_BY>
+                <MODIFIED_TIME>11/24/2021 10:24:17.410</MODIFIED_TIME>
+                <ITEM_NAME>Detergent</ITEM_NAME>
+                <QUANTITY>2</QUANTITY>
+            </ORD_DETAIL>
+        </ORD_DETAIL_set>
+    </ORDER>
+</ORDERS>

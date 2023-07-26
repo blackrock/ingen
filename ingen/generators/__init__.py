@@ -1,0 +1,1 @@
+from ingen.generators.interface_generator import InterfaceGenerator
