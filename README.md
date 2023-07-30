@@ -19,7 +19,66 @@ A Python script suite that can transform data from various sources into desired 
 - [Contact](#contact)
 
 ## Installation
+1. Create a virtual environment
+    ```
+    python -m venv venv
+    ```
+2. Install database drivers
+    - unixodbc - https://github.com/mkleehammer/pyodbc/wiki/Install 
+3. Activate venv and install dependencies
+    ```
+    source venv/bin/activate
+    pip install -r requirements.txt
+    ```
 
+### Sample YAML
+To test your local setup let's write a config file that will read a CSV file 
+and write its content into a PSV file without any other modification.
+
+1. Create a file in your home directory called `test-file.yaml`
+2. Copy the following code into the file
+```
+interfaces:
+    sample:
+        sources: [input_file]
+        columns:
+            - src_col_name: name
+            - src_col_name: city
+        output:
+            type: delimited_file
+            props:
+                delimiter: '|'
+                path: ~/output.psv
+                header:
+                    type: delimited_result_header
+
+sources:
+    - id: input_file
+      type: file
+      file_type: delimited_file
+      delimiter: ','
+      file_path: ~/input.csv
+      columns: [name, city]
+      skip_header_size: 1
+```
+3. Create a sample intput file `input.csv` and copy the following contents
+```
+name,city
+piyush,pune
+sachin,mumbai
+dhoni,ranchi
+```
+4. Run InterfaceGenerator 
+```
+python main.py ~/test-file.yaml
+```
+5. An output file `output.psv` should be created with following contents
+```
+name|city
+piyush|pune
+sachin|mumbai
+dhoni|ranchi
+```
 
 ## Usage
 
