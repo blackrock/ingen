@@ -1,3 +1,6 @@
+#  Copyright (c) 2023 BlackRock, Inc.
+#  All Rights Reserved.
+
 import os
 import unittest
 from unittest.mock import patch

@@ -1,3 +1,6 @@
+#  Copyright (c) 2023 BlackRock, Inc.
+#  All Rights Reserved.
+
 import logging
 
 from ingen.utils.app_http.http_util import execute_requests

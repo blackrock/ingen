@@ -1,3 +1,6 @@
+#  Copyright (c) 2023 BlackRock, Inc.
+#  All Rights Reserved.
+
 class DataSource:
     """
     A DataSource represents the properties of a source of the interface data. All data source must implement

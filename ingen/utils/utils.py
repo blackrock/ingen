@@ -1,3 +1,6 @@
+#  Copyright (c) 2023 BlackRock, Inc.
+#  All Rights Reserved.
+
 import argparse
 import datetime
 from datetime import date

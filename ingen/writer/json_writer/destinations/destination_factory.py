@@ -1,3 +1,6 @@
+#  Copyright (c) 2023 BlackRock, Inc.
+#  All Rights Reserved.
+
 import logging
 
 from ingen.writer.json_writer.destinations.api_destination import ApiDestination

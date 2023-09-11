@@ -1,3 +1,6 @@
+#  Copyright (c) 2023 BlackRock, Inc.
+#  All Rights Reserved.
+
 import json
 import unittest
 from unittest.mock import Mock, patch

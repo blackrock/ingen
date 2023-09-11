@@ -1,3 +1,6 @@
+#  Copyright (c) 2023 BlackRock, Inc.
+#  All Rights Reserved.
+
 import unittest
 from pathlib import Path
 from pyexpat import ExpatError

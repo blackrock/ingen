@@ -1,3 +1,6 @@
+#  Copyright (c) 2023 BlackRock, Inc.
+#  All Rights Reserved.
+
 from ingen.pre_processor.aggregators import *
 from ingen.pre_processor.process import Process
 
