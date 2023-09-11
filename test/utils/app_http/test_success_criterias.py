@@ -1,3 +1,6 @@
+#  Copyright (c) 2023 BlackRock, Inc.
+#  All Rights Reserved.
+
 import unittest
 
 from ingen.utils.app_http.aiohttp_retry import HTTPResponse

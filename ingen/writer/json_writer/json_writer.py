@@ -1,3 +1,6 @@
+#  Copyright (c) 2023 BlackRock, Inc.
+#  All Rights Reserved.
+
 from ingen.utils.path_parser import PathParser
 from ingen.writer.json_writer.convertors.convertor_factory import get_json_convertor
 from ingen.writer.json_writer.destinations.destination_factory import get_json_destination

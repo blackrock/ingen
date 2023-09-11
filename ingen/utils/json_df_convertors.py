@@ -1,3 +1,6 @@
+#  Copyright (c) 2023 BlackRock, Inc.
+#  All Rights Reserved.
+
 import pandas as pd
 
 DEFAULT_CONVERTOR = "pandas_normalize"

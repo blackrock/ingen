@@ -1,3 +1,6 @@
+#  Copyright (c) 2023 BlackRock, Inc.
+#  All Rights Reserved.
+
 # Import these attributes into other files as needed to
 # identify the project version at runtime.
 try:
