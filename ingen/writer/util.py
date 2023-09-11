@@ -1,6 +1,9 @@
 """"
 Utility class to add on custom functions for adding user defined header and footer as required
 """
+#  Copyright (c) 2023 BlackRock, Inc.
+#  All Rights Reserved.
+
 import datetime
 from datetime import date
 from datetime import timedelta

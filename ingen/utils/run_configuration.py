@@ -1,3 +1,6 @@
+#  Copyright (c) 2023 BlackRock, Inc.
+#  All Rights Reserved.
+
 import ingen.formatters as formatters
 import ingen.generators as generators
 import ingen.writer as writers

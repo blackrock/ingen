@@ -1,3 +1,6 @@
+#  Copyright (c) 2023 BlackRock, Inc.
+#  All Rights Reserved.
+
 import logging
 
 from ingen.writer.json_writer.convertors.df_to_multiple_json_convertor import DFToMultipleJsonConvertor

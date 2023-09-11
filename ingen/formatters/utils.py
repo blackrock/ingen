@@ -1,3 +1,6 @@
+#  Copyright (c) 2023 BlackRock, Inc.
+#  All Rights Reserved.
+
 def addition(dataframe, col_name, columns):
     if columns is None or len(columns) < 2:
         return dataframe

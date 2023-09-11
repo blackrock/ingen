@@ -1,3 +1,6 @@
+#  Copyright (c) 2023 BlackRock, Inc.
+#  All Rights Reserved.
+
 class Melt:
     def execute(self, config, sources_data, data):
         return self.melt_column_to_row(config, sources_data)

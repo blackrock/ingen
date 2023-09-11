@@ -1,3 +1,6 @@
+#  Copyright (c) 2023 BlackRock, Inc.
+#  All Rights Reserved.
+
 def groupby(config, data):
     return data.groupby(config['cols'])
 
