@@ -11,6 +11,7 @@ A Python script suite that can transform data from various sources into desired 
 ## Table of Contents
 
 - [Installation](#installation)
+- [Examples](#examples)
 - [Usage](#usage)
 - [Yaml](#yaml)
 - [Contributing](#contributing)
@@ -28,6 +29,19 @@ A Python script suite that can transform data from various sources into desired 
     source venv/bin/activate
     pip install -r requirements.txt
     ```
+
+### Examples
+Checkout the sample metadata files in the `examples` directory to see how InterfaceGenerator can be used to solve
+common data problems.
+
+| Examples                                            |
+|-----------------------------------------------------|
+| [Merge two CSV files](./examples/merge_two_csvs.md) |
+
+
+## Usage
+
+`python main.py <metadata file path>`
 
 ### Sample YAML
 To test your local setup let's write a config file that will read a CSV file 
@@ -77,10 +91,6 @@ piyush|pune
 sachin|mumbai
 dhoni|ranchi
 ```
-
-## Usage
-
-python interfacegenerator main /u1/username/metadata/config.yml
 
 ## Yaml
 
