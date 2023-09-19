@@ -23,9 +23,7 @@ A Python script suite that can transform data from various sources into desired 
     ```
     python -m venv venv
     ```
-2. Install database drivers
-    - unixodbc - https://github.com/mkleehammer/pyodbc/wiki/Install 
-3. Activate venv and install dependencies
+2. Activate venv and install dependencies
     ```
     source venv/bin/activate
     pip install -r requirements.txt
