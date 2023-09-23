@@ -16,12 +16,12 @@ class MetaDataParser:
     MetaDataParser reads a YAML file and creates a MetaData object for each interface
     """
 
-    def __init__(self, filepath, query_params, run_date, selected_interfaces, infile=None, user_domain=None,
+    def __init__(self, filepath, query_params, run_date, selected_interfaces, infile=None,
                  dynamic_data=None):
         """
         Loads a parser for the given metadata file
 
-        :param filepath: file path of the interface metadata file (aka metadata file)
+        param filepath: file path of the interface metadata file (aka metadata file)
         """
         self._filepath = filepath
         self._run_date = run_date
@@ -29,7 +29,6 @@ class MetaDataParser:
         self._selected_interfaces = selected_interfaces
         self._run_config = None
         self._infile = infile
-        self._user_domain = user_domain
         self._dynamic_data = dynamic_data
 
     @property
@@ -54,14 +53,14 @@ class MetaDataParser:
                 interfaces = metadata['interfaces']
             sources = self.make_source_dict(metadata['sources'])
             self.map_interface_sources(interfaces, sources)
-            params_map = self.make_runtime_parameters_map(self._query_params, self._run_date, self._user_domain,
+            params_map = self.make_runtime_parameters_map(self._query_params, self._run_date,
                                                           self._infile)
             interface_configs = [MetaData(x, interfaces[x], params_map, self._infile, self._dynamic_data) for x in
                                  interfaces]
         return interface_configs
 
-    def make_runtime_parameters_map(self, query_params, run_date, user_domain, infile=None):
-        runtime_parameters = {'query_params': query_params, 'run_date': run_date, 'user_domain': user_domain,
+    def make_runtime_parameters_map(self, query_params, run_date, infile=None):
+        runtime_parameters = {'query_params': query_params, 'run_date': run_date,
                               'infile': infile}
         return runtime_parameters
 

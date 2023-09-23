@@ -129,7 +129,7 @@ class TestInterfaceGenerator(unittest.TestCase):
         self.assertTrue(len(validation_summary) == 1)
 
     def test_notify_when_email_given(self):
-        params_map = {'query_params': None, 'run_date': 20221112, 'user_domain': None}
+        params_map = {'query_params': None, 'run_date': 20221112}
         validation_action = {
             'send_email': ['a.b@c.com']
         }
@@ -143,7 +143,7 @@ class TestInterfaceGenerator(unittest.TestCase):
 
     @patch('ingen.validation.notification.email_attributes')
     def test_notify_when_email_not_given(self, mock):
-        params_map = {'query_params': None, 'run_date': 20221112, 'user_domain': None}
+        params_map = {'query_params': None, 'run_date': 20221112}
         validation_action = {}
         validation_summaries = dict()
 
@@ -175,7 +175,7 @@ class TestInterfaceGenerator(unittest.TestCase):
                    {'src_col_name': 'attr2',
                     'validations': [{'type': 'expect_column_values_to_not_be_null', 'severity': 'warning'}]}]
         destination = {'type': None, 'props': {}}
-        params = {'query_params': None, 'run_date': None, 'user_domain': None, 'infile': None}
+        params = {'query_params': None, 'run_date': None, 'infile': None}
         validation_action = None
 
         generator = InterfaceGenerator()
