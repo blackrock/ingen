@@ -1,8 +1,7 @@
 import logging
 import time
 
-from mysql.connector import connection
-
+import pymysql
 from ingen.data_source.source import DataSource
 from ingen.reader.mysql_reader import MYSQLReader
 from ingen.utils.properties import Properties
@@ -32,7 +31,7 @@ class MYSQLSource(DataSource):
         self._database = source.get('database')
         self._query = SqlQueryParser().parse_query(source['query'], params_map, source.get('temp_table_params'))
         if self._connection is None:
-            self._connection = connection.MySQLConnection(host=self._host,
+            self._connection = pymysql.connect(host=self._host,
                                                           user=self._user,
                                                           password=self._password,
                                                           database=self._database)
