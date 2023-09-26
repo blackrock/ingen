@@ -11,7 +11,7 @@ interfaces:
       type: delimited_file
       props:
         delimiter: '|'
-        path: /Users/pkatariy/aladdin-wealth/interfacegenerator/output.txt
+        path: /Users/pkatariy/aladdin-wealth/interface-generator/output.txt
         header:
           type: delimited_result_header
 sources:

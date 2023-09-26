@@ -4,7 +4,7 @@ import time
 import pymysql
 from ingen.data_source.source import DataSource
 from ingen.reader.mysql_reader import MYSQLReader
-from ingen.utils.properties import Properties
+from ingen.utils.properties import properties
 from ingen.utils.sql_query_parser import SqlQueryParser
 
 log = logging.getLogger()
@@ -25,9 +25,9 @@ class MYSQLSource(DataSource):
         """
         super().__init__(source['id'])
         self._src_data_checks = source.get('src_data_checks', [])
-        self._host = Properties.get_property('datasource.mysql.host')
-        self._user = Properties.get_property('datasource.mysql.user')
-        self._password = Properties.get_property('datasource.mysql.password')
+        self._host = properties.get_property('datasource.mysql.host')
+        self._user = properties.get_property('datasource.mysql.user')
+        self._password = properties.get_property('datasource.mysql.password')
         self._database = source.get('database')
         self._query = SqlQueryParser().parse_query(source['query'], params_map, source.get('temp_table_params'))
         if self._connection is None:
