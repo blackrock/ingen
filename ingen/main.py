@@ -1,3 +1,6 @@
+#  Copyright (c) 2023 BlackRock, Inc.
+#  All Rights Reserved.
+
 import argparse
 import logging
 import time
@@ -11,8 +14,8 @@ from ingen.utils.utils import KeyValue
 logger = logging.getLogger()
 
 
-def main(config_path, query_params, run_date, interfaces, infile=None, user_domain=None, dynamic_data=None):
-    parser = MetaDataParser(config_path, query_params, run_date, interfaces, infile, user_domain, dynamic_data)
+def main(config_path, query_params, run_date, interfaces, infile=None, dynamic_data=None):
+    parser = MetaDataParser(config_path, query_params, run_date, interfaces, infile, dynamic_data)
     metadata_list = parser.parse_metadata()
     run_config = parser.run_config
     failed_interfaces = []  # Array to store the names of failed interfaces
@@ -44,7 +47,6 @@ def create_arg_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('config_path')
     parser.add_argument('run_date', nargs='?', default=date.today())
-    parser.add_argument('--user_domain', nargs='?')
     parser.add_argument('--query_params', nargs='*', action=KeyValue)
     parser.add_argument('--interfaces')
     parser.add_argument('--infile', type=str, help="filepath")
@@ -60,7 +62,7 @@ def init(arguments):
         args.run_date = datetime.strptime(args.run_date, '%m%d%Y')
     if args.infile:
         log.info(f"Use poller $infile when source use_infile is turned on, overwrite source file_path: {args.infile}")
-    main(args.config_path, args.query_params, args.run_date, args.interfaces, args.infile, args.user_domain)
+    main(args.config_path, args.query_params, args.run_date, args.interfaces, args.infile)
 
 
 def process_json(config_path, dynamic_data):

@@ -13,6 +13,9 @@ HTTP response. Every function takes two inputs -
 The function should return True if the defined criteria is met by the given
 HTTP response, otherwise False.
 """
+#  Copyright (c) 2023 BlackRock, Inc.
+#  All Rights Reserved.
+
 import logging
 
 DEFAULT_STATUS_CRITERIA_OPTIONS = {'status': 200}

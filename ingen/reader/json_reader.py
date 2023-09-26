@@ -1,6 +1,9 @@
 """
 This script convert json file to csv file
 """
+#  Copyright (c) 2023 BlackRock, Inc.
+#  All Rights Reserved.
+
 import json
 
 import pandas as pd

@@ -1,3 +1,6 @@
+#  Copyright (c) 2023 BlackRock, Inc.
+#  All Rights Reserved.
+
 import logging
 
 from great_expectations.core.expectation_configuration import ExpectationConfiguration

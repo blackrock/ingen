@@ -1,3 +1,6 @@
+#  Copyright (c) 2023 BlackRock, Inc.
+#  All Rights Reserved.
+
 import unittest
 from unittest import mock
 from unittest.mock import Mock, patch
@@ -14,7 +17,6 @@ class TestMain(unittest.TestCase):
         interfaces_list = None
         run_date = date.today()
         infile = None
-        user_domain = None
         dynamic_data = None
 
         parser = Mock()
@@ -23,8 +25,7 @@ class TestMain(unittest.TestCase):
 
         main(config_path, query_params, run_date, interfaces_list)
 
-        mock_metadata_parser.assert_called_with(config_path, query_params, run_date, interfaces_list, infile,
-                                                user_domain, dynamic_data)
+        mock_metadata_parser.assert_called_with(config_path, query_params, run_date, interfaces_list, infile, dynamic_data)
         parser.parse_metadata.assert_called_once()
 
     @patch('ingen.main.MetaDataParser')
@@ -103,8 +104,7 @@ class TestMain(unittest.TestCase):
         args = Mock()
         parse.parse_args.return_value = args
         init(args)
-        main_mock.assert_called_with(args.config_path, args.query_params, args.run_date, args.interfaces, args.infile,
-                                     args.user_domain)
+        main_mock.assert_called_with(args.config_path, args.query_params, args.run_date, args.interfaces, args.infile)
 
     @patch('ingen.main.MetaDataParser')
     def test_process_json_with_dynamic_data(self, mock_metadata_parser):

@@ -1,3 +1,6 @@
+#  Copyright (c) 2023 BlackRock, Inc.
+#  All Rights Reserved.
+
 class Process:
     """
     A Process represents a process to be applied on the dataframe(s). All process must implement

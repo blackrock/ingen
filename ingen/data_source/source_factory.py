@@ -1,3 +1,6 @@
+#  Copyright (c) 2023 BlackRock, Inc.
+#  All Rights Reserved.
+
 from ingen.data_source.data_source_type import DataSourceType
 from ingen.data_source.file_source import FileSource
 from ingen.data_source.json_source import JsonSource
