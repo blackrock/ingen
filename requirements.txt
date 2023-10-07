@@ -28,9 +28,9 @@ pluggy==0.13.1
 py==1.10.0
 pycparser==2.20
 pycryptodome==3.11.0
-mysql-connector==2.2.9
 pyodbc==4.0.28
 pyOpenSSL==21.0.0
+pymysql==1.1.0
 pyparsing==2.4.7
 pyrsistent==0.18.0
 pytest==6.2.4

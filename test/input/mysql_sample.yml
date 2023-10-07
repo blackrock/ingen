@@ -1,0 +1,23 @@
+# note that we would need mysql database configured in the system for running this.
+interfaces:
+  sample:
+    sources: [ 'SAMPLE' ]
+    columns:
+      - src_col_name: 'user'
+      - src_col_name: 'user_id'
+        dest_col_name: 'id'
+      - src_col_name: 'location'
+    output:
+      type: delimited_file
+      props:
+        delimiter: '|'
+        path: ../output.csv
+        header:
+          type: delimited_result_header
+sources:
+  - id: SAMPLE
+    type: mysql
+    host_name: '127.0.0.1'
+    user: root
+    database: SAMPLE_DATABASE
+    query: 'select * from SAMPLE_TABLE'
