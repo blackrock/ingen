@@ -9,8 +9,15 @@ def agg(config, data):
     return data.agg(config['operation'], config['col'])
 
 
-def get_aggregator(formatter_type):
-    if formatter_type == 'groupby':
-        return groupby
-    elif formatter_type == 'agg':
-        return agg
+aggregator_map = {
+    'groupby': groupby,
+    'agg': agg
+
+}
+
+
+def get_aggregator(aggregator_type):
+    return aggregator_map.get(aggregator_type)
+
+def add_aggregator(aggregator_type, aggregator):
+    return aggregator_map.update( {aggregator_type: aggregator} )
