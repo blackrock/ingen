@@ -22,19 +22,18 @@ class Formatter:
 
     def apply_format(self):
         for column in self._columns:
-            if 'formatters' in column:
-                for formatter in column['formatters']:
-                    formatter_func = get_formatter_from_type(formatter['type'])
-                    col_name = column.get('src_col_name')
-                    if formatter_func is None:
-                        raise ValueError(f"Invalid formatter type: {formatter.get('type')} "
-                                         f"on column {col_name}")
-                    log.info(f"Formatting column {col_name} using {formatter.get('type')} formatter")
-                    start = time.time()
-                    self._df = formatter_func(self._df, col_name, formatter.get('format'), self._param)
-                    end = time.time()
-                    log.info(f"Finished '{formatter.get('type')}' formatter on column {col_name} "
-                             f"in {end - start:.2f} seconds")
+            for formatter in column.get('formatters', []):
+                formatter_func = get_formatter_from_type(formatter['type'])
+                col_name = column.get('src_col_name')
+                if formatter_func is None:
+                    raise ValueError(f"Invalid formatter type: {formatter.get('type')} "
+                                     f"on column {col_name}")
+                log.info(f"Formatting column {col_name} using {formatter.get('type')} formatter")
+                start = time.time()
+                self._df = formatter_func(self._df, col_name, formatter.get('format'), self._param)
+                end = time.time()
+                log.info(f"Finished '{formatter.get('type')}' formatter on column {col_name} "
+                         f"in {end - start:.2f} seconds")
 
         column_names = [col['src_col_name'] for col in self._columns]
         self._df = column_filter(self._df, column_names)
