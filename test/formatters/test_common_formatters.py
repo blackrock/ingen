@@ -1239,6 +1239,15 @@ class TestCommonFormatters(unittest.TestCase):
         formatted_data = drop_duplicates(data, col_name, format_options, {})
         pd.testing.assert_frame_equal(expected_data, formatted_data)
 
+    def custom_formatter(config, data):
+        return data
+
+    def test_add_formatter(self):
+        formatter_type = 'cust'
+        custom_formatter_func = self.custom_formatter
+        add_formatter(formatter_type, custom_formatter_func)
+
+        self.assertEqual(get_formatter_from_type(formatter_type), custom_formatter_func)
 
 if __name__ == '__main__':
     unittest.main()
