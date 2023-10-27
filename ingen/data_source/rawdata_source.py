@@ -2,7 +2,6 @@
 #  All Rights Reserved.
 
 import logging
-import time
 
 from ingen.data_source.dataframe_store import store
 from ingen.data_source.source import DataSource

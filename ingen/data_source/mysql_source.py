@@ -2,7 +2,6 @@
 #  All Rights Reserved.
 
 import logging
-import time
 
 import pymysql
 from ingen.data_source.source import DataSource
