@@ -9,7 +9,7 @@ logger.setLevel(logging.DEBUG)
 
 
 def log_time(func):
-    """This decorator prints the execution time for the decorated function."""
+    """This decorator logs the execution time for the decorated function."""
 
     @wraps(func)
     def wrapper(*args, **kwargs):
