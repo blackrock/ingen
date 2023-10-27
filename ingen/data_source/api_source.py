@@ -77,6 +77,9 @@ class APISource(DataSource):
 
     @log_time
     def fetch_data(self, url_reader):
+        """
+        returns a DataFrame of data fetched from APISource.
+        """
         return url_reader.execute(self._data_node, self._data_key, self._meta)
 
     def fetch_validations(self):

@@ -7,6 +7,7 @@ import time
 from ingen.data_source.dataframe_store import store
 from ingen.data_source.source import DataSource
 from ingen.reader.rawdata_reader import RawDataReader
+from ingen.utils.timer import log_time
 
 log = logging.getLogger()
 
@@ -26,14 +27,14 @@ class RawDataSource(DataSource):
         :return: A DataFrame fetched from the dataframe store corresponding to the id given by the user
         """
         reader = RawDataReader()
-        start = time.time()
+        return self.fetch_data(reader)
 
-        result = reader.read(self._id, store)
-
-        end = time.time()
-        log.info(f"Successfully fetched Data Frame from {self._id} in {end - start:.2f} seconds")
-
-        return result
+    @log_time
+    def fetch_data(self, reader):
+        """
+        returns a DataFrame of data fetched from RawDataSource.
+        """
+        return reader.read(self._id, store)
 
     def fetch_validations(self):
         """
