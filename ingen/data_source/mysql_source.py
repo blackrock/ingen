@@ -9,6 +9,7 @@ from ingen.data_source.source import DataSource
 from ingen.reader.mysql_reader import MYSQLReader
 from ingen.utils.properties import properties
 from ingen.utils.sql_query_parser import SqlQueryParser
+from ingen.utils.timer import log_time
 
 log = logging.getLogger()
 
@@ -47,11 +48,14 @@ class MYSQLSource(DataSource):
         :return: A DataFrame created using the result of the query
         """
         reader = MYSQLReader(self._connection)
-        start = time.time()
-        data = reader.execute(self._query)
-        end = time.time()
-        log.info(f"Successfully fetched data from mysql in {end - start:.2f} seconds.")
-        return data
+        return self.fetch_data(reader)
+
+    @log_time
+    def fetch_data(self, reader):
+        """
+        returns a DataFrame of data fetched from MySQLSource.
+        """
+        return reader.execute(self._query)
 
     def fetch_validations(self):
         """
