@@ -7,11 +7,11 @@ import time
 from datetime import date
 from datetime import datetime
 
-from ingen.logger import log
 from ingen.metadata.metadata_parser import MetaDataParser
 from ingen.utils.utils import KeyValue
+from ingen.logger import init_logging
 
-logger = logging.getLogger()
+log = logging.getLogger()
 
 
 def main(config_path, query_params, run_date, interfaces, infile=None, dynamic_data=None):
@@ -19,7 +19,7 @@ def main(config_path, query_params, run_date, interfaces, infile=None, dynamic_d
     metadata_list = parser.parse_metadata()
     run_config = parser.run_config
     failed_interfaces = []  # Array to store the names of failed interfaces
-    logger.info("Metadata parsing complete. Starting interface generation")
+    log.info("Metadata parsing complete. Starting interface generation")
     main_start = time.time()
     for metadata in metadata_list:
         try:
@@ -54,6 +54,7 @@ def create_arg_parser():
 
 
 def init(arguments):
+    init_logging()
     arg_parser = create_arg_parser()
     args = arg_parser.parse_args(arguments)
     if args.interfaces is not None:
