@@ -2,14 +2,22 @@
 #  All Rights Reserved.
 
 import logging
-import traceback
 from abc import ABC, abstractmethod
+
+logger = logging.getLogger(__name__)
 
 
 class BaseInterfaceGenerator(ABC):
-    _logger = logging.getLogger(__name__)
-
-    def generate(self, interface_name, sources, pre_processes, columns, destination, params, validation_action):
+    def generate(
+        self,
+        interface_name,
+        sources,
+        pre_processes,
+        columns,
+        destination,
+        params,
+        validation_action,
+    ):
         """
         Template method that defines the skeleton of interface generation
         :param interface_name: name of the interface, used for logging purpose
@@ -24,14 +32,20 @@ class BaseInterfaceGenerator(ABC):
             data = self.read(sources)
 
             # validation on raw data
-            _, validation_summary_raw = self.validate(data, columns, data=data, sources=sources)
-            validation_summary = {key.id: value for key, value in zip(sources, validation_summary_raw)}
+            _, validation_summary_raw = self.validate(
+                data, columns, data=data, sources=sources
+            )
+            validation_summary = {
+                key.id: value for key, value in zip(sources, validation_summary_raw)
+            }
 
-            if 'blocker' not in str(validation_summary):
+            if "blocker" not in str(validation_summary):
                 processed_data = self.pre_process(pre_processes, data)
                 formatted_data = self.format(processed_data, columns, params)
                 # validation on formatted data
-                validated_data, validation_summary_formatted = self.validate(formatted_data, columns, data=data)
+                validated_data, validation_summary_formatted = self.validate(
+                    formatted_data, columns, data=data
+                )
                 validation_summary[interface_name] = validation_summary_formatted[0]
 
             self.notify(params, validation_action, validation_summary)
@@ -39,10 +53,11 @@ class BaseInterfaceGenerator(ABC):
             if destination.get("type"):
                 self.write(validated_data, destination, params)
             else:
-                return validated_data.to_json(orient='records', lines=True)
+                return validated_data.to_json(orient="records", lines=True)
         except Exception as e:
-            self._logger.error(f'Error generating interface file for {interface_name} \n {e}')
-            self._logger.error(traceback.format_exc())
+            logger.exception(
+                f"Error generating interface file for {interface_name} \n {e}"
+            )
             raise
 
     @abstractmethod
@@ -101,3 +116,4 @@ class BaseInterfaceGenerator(ABC):
         :param validation_summary: Dictionary of source name and their validation summary
         """
         pass
+
