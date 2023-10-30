@@ -4,7 +4,7 @@
 import logging
 from abc import ABC, abstractmethod
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 class BaseInterfaceGenerator(ABC):
@@ -55,7 +55,7 @@ class BaseInterfaceGenerator(ABC):
             else:
                 return validated_data.to_json(orient="records", lines=True)
         except Exception as e:
-            logger.exception(
+            log.exception(
                 f"Error generating interface file for {interface_name} \n {e}"
             )
             raise
@@ -116,4 +116,3 @@ class BaseInterfaceGenerator(ABC):
         :param validation_summary: Dictionary of source name and their validation summary
         """
         pass
-
