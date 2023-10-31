@@ -625,4 +625,18 @@ formatter_map = {
 
 
 def get_formatter_from_type(formatter_type):
+    """
+     gets an formatter, returns formatter function
+
+     :param formatter_type : name/type of the formatter
+    """
     return formatter_map.get(formatter_type)
+
+def add_formatter(formatter_type, formatter):
+    """
+     adds a new formatter, adding for flexibility for users of ingen
+
+     :param formatter_type : name/type of the formatter
+     :param formatter : formatter function
+    """
+    return formatter_map.update( {formatter_type: formatter} )

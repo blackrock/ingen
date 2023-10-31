@@ -52,12 +52,10 @@ def sum(obj, field=None, subfield=None, result=None):
     """
     total = 0.0
     if field is None and subfield is None:
-        for x in obj:
-            total += x
+        total = sum(obj)
         return total
     elif subfield is None:
-        for x in obj[field]:
-            total += x
+        total = sum(obj[field])
         obj[result] = total
         return obj
     else:
