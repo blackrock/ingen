@@ -6,7 +6,7 @@ from ingen.pre_processor.process import Process
 
 class Mask(Process):
     def execute(self, config, sources_data, data):
-        on_col = config.get('on_col')
+        on_col = config['on_col']
         masking_col = config.get('masking_col')
         masking_data_name = config.get('masking_source')
         masking_data = sources_data.get(masking_data_name)

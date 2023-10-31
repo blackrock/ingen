@@ -43,3 +43,13 @@ class TestAggregators(unittest.TestCase):
 
         aggregator_type = 'agg'
         self.assertEqual(get_aggregator(aggregator_type), agg)
+
+    def custom_aggregator(config, data):
+        return data
+
+    def test_add_aggregator(self):
+        aggregator_type = 'cust'
+        custom_aggregator_func = self.custom_aggregator
+        add_aggregator(aggregator_type, custom_aggregator_func)
+
+        self.assertEqual(get_aggregator(aggregator_type), custom_aggregator_func)
