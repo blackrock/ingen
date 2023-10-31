@@ -3,9 +3,7 @@ import time
 
 from functools import wraps
 
-logging.basicConfig()
-logger = logging.getLogger("my-logger")
-logger.setLevel(logging.DEBUG)
+log = logging.getLogger()
 
 
 def log_time(func):
@@ -16,7 +14,7 @@ def log_time(func):
         start = time.time()
         result = func(*args, **kwargs)
         end = time.time()
-        logger.info(f"Successfully ran function={func.__name__} in time={round(end - start, 2)} seconds.")
+        log.info(f"Successfully ran function={func.__name__} in time={round(end - start, 2)} seconds.")
         return result
 
     return wrapper
