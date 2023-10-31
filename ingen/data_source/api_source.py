@@ -2,7 +2,6 @@
 #  All Rights Reserved.
 
 import logging
-import time
 from datetime import date
 
 from ingen.data_source.source import DataSource
@@ -10,6 +9,7 @@ from ingen.reader.api_reader import APIReader
 from ingen.utils.app_http.HTTPRequest import HTTPRequest
 from ingen.utils.app_http.success_criterias import DEFAULT_STATUS_CRITERIA_OPTIONS, get_criteria_by_name
 from ingen.utils.interpolators.Interpolator import Interpolator
+from ingen.utils.timer import log_time
 from ingen.utils.url_constructor import UrlConstructor
 
 log = logging.getLogger()
@@ -73,11 +73,14 @@ class APISource(DataSource):
                                 auth=self._auth,
                                 data=self._req_data) for url in urls]
         url_reader = APIReader(requests, self.reader_params)
-        start = time.time()
-        data = url_reader.execute(self._data_node, self._data_key, self._meta)
-        end = time.time()
-        log.info(f"Successfully fetched API data in {end - start:.2f} seconds.")
-        return data
+        return self.fetch_data(url_reader)
+
+    @log_time
+    def fetch_data(self, url_reader):
+        """
+        returns a DataFrame of data fetched from APISource.
+        """
+        return url_reader.execute(self._data_node, self._data_key, self._meta)
 
     def fetch_validations(self):
         """

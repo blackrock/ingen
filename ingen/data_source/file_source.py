@@ -2,12 +2,12 @@
 #  All Rights Reserved.
 
 import logging
-import time
 from datetime import date
 
 from ingen.data_source.source import DataSource
 from ingen.reader.file_reader import ReaderFactory
 from ingen.utils.path_parser import PathParser
+from ingen.utils.timer import log_time
 
 log = logging.getLogger()
 
@@ -39,11 +39,14 @@ class FileSource(DataSource):
         :return: A DataFrame created using the result of the reading the file
         """
         reader = ReaderFactory.get_reader(self._src)
-        start = time.time()
-        data = reader.read(self._src)
-        end = time.time()
-        log.info(f"Successfully fetched file from {self._src.get('file_path')} in {end - start:.2f} seconds")
-        return data
+        return self.fetch_data(reader)
+
+    @log_time
+    def fetch_data(self, reader):
+        """
+        returns a DataFrame of data fetched from input FileSource.
+        """
+        return reader.read(self._src)
 
     def fetch_validations(self):
         """
