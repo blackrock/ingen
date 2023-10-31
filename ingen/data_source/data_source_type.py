@@ -15,3 +15,4 @@ class DataSourceType(Enum):
     Api = "api"
     MYSQL = "mysql"
     RawDataStore = "rawdatastore"
+    JSON = "json"

@@ -16,12 +16,24 @@ class MetaDataParser:
     MetaDataParser reads a YAML file and creates a MetaData object for each interface
     """
 
-    def __init__(self, filepath, query_params, run_date, selected_interfaces, infile=None,
-                 dynamic_data=None):
-        """
-        Loads a parser for the given metadata file
+    def __init__(
+        self,
+        filepath,
+        query_params,
+        run_date,
+        selected_interfaces,
+        infile=None,
+        dynamic_data=None,
+    ):
+        """Initializes a metadata parser
 
-        param filepath: file path of the interface metadata file (aka metadata file)
+        Args:
+            filepath: Metadata file path
+            query_params: Key Value pairs passed from CLI that is used to replace keys with values in sql queries
+            run_date: A date param to determine the date on which InGen runs, defaults to current date
+            selected_interfaces: List of interface names. This should be a subset of names declared in the metadata file
+            infile: A file path passed from command line to load a File Source
+            dynamic_data: JSON String passed from command line to load a JSON Source
         """
         self._filepath = filepath
         self._run_date = run_date
@@ -41,42 +53,34 @@ class MetaDataParser:
 
         :return: A list of interface MetaData objects
         """
-        interface_configs = []
         with open(self._filepath) as file:
             log.info(f"Loading file {self._filepath} to parse metadata config")
             metadata = yaml.load(file, Loader=yaml.FullLoader)
-            self._run_config = self.parse_run_config(metadata)
+            self._run_config = RunConfiguration(metadata.get("run_config", {}))
             if self._selected_interfaces:
-                interfaces_from_metadata = metadata['interfaces']
-                interfaces = {k: v for (k, v) in interfaces_from_metadata.items() if k in self._selected_interfaces}
+                interfaces_from_metadata = metadata["interfaces"]
+                interfaces = {
+                    k: v
+                    for (k, v) in interfaces_from_metadata.items()
+                    if k in self._selected_interfaces
+                }
             else:
-                interfaces = metadata['interfaces']
-            sources = self.make_source_dict(metadata['sources'])
-            self.map_interface_sources(interfaces, sources)
-            params_map = self.make_runtime_parameters_map(self._query_params, self._run_date,
-                                                          self._infile)
-            interface_configs = [MetaData(x, interfaces[x], params_map, self._infile, self._dynamic_data) for x in
-                                 interfaces]
-        return interface_configs
+                interfaces = metadata["interfaces"]
 
-    def make_runtime_parameters_map(self, query_params, run_date, infile=None):
-        runtime_parameters = {'query_params': query_params, 'run_date': run_date,
-                              'infile': infile}
-        return runtime_parameters
+            sources = {source["id"]: source for source in metadata["sources"]}
 
-    def make_source_dict(self, sources):
-        sources_dict = {}
-        for source in sources:
-            sources_dict[source['id']] = source
-        return sources_dict
+            for interface in interfaces.values():
+                source_ids = interface.get("sources")
+                interface["sources"] = [sources[sid] for sid in source_ids]
 
-    def map_interface_sources(self, interfaces, sources):
-        for interface in interfaces.values():
-            source_ids = interface.get('sources')
-            interface['sources'] = [sources[sid] for sid in source_ids]
+            params_map = {
+                "query_params": self._query_params,
+                "run_date": self._run_date,
+                "infile": self._infile,
+            }
 
-    def parse_run_config(self, metadata):
-        config = {}
-        if 'run_config' in metadata:
-            config = metadata['run_config']
-        return RunConfiguration(config)
+            interface_configs = [
+                MetaData(x, interfaces[x], params_map, self._dynamic_data)
+                for x in interfaces
+            ]
+            return interface_configs
