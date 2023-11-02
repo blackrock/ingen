@@ -23,13 +23,11 @@ class JsonSource(DataSource):
     def fetch(self):
         if not self._data:
             raise ValueError("JSON string is not provided")
-        try:
-            json_dict = json.loads(self._data)
-            if not json_dict[self.id]:
-                raise ValueError("JSON source with ID {} does not exist".format(self.id))
-            self._data = pd.json_normalize(json_dict[self.id])
-        except ValueError:
-            raise ValueError("JSON string is malformed")
+
+        json_dict = json.loads(self._data)
+        if not json_dict[self.id]:
+            raise ValueError("JSON source with ID {} does not exist".format(self.id))
+        self._data = pd.json_normalize(json_dict[self.id])
         return self._data
 
     def fetch_validations(self):
