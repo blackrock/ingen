@@ -7,8 +7,8 @@ class DataSource:
     a method called fetch, which is responsible for fetching data and returning it in a pandas DataFrame fromat
     """
 
-    def __init__(self, id):
-        self._id = id
+    def __init__(self, _id):
+        self._id = _id
 
     @property
     def id(self):
