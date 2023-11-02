@@ -91,7 +91,7 @@ class MyTestCase(unittest.TestCase):
         url_params = [{
             "id": "query",
             "type": "const",
-            "value": "value with spaces & special chars."
+            "value": "value with spaces & special chars"
         }
         ]
 

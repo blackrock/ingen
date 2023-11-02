@@ -30,7 +30,7 @@ def process_dataframe_columns_schema(df, column_details):
                 field_total = details.get("field_total")
                 df_copy[field_name] = df_copy[field_name]. \
                     apply(lambda x, agg_column=field_agg_column, action_column=field_action_column, total=field_total:
-                          sum(x, agg_column, action_column, total))
+                          json_sum(x, agg_column, action_column, total))
         elif field_type == 'date':
             # TODO add handling for multiple date formats
             df_copy[field_name] = str(date.today())
@@ -40,7 +40,7 @@ def process_dataframe_columns_schema(df, column_details):
     return df_copy[resultant_columns]
 
 
-def sum(obj, field=None, subfield=None, result=None):
+def json_sum(obj, field=None, subfield=None, result=None):
     """
     Calculate the sum of a given collection in simple list,
     dict with array, dict with field and subfield as data
@@ -52,12 +52,10 @@ def sum(obj, field=None, subfield=None, result=None):
     """
     total = 0.0
     if field is None and subfield is None:
-        for x in obj:
-            total += x
+        total = sum(obj)
         return total
     elif subfield is None:
-        for x in obj[field]:
-            total += x
+        total = sum(obj[field])
         obj[result] = total
         return obj
     else:
