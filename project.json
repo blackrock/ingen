@@ -1,9 +1,0 @@
-{
-    "name": "InterfaceGenerator",
-    "main_package": "InterfaceGenerator",
-    "piv": "3.7.9",
-    "type": "Python-ScriptSuite",
-    "main_files": [],
-    "deploy": "L",
-    "pip": ">21.0"
-}
