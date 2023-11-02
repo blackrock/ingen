@@ -2,9 +2,11 @@
 #  All Rights Reserved.
 
 import unittest
+from datetime import date
 from unittest import mock
 from unittest.mock import Mock, patch
 
+from main import create_arg_parser
 from ingen.data_source.json_source import JsonSource
 from ingen.main import *
 
@@ -59,7 +61,7 @@ class TestMain(unittest.TestCase):
         )
 
     @patch('ingen.main.MetaDataParser')
-    @patch('ingen.main.log')
+    @patch('ingen.main.logger')
     def test_main_catches_exception_and_system_exit(self, mock_logging, mock_metadata_parser):
         config_path = 'path/to/file'
         query_params = {}
