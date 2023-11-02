@@ -53,10 +53,11 @@ def create_arg_parser():
     return parser
 
 
-def init(arguments):
+def init():
+    """Initializes logger and arguments"""
     init_logging()
     arg_parser = create_arg_parser()
-    args = arg_parser.parse_args(arguments)
+    args = arg_parser.parse_args()
     if args.interfaces is not None:
         args.interfaces = args.interfaces.split(',')
     if type(args.run_date) == str:

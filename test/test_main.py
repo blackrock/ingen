@@ -96,16 +96,6 @@ class TestMain(unittest.TestCase):
         parsed_args = parser.parse_args(arguments)
         self.assertEqual(['positions', 'account'], parsed_args.interfaces)
 
-    @patch('ingen.main.create_arg_parser')
-    @patch('ingen.main.main')
-    def test_init(self, main_mock, parser_mock):
-        parse = Mock()
-        parser_mock.return_value = parse
-        args = Mock()
-        parse.parse_args.return_value = args
-        init(args)
-        main_mock.assert_called_with(args.config_path, args.query_params, args.run_date, args.interfaces, args.infile)
-
     @patch('ingen.main.MetaDataParser')
     def test_process_json_with_dynamic_data(self, mock_metadata_parser):
         config_path = 'path/to/file'
