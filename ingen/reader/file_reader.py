@@ -103,7 +103,7 @@ class FixedWidthFileReader(Reader):
 def get_config(src):
     header_size = src.get('skip_header_size' , 0)
     trailer_size = src.get('skip_trailer_size' , 0)
-    all_cols = src.get('columns', None)
+    all_cols = src.get('columns')
     return {
         "header_size": header_size,
         "trailer_size": trailer_size,
