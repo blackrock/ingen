@@ -95,10 +95,4 @@ class APISource(DataSource):
         :param headers: dict-like HTTP headers
         :return: dict of HTTP headers with interpolated values
         """
-        if headers is None:
-            return None
-
-        for key, value in headers.items():
-            headers[key] = self._interpolator.interpolate(value)
-
-        return headers
+        return {key: self._interpolator.interpolate(value) for key, value in headers.items()} if headers else None
