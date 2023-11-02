@@ -20,7 +20,6 @@ def main(
     )
     metadata_list = parser.parse_metadata()
     run_config = parser.run_config
-    failed_interfaces = []  # List to store the names of the failed interfaces
     logger.info("Metadata parsing complete. Starting interface generation")
 
     main_start = time.time()
@@ -43,9 +42,6 @@ def main(
                 f"Successfully generated interface '{metadata.name}' in {end - start:.2f} seconds."
             )
         except Exception as e:
-            failed_interfaces.append(
-                metadata.name
-            )  # append the name of failed interfaces in a list
             logger.error(
                 f"Failed to generate interface file for {metadata.name} \n {e}"
             )
@@ -54,8 +50,6 @@ def main(
         f"Interface Generation finished. Time taken: {main_end - main_start:.2f} seconds"
     )
 
-    if failed_interfaces:
-        exit(f"Error while generating interface file for {failed_interfaces}")
     # dynamic_data: a JSON string input that was provided alongside a config file
     if dynamic_data:
         return interface

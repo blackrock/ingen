@@ -60,31 +60,6 @@ class TestMain(unittest.TestCase):
             metadata1.validation_action
         )
 
-    @patch('ingen.main.MetaDataParser')
-    @patch('ingen.main.logger')
-    def test_main_catches_exception_and_system_exit(self, mock_logging, mock_metadata_parser):
-        config_path = 'path/to/file'
-        query_params = {}
-        interfaces_list = None
-        run_date = date.today()
-
-        metadata1 = Mock()
-        mock_source = Mock()
-        metadata1.sources = [mock_source]
-        parser = Mock()
-        mock_run_config = Mock()
-        mock_generator = Mock()
-        mock_generator.generate.side_effect = Exception('Custom Exception')
-        parser.parse_metadata.return_value = [metadata1]
-        parser.run_config = mock_run_config
-        mock_run_config.generator.return_value = mock_generator
-        mock_metadata_parser.return_value = parser
-        with self.assertRaises(SystemExit):
-            main(config_path, query_params, run_date, interfaces_list)
-
-        message = f"Failed to generate interface file for {metadata1.name} \n Custom Exception"
-        mock_logging.error.assert_called_with(message)
-
     def test_query_params_arguments(self):
         arguments = ['file/to/metadata.yml', '--query_params', 'date=12/09/1995', 'table=position']
         parser = create_arg_parser()
