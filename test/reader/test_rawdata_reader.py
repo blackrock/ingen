@@ -32,6 +32,6 @@ class TestRawDataReader(unittest.TestCase):
 
     def testgetframeid_wrongid(self):
         _id = "height"
-        with self.assertRaisesRegex(KeyError, "key 'height' missing in RawDataStore."):
+        with self.assertRaisesRegex(KeyError, "'height'"):
             reader = RawDataReader()
             data = reader.read(_id, store)

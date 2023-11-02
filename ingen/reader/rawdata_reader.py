@@ -6,7 +6,4 @@ class RawDataReader:
     Dictionary"""
 
     def read(self, _id, df_dict):
-        if _id in df_dict.keys():
-            return df_dict.get(_id)
-        else:
-            raise KeyError(f"key '{_id}' missing in RawDataStore.")
+        return df_dict[_id]

@@ -41,30 +41,30 @@ class XMLFileReader:
             else:
                 main_df = pd.DataFrame([], columns=columns)
         except ExpatError:
-            logging.error("XML file is empty")
+            logging.error("XML file is empty or malformed")
             raise
         return main_df
 
 
 def get_record(obj, name, val_arr):
     n = name.split('.')
-    if obj is None or type(obj) is str:
+    if obj is None or isinstance(obj, str):
         val_arr.append('')
     if len(n) == 1:
         elem_name = n[0]
-        if type(obj) is list:
+        if isinstance(obj, list):
             # for each obj in that list print elem
             get_list_record(obj, elem_name, val_arr)
-        elif type(obj) is collections.OrderedDict:
-            if type(obj.get(elem_name)) is str:
+        elif isinstance(obj, collections.OrderedDict):
+            if isinstance(obj.get(elem_name), str):
                 val_arr.append(obj.get(elem_name))
-            elif type(obj.get(elem_name)) is collections.OrderedDict:
+            elif isinstance(obj.get(elem_name), collections.OrderedDict):
                 val_arr.append(obj.get(elem_name).get('#text'))
             elif isinstance(obj.get(elem_name), type(None)):
                 val_arr.append('')
 
     else:
-        if type(obj) is list:
+        if isinstance(obj, list):
             get_list_record(obj, name, val_arr)
         else:
             get_record(obj.get(n[0]), '.'.join(n[1:]), val_arr)

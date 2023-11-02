@@ -25,7 +25,7 @@ class CSVFileReader(Reader):
         dtype = src.get('dtype')
         try:
             result = pd.read_csv(src['file_path'],
-                                 sep=src['delimiter'],
+                                 sep=src.get('delimiter'),
                                  index_col=False,
                                  skiprows=config['header_size'],
                                  skipfooter=config['trailer_size'],
@@ -101,9 +101,9 @@ class FixedWidthFileReader(Reader):
 
 
 def get_config(src):
-    header_size = src['skip_header_size'] if 'skip_header_size' in src else 0
-    trailer_size = src['skip_trailer_size'] if 'skip_trailer_size' in src else 0
-    all_cols = src['columns'] if 'columns' in src else None
+    header_size = src.get('skip_header_size' , 0)
+    trailer_size = src.get('skip_trailer_size' , 0)
+    all_cols = src.get('columns')
     return {
         "header_size": header_size,
         "trailer_size": trailer_size,
@@ -112,15 +112,16 @@ def get_config(src):
 
 
 class ReaderFactory:
+
     @classmethod
     def get_reader(cls, src):
-        if src['type'] == 'file' and src['file_type'] == 'delimited_file':
-            return CSVFileReader()
-        elif src['type'] == 'file' and src['file_type'] == 'excel':
-            return ExcelFileReader()
-        elif src['type'] == 'file' and src['file_type'] == 'xml':
-            return XMLFileReader()
-        elif src['type'] == 'file' and src['file_type'] == 'json':
-            return JSONFileReader()
-        elif src['type'] == 'file' and src['file_type'] == 'fixed_width':
-            return FixedWidthFileReader()
+        factory_types = {'delimited_file': CSVFileReader,
+                         'excel': ExcelFileReader,
+                         'xml': XMLFileReader,
+                         'json': JSONFileReader,
+                         "fixed_width": FixedWidthFileReader
+                         }
+        reader_cls = factory_types.get(src.get('file_type'))
+        if reader_cls:
+            return reader_cls()
+
