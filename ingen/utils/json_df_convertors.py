@@ -15,11 +15,12 @@ def pandas_normalize(responses, data_node, data_key, meta=None):
     result = []
     if len(responses) == 0:
         return pd.DataFrame()
-    elif type(responses[0]) == list:
+
+    if isinstance(responses[0], list):
         for response in responses:
             result.extend(response)
         return pandas_normalize(result, data_node, data_key, meta)
-    elif type(responses[0]) == str:
+    elif isinstance(responses[0], str):
         return pd.DataFrame(responses)
     else:
         result = responses
