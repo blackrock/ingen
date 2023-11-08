@@ -34,16 +34,13 @@ def _filtered_df(df, data_key, meta):
         return df
 
     cols = []
-    if data_key:
-        for key in data_key:
-            cols.append(key)
+    cols.extend(data_key)
 
-    if meta:
-        for key in meta:
-            if type(key) == list:
-                cols.append(".".join(key))
-            else:
-                cols.append(key)
+    for key in meta:
+        if isinstance(key, list):
+            cols.append(".".join(key))
+        else:
+            cols.append(key)
 
     return df[cols]
 
@@ -65,4 +62,4 @@ CONVERTORS = {
 
 
 def get_json_to_df_convertor(func_name=DEFAULT_CONVERTOR):
-    return CONVERTORS.get(func_name)
+    return CONVERTORS[func_name]
