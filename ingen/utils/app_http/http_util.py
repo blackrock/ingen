@@ -30,8 +30,8 @@ def execute_requests(requests, request_params):
     failed_responses = list((filter(lambda res: type(res) is not HTTPResponse, http_responses)))
     logger.error(f"{len(failed_responses)} error in app_http responses: {failed_responses}")
     if failed_responses and not request_params.get('ignore_failure', True):
-        logger.info("Exiting the program due to failure in API response.")
-        sys.exit(-1)
+        logger.error("Exiting the program due to failure in API response.")
+        raise Exception("Exiting the program due to failure in API response.")
     return data
 
 

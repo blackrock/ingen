@@ -6,7 +6,7 @@ from datetime import date
 
 from ingen.data_source.source import DataSource
 from ingen.reader.api_reader import APIReader
-from ingen.utils.app_http.HTTPRequest import HTTPRequest
+from ingen.utils.app_http.http_request import HTTPRequest
 from ingen.utils.app_http.success_criterias import DEFAULT_STATUS_CRITERIA_OPTIONS, get_criteria_by_name
 from ingen.utils.interpolators.Interpolator import Interpolator
 from ingen.utils.timer import log_time

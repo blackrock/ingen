@@ -64,7 +64,7 @@ async def http_retry_request(
                 status = response.status
                 headers = response.headers
 
-                if headers.get('Content-Type') and 'application/json' in headers.get('Content-Type'):
+                if headers.get('Content-Type') and 'application/json' in headers.get('Content-Type', ''):
                     data = await response.json()
                 else:
                     data = await response.text()
