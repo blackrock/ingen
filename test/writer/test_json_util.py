@@ -7,7 +7,7 @@ from datetime import date
 import pandas as pd
 
 from ingen.writer import process_dataframe_columns_schema
-from ingen.writer.json_util import sum
+from ingen.writer.json_util import json_sum
 
 
 class TestJsonUtil(unittest.TestCase):
@@ -83,18 +83,18 @@ class TestJsonUtil(unittest.TestCase):
 
     def test_sum_method_with_list_data(self):
         data = [123.23, 223.23, 444, 12]
-        total = sum(obj=data)
+        total = json_sum(obj=data)
         self.assertEqual(802.46, total)
 
     def test_sum_method_with_single_d_hash(self):
         data = {'nums': [123.23, 223.23, 444, 12]}
-        total = sum(obj=data, field='nums', result='totalSum')
+        total = json_sum(obj=data, field='nums', result='totalSum')
         self.assertEqual(802.46, total['totalSum'])
 
     def test_sum_method_with_two_d_hash(self):
         data = {'accs': [{'num': 23},
                          {'num': 23}]}
-        total = sum(obj=data, field='accs', subfield='num', result='totalSum')
+        total = json_sum(obj=data, field='accs', subfield='num', result='totalSum')
         self.assertEqual(46.0, total['totalSum'])
 
 

@@ -164,44 +164,33 @@ class MyTestCase(unittest.TestCase):
         source_file_path = '../input/test1.csv'
         cmd_line_query_params = None
 
-        query = "SELECT t.cusip,ca.alias_cusip FROM #temp_sec_master t, cusip_table ca " \
-                "WHERE t.cusip = ca.bfm_cusip  where purpose = 'SMA' and " \
-                "ca.alias_code=5005"
-        expected_query = "create table #temp_sec_master (bcusip varchar(50));" \
-                         "INSERT INTO #temp_sec_master (bcusip) VALUES ('aaaaaaaa');" \
-                         "INSERT INTO #temp_sec_master (bcusip) VALUES ('bbbbbbbb');" \
-                         "SELECT t.cusip,ca.alias_cusip FROM #temp_sec_master t, cusip_table ca " \
-                         "WHERE t.cusip = ca.bfm_cusip  where purpose = 'SMA' and ca.alias_code=5005"
+        query = "select DATA, COURSE_NAME, ID FROM test_table"
+        expected_query = "create table #temp_id (ID varchar(50));INSERT INTO #temp_id (ID) VALUES (1);INSERT INTO #temp_id (ID) VALUES (2);select DATA, COURSE_NAME, ID FROM "'test_table'""
 
         temp_table_params = [{'id': 'file1', 'type': 'file', 'file_type': 'delimited_file', 'delimiter': ',',
                               'file_path': os.path.join(script_dir, source_file_path),
-                              'temp_table_name': 'temp_sec_master',
+                              'temp_table_name': 'temp_id',
                               'temp_table_cols': [
-                                  {'name': 'bcusip', 'type': "varchar", 'size': 50, "file_col": "CUSIP",
+                                  {'name': 'ID', 'type': "varchar", 'size': 50, "file_col": "ID",
                                    "default_val_if_empty": "temp_string"}]}]
-
         actual_query = self.query_parser.parse_query(query, cmd_line_query_params, temp_table_params)
+        print(actual_query)
         self.assertEqual(expected_query, actual_query)
 
     def test_parse_query_with_cmd_line_params_and_temp_table_query_params(self):
         script_dir = os.path.dirname(__file__)
         source_file_path = '../input/test1.csv'
-        cmd_line_query_params = {'query_params': {'purpose': 'ABC'}}
+        cmd_line_query_params = {'query_params': {'ID': '1'}}
 
-        query = "SELECT t.cusip,ca.alias_cusip FROM #temp_sec_master t, securities_aliases ca " \
-                "WHERE t.cusip = ca.cusip  where purpose = '{purpose}' and " \
-                "ca.code=5005"
-        expected_query = "create table #temp_sec_master (cusip varchar(50));" \
-                         "INSERT INTO #temp_sec_master (cusip) VALUES ('aaaaaaaa');" \
-                         "INSERT INTO #temp_sec_master (cusip) VALUES ('bbbbbbbb');" \
-                         "SELECT t.cusip,ca.alias_cusip FROM #temp_sec_master t, securities_aliases ca " \
-                         "WHERE t.cusip = ca.cusip  where purpose = 'ABC' and ca.code=5005"
+        query = "select DATA, COURSE_NAME, ID FROM test_table"
+        expected_query = "create table #temp_id (ID varchar(50));INSERT INTO #temp_id (ID) VALUES (1);INSERT INTO #temp_id (ID) VALUES (2);select DATA, COURSE_NAME, ID FROM "'test_table'""
 
         temp_table_params = [{'id': 'file1', 'type': 'file', 'file_type': 'delimited_file', 'delimiter': ',',
                               'file_path': os.path.join(script_dir, source_file_path),
-                              'temp_table_name': 'temp_sec_master',
+                              'temp_table_name': 'temp_id',
                               'temp_table_cols': [
-                                  {'name': 'cusip', 'type': "varchar", 'size': 50, "file_col": "CUSIP"}]}]
+                                  {'name': 'ID', 'type': "varchar", 'size': 50, "file_col": "ID",
+                                   "default_val_if_empty": "temp_string"}]}]
 
         actual_query = self.query_parser.parse_query(query, cmd_line_query_params, temp_table_params)
         self.assertEqual(expected_query, actual_query)

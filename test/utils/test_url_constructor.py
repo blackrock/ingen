@@ -6,6 +6,7 @@ from unittest.mock import patch, Mock
 
 import pandas as pd
 
+from ingen.data_source.mysql_source import MYSQLSource
 from ingen.utils.url_constructor import FileSource
 from ingen.utils.url_constructor import UrlConstructor
 
@@ -90,7 +91,7 @@ class MyTestCase(unittest.TestCase):
         url_params = [{
             "id": "query",
             "type": "const",
-            "value": "value with spaces & special chars."
+            "value": "value with spaces & special chars"
         }
         ]
 
@@ -110,13 +111,13 @@ class MyTestCase(unittest.TestCase):
         }, {
             "id": "add",
             "type": "db",
-            "db_token": "DSREAD",
+            "db_token": "mysql",
             "query": "select cde from fake_db where tbl_desc = 'fake_table'"
         }]
 
         db_source_result = pd.DataFrame()
         expected_urls = ["https://google.com?query=&loc=&add="]
-        with patch.object(DBSource, 'fetch', return_value=db_source_result):
+        with patch.object(MYSQLSource, 'fetch', return_value=db_source_result):
             constructor = UrlConstructor(url, url_params)
             constructed_urls = constructor.get_urls()
             self.assertListEqual(expected_urls, constructed_urls)
