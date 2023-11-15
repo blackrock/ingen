@@ -3,7 +3,6 @@
 
 import asyncio
 import logging
-import sys
 from asyncio import CancelledError
 
 import aiohttp
@@ -13,7 +12,7 @@ from ingen.utils.app_http.aiohttp_retry import http_retry_request, HTTPResponse
 from ingen.utils.app_http.success_criterias import status_criteria, DEFAULT_STATUS_CRITERIA_OPTIONS
 from ingen.utils.properties import Properties
 
-logger = logging.getLogger()
+log = logging.getLogger()
 
 
 def execute_requests(requests, request_params):
@@ -24,25 +23,24 @@ def execute_requests(requests, request_params):
     :return: list of response body
     """
     http_responses = asyncio.run(execute(requests, request_params))
-    logger.info(f"responses length: {len(http_responses)}")
+    log.info(f"responses length: {len(http_responses)}")
     data = list(map(lambda res: res.data, filter(lambda res: type(res) is HTTPResponse, http_responses)))
-    logger.info(f"data len after filtering errors: {len(data)}")
+    log.info(f"data len after filtering errors: {len(data)}")
     failed_responses = list((filter(lambda res: type(res) is not HTTPResponse, http_responses)))
-    logger.error(f"{len(failed_responses)} error in app_http responses: {failed_responses}")
+    log.error(f"{len(failed_responses)} error in app_http responses: {failed_responses}")
     if failed_responses and not request_params.get('ignore_failure', True):
-        logger.info("Exiting the program due to failure in API response.")
-        sys.exit(-1)
+        raise Exception("Failure in executing requests.")
     return data
 
 
 async def execute(requests, request_params):
     request_params['size'] = len(requests)
-    logger.info(f"Starting to process {len(requests)} requests")
+    log.info(f"Starting to process {len(requests)} requests")
     results = []
     queue = asyncio.Queue(maxsize=request_params.get('queue_size', 1))
     ssl = request_params.get('ssl', True)
     if not ssl:
-        logger.warning("SSL is turned off")
+        log.warning("SSL is turned off")
     connector = aiohttp.TCPConnector(ssl=request_params.get('ssl', True))
 
     async with ClientSession(connector=connector) as session:
@@ -51,7 +49,7 @@ async def execute(requests, request_params):
         # consumers
         tasks = []
         tasks_len = request_params.get('tasks_len', 1)
-        logger.info(f"PROC TASK: Creating {tasks_len} tasks to process queue")
+        log.info(f"PROC TASK: Creating {tasks_len} tasks to process queue")
         for _ in range(tasks_len):
             tasks.append(
                 asyncio.create_task(fetch(session, queue, request_params, results))
@@ -71,12 +69,20 @@ async def execute(requests, request_params):
 
 
 async def fill_queue(requests, queue):
-    logger.info("FILL TASK: Starting to fill request queue with requests")
+    log.info("FILL TASK: Starting to fill request queue with requests")
     while len(requests) > 0:
         await queue.put(requests.pop())
 
 
 async def fetch(session, queue, request_params, results):
+    """
+    Consumer method that is responsible for fetching requests from queue and executing them.
+    :param session: aiohttp.ClientSession
+    :param queue: asyncio.Queue
+    :param request_params: additional config parameters for app_http request like retries, intervals, etc.
+    :param results: list of response body
+    :return: None
+    """
     while True:
         try:
             request = await queue.get()
@@ -94,21 +100,22 @@ async def fetch(session, queue, request_params, results):
                                                 headers=request.headers,
                                                 data=request.data)
         except CancelledError:
-            logger.info("Task cancelled.")
+            log.info("Task cancelled.")
             break
         except Exception as e:
-            logger.exception(f"Error in fetch task:  {e}")
+            log.exception(f"Error in fetch task:  {e}")
             queue.task_done()
         else:
             results.append(response)
-            logger.info(f"Processed request {len(results)} / {request_params.get('size')}")
+            log.info(f"Processed request {len(results)} / {request_params.get('size')}")
             queue.task_done()
 
 
 def api_auth(auth):
     """
-        Method responsible for authenticating API. aiohttp.BasicAuth is used for it.
-        :param auth: Dictionary that contains auth.type, auth.username and auth.pwd.
+    Method responsible for authenticating API. aiohttp.BasicAuth is used for it.
+    :param auth: Dictionary that contains auth.type, auth.username and auth.pwd.
+    :return: aiohttp.BasicAuth if auth.type is BasicAuth, None otherwise.
     """
     if auth and auth.get('type') == 'BasicAuth':
         try:
@@ -116,5 +123,4 @@ def api_auth(auth):
             password = Properties.get_property('api_auth.password')
             return BasicAuth(user, password)
         except Exception as e:
-            logger.exception(f"Error while getting the property username/pwd for api call: {e} ")
-            sys.exit(-1)
+            log.exception(f"Error while getting the property username/pwd for api call: {e} ")

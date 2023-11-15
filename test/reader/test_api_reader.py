@@ -7,7 +7,7 @@ from unittest.mock import patch
 import pandas as pd
 
 from ingen.reader.api_reader import APIReader
-from ingen.utils.app_http.HTTPRequest import HTTPRequest
+from ingen.utils.app_http.http_request import HTTPRequest
 
 
 class TestAPIReader(unittest.TestCase):

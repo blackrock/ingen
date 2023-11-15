@@ -5,7 +5,7 @@ import unittest
 from unittest.mock import patch, Mock
 
 from ingen.data_source.api_source import APISource
-from ingen.utils.app_http.HTTPRequest import HTTPRequest
+from ingen.utils.app_http.http_request import HTTPRequest
 from ingen.utils.app_http.success_criterias import status_criteria, DEFAULT_STATUS_CRITERIA_OPTIONS
 from ingen.utils.url_constructor import UrlConstructor
 

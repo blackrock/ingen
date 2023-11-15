@@ -64,7 +64,7 @@ async def http_retry_request(
                 status = response.status
                 headers = response.headers
 
-                if headers.get('Content-Type') and 'application/json' in headers.get('Content-Type'):
+                if headers.get('Content-Type') and 'application/json' in headers.get('Content-Type', ''):
                     data = await response.json()
                 else:
                     data = await response.text()
@@ -76,8 +76,8 @@ async def http_retry_request(
 
             if success_criteria(http_response, criteria_options):
                 return http_response
-            else:
-                should_retry = True
-                logger.info(f"Retrying in {wait_time} seconds")
+
+            should_retry = True
+            logger.info(f"Retrying in {wait_time} seconds")
 
     logger.error(f"Could not get a successful response for url: {url} after {retries} retries.")

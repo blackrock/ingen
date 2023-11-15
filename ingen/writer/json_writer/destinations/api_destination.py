@@ -5,7 +5,7 @@ import json
 import logging
 
 from ingen.reader.api_reader import APIReader
-from ingen.utils.app_http.HTTPRequest import HTTPRequest
+from ingen.utils.app_http.http_request import HTTPRequest
 from ingen.utils.app_http.success_criterias import DEFAULT_STATUS_CRITERIA_OPTIONS, get_criteria_by_name
 from ingen.utils.interpolators.Interpolator import Interpolator
 from ingen.utils.path_parser import PathParser

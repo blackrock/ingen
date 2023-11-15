@@ -2,19 +2,19 @@
 #  All Rights Reserved.
 
 import logging
+import os
 from datetime import date
 
 from ingen.utils.interpolators.Interpolator import Interpolator
-from ingen.utils.parse_utils import ENVIRONMENT_VAR_PATTERN
-from ingen.utils.parse_utils import var_starts_with, get_environment_value
+
+ENVIRONMENT_VAR_PATTERN = "$$"
 
 
 class PathParser:
     """
     PathParser is a utility class that provides methods to parse file paths and replace
     the dynamic fields in it with appropriate values. A replaceable item can be one of the following:
-        1. bfm_token - $token(<TOKEN>) - it will be replaced by the value of 'TOKEN' as written in files.date file
-        2. date - $date(<FORMAT>) - it will be replaced by the date provided in the constructor in the given format
+        1. date - $date(<FORMAT>) - it will be replaced by the date provided in the constructor in the given format
     """
 
     def __init__(self, run_date=date.today(), interpolator=Interpolator()):
@@ -34,9 +34,9 @@ class PathParser:
         return self.interpolator.interpolate(path, self.item_name_method_map)
 
     def parse_env_variable(self, path):
-        if var_starts_with(path, ENVIRONMENT_VAR_PATTERN):
+        if path.startswith(ENVIRONMENT_VAR_PATTERN):
             environment_var = path[2:]
-            path = get_environment_value(environment_var)
+            path = os.getenv(environment_var)
             if path is None:
                 logging.error(f'Could not parse file path. Environment variable "{environment_var}" is not set.')
                 raise ValueError

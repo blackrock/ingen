@@ -7,7 +7,7 @@ from unittest.mock import patch, MagicMock
 
 from aiohttp import BasicAuth
 
-from ingen.utils.app_http.HTTPRequest import HTTPRequest
+from ingen.utils.app_http.http_request import HTTPRequest
 from ingen.utils.app_http.aiohttp_retry import HTTPResponse
 from ingen.utils.app_http.http_util import api_auth, execute_requests
 from ingen.utils.app_http.success_criterias import get_criteria_by_name, DEFAULT_STATUS_CRITERIA_OPTIONS

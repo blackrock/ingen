@@ -7,7 +7,7 @@ from unittest.mock import patch, Mock
 
 import pandas as pd
 
-from ingen.utils.app_http.HTTPRequest import HTTPRequest
+from ingen.utils.app_http.http_request import HTTPRequest
 from ingen.utils.app_http.success_criterias import get_criteria_by_name
 from ingen.writer.json_writer.destinations.api_destination import ApiDestination
 
