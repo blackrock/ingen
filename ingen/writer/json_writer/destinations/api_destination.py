@@ -14,6 +14,15 @@ from ingen.writer.dataframe_writer import DataFrameWriter
 log = logging.getLogger()
 
 
+def parse_headers(headers, params):
+    """
+    Interpolate header values
+    params: dictionary for HTTP headers
+    returns interpolated values of the dictionary
+    """
+    return {key: Interpolator(params).interpolate(value) for key, value in headers.items()} if headers else None
+
+
 class ApiDestination:
     def __init__(self, params=None):
         self._params = params
@@ -35,7 +44,7 @@ class ApiDestination:
         path_parser = PathParser()
         requests = [HTTPRequest(url=path_parser.parse(api_request_props.get('url')),
                                 method=api_request_props.get('method'),
-                                headers=self.parse_headers(api_request_props.get('headers'), self._params),
+                                headers=parse_headers(api_request_props.get('headers'), self._params),
                                 auth=api_request_props.get('auth'),
                                 data=json_string) for json_string in json_strings]
 
@@ -62,17 +71,3 @@ class ApiDestination:
 
         writer = DataFrameWriter(response_data, {'id': api_response_props.get('dataframe_id')})
         writer.write()
-
-    def parse_headers(self, headers, params):
-        """
-        Interpolate header values
-        params: dictionary for HTTP headers
-        returns interpolated values of the dictionary
-        """
-        if headers is None:
-            return None
-
-        for key, value in headers.items():
-            headers[key] = Interpolator(params).interpolate(value)
-
-        return headers
