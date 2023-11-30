@@ -55,6 +55,7 @@ def create_arg_parser():
 
 def init(arguments):
     init_logging()
+    log.info("I'm here")
     arg_parser = create_arg_parser()
     args = arg_parser.parse_args(arguments)
     if args.interfaces is not None:

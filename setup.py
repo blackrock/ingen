@@ -3,6 +3,7 @@
 
 import os
 
+import setuptools
 from setuptools import setup
 
 PKG_NAME = 'ingen'
@@ -14,7 +15,7 @@ PKG_VERSION_FILE = 'pkg_version.txt'
 
 setup(name=PKG_NAME,
       version=PKG_VERSION,
-      packages=[MAIN_PKG],
+      packages=setuptools.find_packages(include=['ingen', 'ingen.*']),
       package_data={},
       description='A Python script suite that generates interface files based on the given interface metadata/config '
                   'file',
