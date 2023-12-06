@@ -14,4 +14,4 @@
 uwsgi_dev.ini
 /output/**
 .DS_Store
-ingen.egg-info/**
+*.egg-info/**
