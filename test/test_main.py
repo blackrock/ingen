@@ -6,7 +6,7 @@ from unittest import mock
 from unittest.mock import Mock, patch
 
 from ingen.data_source.json_source import JsonSource
-from ingen.main import *
+from ingen.__main__ import *
 
 
 class TestMain(unittest.TestCase):
