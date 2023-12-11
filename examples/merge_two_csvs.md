@@ -47,12 +47,14 @@ sources:
     type: file
     file_type: delimited_file
     file_path: orders.csv
+    delimiter: ','
     columns: [order_id, customer_id, order_date, total_amount]
     skip_header_size: 1
   - id: customers
     type: file
     file_type: delimited_file
     file_path: customers.csv
+    delimiter: ','
     columns: [customer_id, customer_name, customer_email, customer_address]
     skip_header_size: 1
 ```
@@ -140,12 +142,14 @@ sources:
     type: file
     file_type: delimited_file
     file_path: orders.csv
+    delimiter: ','
     columns: [order_id, customer_id, order_date, total_amount]
     skip_header_size: 1
   - id: customers
     type: file
     file_type: delimited_file
     file_path: customers.csv
+    delimiter: ','
     columns: [customer_id, customer_name, customer_email, customer_address]
     skip_header_size: 1
 ```
