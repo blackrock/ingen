@@ -55,5 +55,5 @@ create a [new issue](https://github.com/blackrock/interface-generator/issues/new
 [contributing guidelines](https://github.com/blackrock/interface-generator/blob/main/CONTRIBUTING.md) for more information.
 
 ## License
-[LICENSE.txt](https://github.com/blackrock/interface-generator/blob/main/LICENSE.txt)
+[LICENSE](https://github.com/blackrock/interface-generator/blob/main/LICENSE)
 

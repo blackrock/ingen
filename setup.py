@@ -20,11 +20,14 @@ setup(name=PKG_NAME,
       description='A Python script suite that generates interface files based on the given interface metadata/config '
                   'file',
       install_requires=open('requirements.txt').read().splitlines(),
-      long_description="file: README.md, LICENSE.txt",
+      long_description="InGen is a command line tool written on top of pandas and great_expectations to perform small "
+                       "scale data transformations and validations without writing code. It is designed for "
+                       "developers and analysts to quickly transform data by specifying their requirements in a "
+                       "simple YAML file.",
       classifiers=[
           'License :: Apache License',
           'Operating System :: OS Independent',
-          'Programming Language :: Python :: 3.6'
+          'Programming Language :: Python :: 3.7'
       ],
       license='License :: Apache License',
       maintainer='Swarna Dhakad, Piyush Ranjan, Jatin Varlyani, Pooja Katariya',
