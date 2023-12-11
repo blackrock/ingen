@@ -13,11 +13,11 @@ requirements in a simple YAML file.
 - [License](#license)
 
 ## Installation
-Note: For Windows users only, this project has been tested on python version 3.7.9 and may not work on newer versions of
+Note: This project has been tested on python version 3.7.9 and may not work on newer versions of
 python. There is an open [issue](https://github.com/blackrock/interface-generator/issues/28 ) to fix this problem.  
 
 To install the project locally follow the steps:
-1. Make sure you have Python 3.7 or higher installed on your system.
+1. Make sure you have Python 3.7.9 installed on your system.
 2. To be able to build the project locally, you will need to install the `build` package
     ```
     pip install build
