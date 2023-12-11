@@ -1,32 +1,43 @@
-# interface-generator
+# Interface-Generator (InGen)
 
-A Python script suite that can transform data from various sources into desired format basis configuration defined in a yaml file. The process can be divided into five stages:
-
-1. Read: Responsible for reading data from different sources like database or files or APIs. 
-2. Pre-Process: Data from different sources can be merged or pre-processed into a single format (table-like structure). 
-3. Format: Responsible for structurally modifying columns by applying the formatting options as specified in the metadata file.
-4. Validate: Responsible for verifying the file produced has required data in columns. InGen leverages the power of [great_expectations](https://greatexpectations.io/) to validate the data. It supports validation on input data as well as validating data just before writing.
-5. Write: Write is supported to files or APIs.
+InGen is a command line tool written on top of [pandas](https://pandas.pydata.org/) and 
+[great_expectations](https://greatexpectations.io/) to perform small scale data transformations and validations 
+without writing code. It is designed for developers and analysts to quickly transform data by specifying their 
+requirements in a simple YAML file.
 
 ## Table of Contents
 
 - [Installation](#installation)
 - [Examples](#examples)
-- [Usage](#usage)
 - [Contributing](#contributing)
 - [License](#license)
-- [Credits](#credits)
-- [Contact](#contact)
 
 ## Installation
-1. Create a virtual environment
+Note: For Windows users only, this project has been tested on python version 3.7.9 and may not work on newer versions of
+python. There is an open [issue](https://github.com/blackrock/interface-generator/issues/28 ) to fix this problem.  
+
+To install the project locally follow the steps:
+1. Make sure you have Python 3.7 or higher installed on your system.
+2. To be able to build the project locally, you will need to install the `build` package
     ```
-    python -m venv venv
+    pip install build
     ```
-2. Activate venv and install dependencies
+3. Clone the repository
     ```
-    source venv/bin/activate
-    pip install -r requirements.txt
+    git clone git@github.com:blackrock/interface-generator.git 
+    ```
+4. Build the project
+    ```
+    cd interface-generator
+    python -m build 
+    ```
+5. Install the wheel
+    ```
+    pip install dist/interface_generator-*.whl
+    ```
+6. Run the project
+    ```
+   python -m ingen <metadata file path>
     ```
 
 ### Examples
@@ -37,73 +48,12 @@ common data problems.
 |-----------------------------------------------------|
 | [Merge two CSV files](./examples/merge_two_csvs.md) |
 
-
-## Usage
-
-`python main.py <metadata file path>`
-
-### Sample YAML
-To test your local setup let's write a config file that will read a CSV file 
-and write its content into a PSV file without any other modification.
-
-1. Create a file in your home directory called `test-file.yaml`
-2. Copy the following code into the file
-```
-interfaces:
-    sample:
-        sources: [input_file]
-        columns:
-            - src_col_name: name
-            - src_col_name: city
-        output:
-            type: delimited_file
-            props:
-                delimiter: '|'
-                path: ~/output.psv
-                header:
-                    type: delimited_result_header
-
-sources:
-    - id: input_file
-      type: file
-      file_type: delimited_file
-      delimiter: ','
-      file_path: ~/input.csv
-      columns: [name, city]
-      skip_header_size: 1
-```
-3. Create a sample intput file `input.csv` and copy the following contents
-```
-name,city
-piyush,pune
-sachin,mumbai
-dhoni,ranchi
-```
-4. Run InterfaceGenerator 
-```
-python main.py ~/test-file.yaml
-```
-5. An output file `output.psv` should be created with following contents
-```
-name|city
-piyush|pune
-sachin|mumbai
-dhoni|ranchi
-```
-
-
 ## Contributing
 
-Guidelines for contributing to the project. link to CONTRIBUTING.md and CODE_OF_CONDUCT.md
+All contributions are welcome, please see [open issues](https://github.com/blackrock/interface-generator/issues) or 
+create a [new issue](https://github.com/blackrock/interface-generator/issues/new/choose) to discuss your ideas. Please see our 
+[contributing guidelines](https://github.com/blackrock/interface-generator/blob/main/CONTRIBUTING.md) for more information.
 
 ## License
+[LICENSE.txt](https://github.com/blackrock/interface-generator/blob/main/LICENSE.txt)
 
-The license for the project. Lint to the LICENSE file in the root
-
-## Credits
-
-Acknowledgements for any contributors, libraries, or resources.
-
-## Contact
-
-Contact information for questions or feedback.
