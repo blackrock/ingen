@@ -40,11 +40,15 @@ def main(config_path, query_params, run_date, interfaces, infile=None, dynamic_d
 
 def create_arg_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('config_path')
-    parser.add_argument('run_date', nargs='?', default=date.today())
-    parser.add_argument('--query_params', nargs='*', action=KeyValue)
-    parser.add_argument('--interfaces')
-    parser.add_argument('--infile', type=str, help="filepath")
+    parser.add_argument('config_path', help='Path to config file')
+    parser.add_argument('run_date', nargs='?', default=date.today(), help='Run date in YYYY-MM-DD format, if provided '
+                                                                          'this will override today\'s date in '
+                                                                          'formatters')
+    parser.add_argument('--query_params', nargs='*', action=KeyValue, help='Query parameters in key value pairs to be '
+                                                                           'used in the SQL query')
+    parser.add_argument('--interfaces', help='Comma separated list of interface names to generate, if not provided '
+                                             'all interfaces listed in the config file will be generated')
+    parser.add_argument('--infile', type=str, help='filepath to the JSON file to be used in JSON source')
     return parser
 
 
