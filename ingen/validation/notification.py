@@ -2,6 +2,7 @@
 #  All Rights Reserved.
 
 import logging
+import os.path
 
 from ingen.validation.send_email import send_email
 
@@ -13,7 +14,7 @@ def get_attributes(params, validation_action):
     run_date = params.get('run_date')
     file_name = params.get('infile')
     if file_name:
-        file_name = file_name.split('/')[-1]
+        file_name = os.path.basename(file_name)
     validate_action_attributes = {'run_date': run_date, 'validate_action_to_adr': validate_action_to_adr,
                                   'file_name': file_name}
     return validate_action_attributes

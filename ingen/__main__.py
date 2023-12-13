@@ -48,7 +48,7 @@ def create_arg_parser():
                                                                            'used in the SQL query')
     parser.add_argument('--interfaces', help='Comma separated list of interface names to generate, if not provided '
                                              'all interfaces listed in the config file will be generated')
-    parser.add_argument('--infile', type=str, help='filepath to the JSON file to be used in JSON source')
+    parser.add_argument('--infile', help='filepath to the JSON file to be used in JSON source')
     return parser
 
 
