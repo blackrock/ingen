@@ -48,6 +48,8 @@ common data problems.
 |-----------------------------------------------------|
 | [Merge two CSV files](./examples/merge_two_csvs.md) |
 
+For a complete list of configuration options, see the metadata reference documentation [here](./docs/config_reference.md).
+
 ## Contributing
 
 All contributions are welcome, please see [open issues](https://github.com/blackrock/interface-generator/issues) or 
