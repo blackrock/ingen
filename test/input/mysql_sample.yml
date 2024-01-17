@@ -3,21 +3,23 @@ interfaces:
   sample:
     sources: [ 'SAMPLE' ]
     columns:
-      - src_col_name: 'user'
-      - src_col_name: 'user_id'
-        dest_col_name: 'id'
-      - src_col_name: 'location'
+      - src_col_name: 'order_id'
+      - src_col_name: 'customer_id'
+      - src_col_name: 'order_date'
+      - src_col_name: 'total_amount'
+      - src_col_name: 'customer_name'
+      - src_col_name: 'customer_address'
     output:
       type: delimited_file
       props:
         delimiter: '|'
-        path: ../output.csv
+        path: ./test/customer_orders.csv
         header:
           type: delimited_result_header
 sources:
   - id: SAMPLE
     type: mysql
-    host_name: '127.0.0.1'
-    user: root
     database: SAMPLE_DATABASE
-    query: 'select * from SAMPLE_TABLE'
+    query: 'select 
+    o.order_id, o.customer_id, o.order_date, o.total_amount, c.customer_name, c.customer_address
+    from ORDERS o inner join CUSTOMERS c on o.customer_id = c.customer_id'
