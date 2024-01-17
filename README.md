@@ -1,4 +1,4 @@
-# Interface-Generator (InGen)
+# InGen
 
 InGen is a command line tool written on top of [pandas](https://pandas.pydata.org/) and 
 [great_expectations](https://greatexpectations.io/) to perform small scale data transformations and validations 
