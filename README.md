@@ -47,6 +47,7 @@ common data problems.
 | Examples                                            |
 |-----------------------------------------------------|
 | [Merge two CSV files](./examples/merge_two_csvs.md) |
+| [Extract data from database](./examples/extract_data_from_database.md) |
 
 For a complete list of configuration options, see the metadata reference documentation [here](./docs/config_reference.md).
 
