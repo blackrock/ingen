@@ -10,7 +10,7 @@ requirements in a simple YAML file.
 - [InGen](#ingen)
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
-    - [Examples](#examples)
+  - [Examples](#examples)
   - [Contributing](#contributing)
   - [License](#license)
 
@@ -41,7 +41,7 @@ To install the project locally follow the steps:
    python -m ingen <metadata file path>
     ```
 
-### Examples
+## Examples
 Checkout the sample metadata files in the `examples` directory to see how InterfaceGenerator can be used to solve
 common data problems.
 
