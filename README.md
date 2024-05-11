@@ -7,10 +7,12 @@ requirements in a simple YAML file.
 
 ## Table of Contents
 
-- [Installation](#installation)
-- [Examples](#examples)
-- [Contributing](#contributing)
-- [License](#license)
+- [InGen](#ingen)
+  - [Table of Contents](#table-of-contents)
+  - [Installation](#installation)
+    - [Examples](#examples)
+  - [Contributing](#contributing)
+  - [License](#license)
 
 ## Installation
 Note: This project has been tested on python version 3.7.9 and may not work on newer versions of
@@ -47,6 +49,8 @@ common data problems.
 | Examples                                            |
 |-----------------------------------------------------|
 | [Merge two CSV files](./examples/merge_two_csvs.md) |
+|-----------------------------------------------------|
+| [Convert XML to CSV/Excel](./examples/xml_to_csv.md)|
 
 For a complete list of configuration options, see the metadata reference documentation [here](./docs/config_reference.md).
 
