@@ -7,46 +7,48 @@ requirements in a simple YAML file.
 
 ## Table of Contents
 
-- [Installation](#installation)
-- [Examples](#examples)
-- [Contributing](#contributing)
-- [License](#license)
+- [InGen](#ingen)
+  - [Table of Contents](#table-of-contents)
+  - [Installation](#installation)
+  - [Examples](#examples)
+  - [Contributing](#contributing)
+  - [License](#license)
 
 ## Installation
-Note: This project has been tested on python version 3.7.9 and may not work on newer versions of
-python. There is an open [issue](https://github.com/blackrock/interface-generator/issues/28 ) to fix this problem.  
+Note: This project has been tested on python version 3.9.6 on MacOS Ventura with apple chip.
 
 To install the project locally follow the steps:
-1. Make sure you have Python 3.7.9 installed on your system.
+1. Make sure you have Python 3.9.6 installed on your system.
 2. To be able to build the project locally, you will need to install the `build` package
     ```
     pip install build
     ```
 3. Clone the repository
     ```
-    git clone git@github.com:blackrock/interface-generator.git 
+    git clone git@github.com:blackrock/ingen.git 
     ```
 4. Build the project
     ```
-    cd interface-generator
+    cd ingen
     python -m build 
     ```
 5. Install the wheel
     ```
-    pip install dist/interface_generator-*.whl
+    pip install dist/ingen-1.0.0-py3-none-any.whl
     ```
 6. Run the project
     ```
    python -m ingen <metadata file path>
     ```
 
-### Examples
+## Examples
 Checkout the sample metadata files in the `examples` directory to see how InterfaceGenerator can be used to solve
 common data problems.
 
-| Examples                                            |
-|-----------------------------------------------------|
-| [Merge two CSV files](./examples/merge_two_csvs.md) |
+| Examples                                                       |
+| -------------------------------------------------------------- |
+| [Merge two CSV files](./examples/merge_two_csvs.md)            |
+| [Database as source](./examples/extract_data_from_database.md) |
 
 For a complete list of configuration options, see the metadata reference documentation [here](./docs/config_reference.md).
 
