@@ -27,7 +27,7 @@ setup(name=PKG_NAME,
       classifiers=[
           'License :: Apache License',
           'Operating System :: OS Independent',
-          'Programming Language :: Python :: 3.7'
+          'Programming Language :: Python :: 3.12'
       ],
       license='License :: Apache License',
       maintainer='Swarna Dhakad, Piyush Ranjan, Jatin Varlyani, Pooja Katariya',
