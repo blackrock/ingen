@@ -49,6 +49,8 @@ common data problems.
 | -------------------------------------------------------------- |
 | [Merge two CSV files](./examples/merge_two_csvs.md)            |
 | [Database as source](./examples/extract_data_from_database.md) |
+| [Convert XML to CSV/Excel](./examples/xml_to_csv.md)|
+
 
 For a complete list of configuration options, see the metadata reference documentation [here](./docs/config_reference.md).
 
