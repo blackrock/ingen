@@ -77,6 +77,19 @@ class TestXMLFileReader(unittest.TestCase):
             ],
             'root_tag': 'ORDER'
         }
+        self.xml_src_utf_16_encoding = {
+            'id': 'order_xml',
+            'type': 'file',
+            'file_type': 'xml',
+            'file_encoding': 'utf-16',
+            'file_path': f'{THIS_DIR.parent}/input/test_utf_16.xml',
+            'columns': [
+                'ORDER_ID',
+                'ORD_DETAIL_set.ORD_DETAIL.ITEM_NAME',
+                'ORD_DETAIL_set.ORD_DETAIL.QUANTITY'
+            ],
+            'root_tag': 'ORDER'
+        }
 
     def test_xml(self):
         source = self.xml_src
@@ -132,6 +145,16 @@ class TestXMLFileReader(unittest.TestCase):
             reader.read(source)
             error_msg = "XML file is empty"
             mock_logging.error.assert_called_with(error_msg)
+
+    def test_xml_utf_16_encoding(self):
+        source = self.xml_src_utf_16_encoding
+        reader = XMLFileReader()
+        data = reader.read(source)
+        keys = {}
+        expected_data = pd.DataFrame(
+            keys,
+            columns=source['columns'])
+        pd.testing.assert_frame_equal(expected_data, data)
 
 
 if __name__ == '__main__':

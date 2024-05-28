@@ -101,8 +101,8 @@ class FixedWidthFileReader(Reader):
 
 
 def get_config(src):
-    header_size = src.get('skip_header_size' , 0)
-    trailer_size = src.get('skip_trailer_size' , 0)
+    header_size = src.get('skip_header_size', 0)
+    trailer_size = src.get('skip_trailer_size', 0)
     all_cols = src.get('columns')
     return {
         "header_size": header_size,
@@ -115,13 +115,13 @@ class ReaderFactory:
 
     @classmethod
     def get_reader(cls, src):
-        factory_types = {'delimited_file': CSVFileReader,
-                         'excel': ExcelFileReader,
-                         'xml': XMLFileReader,
-                         'json': JSONFileReader,
-                         "fixed_width": FixedWidthFileReader
-                         }
+        factory_types = {
+            'delimited_file': CSVFileReader,
+            'excel': ExcelFileReader,
+            'xml': XMLFileReader,
+            'json': JSONFileReader,
+            'fixed_width': FixedWidthFileReader
+        }
         reader_cls = factory_types.get(src.get('file_type'))
         if reader_cls:
             return reader_cls()
-

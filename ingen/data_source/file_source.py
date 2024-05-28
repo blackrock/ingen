@@ -46,7 +46,7 @@ class FileSource(DataSource):
         """
         returns a DataFrame of data fetched from input FileSource.
         """
-        return reader.read(self._src)
+        return reader.read(self._src, encoding=self._src['file_encoding'])
 
     def fetch_validations(self):
         """
@@ -64,4 +64,6 @@ class FileSource(DataSource):
         path_parser = PathParser(run_date)
         if 'file_path' in source:
             source['file_path'] = path_parser.parse(source['file_path'])
+        if not source.get('file_encoding'):
+            source['file_encoding'] = 'utf-8'
         return source
