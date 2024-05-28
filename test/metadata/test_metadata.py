@@ -131,7 +131,7 @@ class TestMetaData(unittest.TestCase):
         output = self.metadata.output
         self.assertEqual("file", output["type"])
 
-    def test_output_type(self):
+    def test_split_output_type(self):
         self.setUp({"use_split_file_config": True})
         output = self.metadata.output
         self.assertEqual("splitted_file", output["type"])
@@ -238,6 +238,20 @@ class TestMetaData(unittest.TestCase):
 
         self.assertIsInstance(metadata.sources[1], JsonSource)
         self.assertEqual("json_payload", metadata.sources[1]._id)
+
+    def test_default_file_encoding(self):
+        metadata = MetaData(
+            self.test_md_name, self.test_md_configurations, self.params_map
+        )
+        self.assertEqual("utf-8", metadata.sources[0]._src["file_encoding"])
+
+    def test_custom_file_encoding(self):
+        metadata_config = self.test_md_configurations.copy()
+        metadata_config["sources"][0]["file_encoding"] = "utf-16"
+        metadata = MetaData(
+            self.test_md_name, metadata_config, self.params_map
+        )
+        self.assertEqual("utf-16", metadata.sources[0]._src["file_encoding"])
 
 
 if __name__ == "__main__":
