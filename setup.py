@@ -6,7 +6,7 @@ import os
 import setuptools
 from setuptools import setup
 
-PKG_NAME = 'ingen'
+PKG_NAME = 'ingen-lib'
 MAIN_PKG = 'ingen'
 VERSION_PY_FILE = os.path.join(MAIN_PKG, 'version.py')
 DEFAULT_PKG_VERSION = '1.0.0'
@@ -25,7 +25,7 @@ setup(name=PKG_NAME,
                        "developers and analysts to quickly transform data by specifying their requirements in a "
                        "simple YAML file.",
       classifiers=[
-          'License :: Apache License',
+          'License :: OSI Approved :: Apache Software License',
           'Operating System :: OS Independent',
           'Programming Language :: Python :: 3.12'
       ],
