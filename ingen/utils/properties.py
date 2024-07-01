@@ -30,12 +30,23 @@ class Properties:
         if self.property_map is None:
             self.property_map = dict()
             path = os.getenv('config_path')
-            if path is not None:
-                file = open(os.path.join(path, "config.properties"), 'r')
-                properties_line = file.read().splitlines()
-                for prop in properties_line:
-                    list_property = prop.split("=")
-                    self.property_map[list_property[0]] = list_property[1]
+            try:
+                if path is not None:
+                    with open(os.path.join(path, "config.properties"), 'r') as file:
+                        properties_line = file.read().splitlines()
+                        for prop in properties_line:
+                            if prop.strip():
+                                print(prop)
+                                list_property = prop.split("=")
+                                if len(list_property) == 2:
+                                    self.property_map[list_property[0].strip()] = list_property[1].strip()
+                                else:
+                                    print(f"Invalid property format in line: {prop}")
+            except FileNotFoundError:
+                print(f"Configuration file not found at path: {path}."
+                      f" Please create the file with the necessary properties.")
+            except Exception as e:
+                print(f"An error occurred while reading the properties file: {e}")
 
     def get_property(self, token_name, default=None):
         """
