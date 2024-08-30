@@ -36,7 +36,6 @@ class Properties:
                         properties_line = file.read().splitlines()
                         for prop in properties_line:
                             if prop.strip():
-                                print(prop)
                                 list_property = prop.split("=")
                                 if len(list_property) == 2:
                                     self.property_map[list_property[0].strip()] = list_property[1].strip()
