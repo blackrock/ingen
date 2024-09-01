@@ -24,13 +24,16 @@ class CSVFileReader(Reader):
         config = get_config(src)
         dtype = src.get('dtype')
         try:
-            result = pd.read_csv(src['file_path'],
-                                 sep=src.get('delimiter'),
-                                 index_col=False,
-                                 skiprows=config['header_size'],
-                                 skipfooter=config['trailer_size'],
-                                 names=config['all_cols'],
-                                 dtype=dtype)
+            result = pd.read_csv(
+                src['file_path'],
+                sep=src.get('delimiter'),
+                index_col=False,
+                skiprows=config['header_size'],
+                skipfooter=config['trailer_size'],
+                names=config['all_cols'],
+                dtype=dtype,
+                encoding=src['file_encoding'],
+            )
         except TypeError:
             logging.error(self.DTYPE_LOG_MSG)
             raise
