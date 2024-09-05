@@ -9,12 +9,9 @@ from setuptools import setup
 PKG_NAME = 'ingen-lib'
 MAIN_PKG = 'ingen'
 VERSION_PY_FILE = os.path.join(MAIN_PKG, 'version.py')
-DEFAULT_PKG_VERSION = '1.0.0'
-PKG_VERSION = DEFAULT_PKG_VERSION
-PKG_VERSION_FILE = 'pkg_version.txt'
 
 setup(name=PKG_NAME,
-      version=PKG_VERSION,
+      version='{{VERSION_PLACEHOLDER}}',
       packages=setuptools.find_packages(include=['ingen', 'ingen.*']),
       package_data={},
       description='A Python script suite that generates interface files based on the given interface metadata/config '
