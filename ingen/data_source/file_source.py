@@ -6,6 +6,7 @@ from datetime import date
 
 from ingen.data_source.source import DataSource
 from ingen.reader.file_reader import ReaderFactory
+from ingen.utils.interpolators.Interpolator import Interpolator
 from ingen.utils.path_parser import PathParser
 from ingen.utils.timer import log_time
 
@@ -17,7 +18,7 @@ class FileSource(DataSource):
     This class represents a File source
     """
 
-    def __init__(self, source, params_map):
+    def __init__(self, source, params_map, interpolator=Interpolator()):
         """
         Loads a file
 
@@ -26,6 +27,7 @@ class FileSource(DataSource):
 
         """
         super().__init__(source.get('id'))
+        self.interpolator = interpolator
         if params_map.get('infile') and source['use_infile']:
             source['file_path'] = params_map['infile']
             self._src = source
@@ -61,7 +63,7 @@ class FileSource(DataSource):
         else:
             run_date = params_map.get('run_date', date.today())
 
-        path_parser = PathParser(run_date)
+        path_parser = PathParser(run_date, interpolator=self.interpolator)
         if 'file_path' in source:
             source['file_path'] = path_parser.parse(source['file_path'])
         return source
