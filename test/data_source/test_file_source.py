@@ -26,7 +26,7 @@ class TestFileSource(unittest.TestCase):
         self.params_map = {'query_params': {'table_name': 'positions'}, 'infile': {}}
         self.source = FileSource(self._src, self.params_map)
 
-    @patch('src.data_source.file_source.ReaderFactory')
+    @patch('ingen.data_source.file_source.ReaderFactory')
     def test_source_fetch(self, mock_reader_factory):
         fileReader = Mock()
         fileReader.read.return_value = pd.DataFrame()
