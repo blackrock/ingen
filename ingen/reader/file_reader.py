@@ -24,13 +24,16 @@ class CSVFileReader(Reader):
         config = get_config(src)
         dtype = src.get('dtype')
         try:
-            result = pd.read_csv(src['file_path'],
-                                 sep=src.get('delimiter'),
-                                 index_col=False,
-                                 skiprows=config['header_size'],
-                                 skipfooter=config['trailer_size'],
-                                 names=config['all_cols'],
-                                 dtype=dtype)
+            result = pd.read_csv(
+                src['file_path'],
+                sep=src.get('delimiter'),
+                index_col=False,
+                skiprows=config['header_size'],
+                skipfooter=config['trailer_size'],
+                names=config['all_cols'],
+                dtype=dtype,
+                encoding=src['file_encoding'],
+            )
         except TypeError:
             logging.error(self.DTYPE_LOG_MSG)
             raise
@@ -101,8 +104,8 @@ class FixedWidthFileReader(Reader):
 
 
 def get_config(src):
-    header_size = src.get('skip_header_size' , 0)
-    trailer_size = src.get('skip_trailer_size' , 0)
+    header_size = src.get('skip_header_size', 0)
+    trailer_size = src.get('skip_trailer_size', 0)
     all_cols = src.get('columns')
     return {
         "header_size": header_size,
@@ -115,13 +118,13 @@ class ReaderFactory:
 
     @classmethod
     def get_reader(cls, src):
-        factory_types = {'delimited_file': CSVFileReader,
-                         'excel': ExcelFileReader,
-                         'xml': XMLFileReader,
-                         'json': JSONFileReader,
-                         "fixed_width": FixedWidthFileReader
-                         }
+        factory_types = {
+            'delimited_file': CSVFileReader,
+            'excel': ExcelFileReader,
+            'xml': XMLFileReader,
+            'json': JSONFileReader,
+            'fixed_width': FixedWidthFileReader
+        }
         reader_cls = factory_types.get(src.get('file_type'))
         if reader_cls:
             return reader_cls()
-
