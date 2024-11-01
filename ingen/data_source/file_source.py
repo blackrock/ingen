@@ -33,6 +33,8 @@ class FileSource(DataSource):
             self._src = source
         else:
             self._src = self.format_file_path(source, params_map)
+        if not source.get('file_encoding'):
+            source['file_encoding'] = 'utf-8'
 
     def fetch(self):
         """
