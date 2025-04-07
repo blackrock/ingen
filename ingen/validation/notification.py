@@ -56,5 +56,5 @@ def email_attributes(params, validation_action, validation_summary):
         send_email(validation_action_to_address, email_body, subject)
     if "blocker" in str(validation_summary):
         raise ValueError(
-            f"Error while Validating interface file for the columns having severity as blocker"
+            "Error while Validating interface file for the columns having severity as blocker"
         )

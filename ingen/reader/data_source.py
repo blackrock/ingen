@@ -18,7 +18,7 @@ class DataSource(object):
             self.__connection = connection.MySQLConnection(host=self.__host, user=self.__user, password=self.__passwd,
                                  database=self.__database) if not self.__connection else self.__connection
             return self.__connection
-        except Error as e:
+        except Error:
             raise RuntimeError("Not able to establish connection with this database.")
 
     def get_cursor(self):
