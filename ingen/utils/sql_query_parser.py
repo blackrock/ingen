@@ -88,7 +88,7 @@ class SqlQueryParser:
             file_col = key['file_col']
             col_size = f"({key.get('size')})" if 'size' in key else ''
             separtaor = '' if key == temp_table_cols[-1] else ','
-            col_config += col_name + f" " + col_type + col_size + separtaor
+            col_config += col_name + " " + col_type + col_size + separtaor
             col_list += col_name + separtaor
             file_cols.append(file_col)
             default_val = cls.fill_empty_values(key, col_type)

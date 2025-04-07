@@ -332,7 +332,7 @@ def split_column_formatter(dataframe, col_name, format_options, runtime_params):
     if col_name not in dataframe.columns:
         raise KeyError(f"Column '{col_name}' not found.")
     if dataframe.empty:
-        raise ValueError(f"Given Dataframe is Empty.")
+        raise ValueError("Given Dataframe is Empty.")
     if (dataframe[col_name] == 'na').all():
         return dataframe
 
@@ -349,11 +349,11 @@ def split_column_formatter(dataframe, col_name, format_options, runtime_params):
 def spacing_formatter(dataframe, col_name, format_options, runtime_params):
     num_of_spaces = format_options.get('spacing')
     if num_of_spaces < 0:
-        raise ValueError(f"Spaces cannot be negative")
+        raise ValueError("Spaces cannot be negative")
     if col_name not in dataframe.columns:
         raise KeyError(f"Column '{col_name}' not found.")
     if dataframe.empty:
-        raise ValueError(f"Given Dataframe is Empty.")
+        raise ValueError("Given Dataframe is Empty.")
     else:
         dataframe[col_name] = dataframe[col_name].astype("string")
         dataframe[col_name] = dataframe[col_name].str.ljust(num_of_spaces, " ")
@@ -363,11 +363,11 @@ def spacing_formatter(dataframe, col_name, format_options, runtime_params):
 def add_trailing_zeros_formatter(dataframe, col_name, format_options, runtime_params):
     max_chars = format_options.get('num_of_chars')
     if max_chars < 0:
-        raise ValueError(f"Number of characters in a string cannot be negative")
+        raise ValueError("Number of characters in a string cannot be negative")
     if col_name not in dataframe.columns:
         raise KeyError(f"Column '{col_name}' not found.")
     if dataframe.empty:
-        raise ValueError(f"Given Dataframe is Empty.")
+        raise ValueError("Given Dataframe is Empty.")
     else:
         dataframe[col_name] = dataframe[col_name].apply(lambda x: str(x).zfill(max_chars))
         return dataframe

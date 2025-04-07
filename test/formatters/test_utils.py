@@ -17,7 +17,7 @@ class TestUtils(unittest.TestCase):
             'weight4': [56, 13, 22]
         })
         col_name = 'sum'
-        columns = ['weight1', 'weight2', 'weight3', 'weight4'];
+        columns = ['weight1', 'weight2', 'weight3', 'weight4']
         expected_data = sample_data.copy()
         expected_data[col_name] = [106, 90, 121]
         formatted_data = addition(sample_data, col_name, columns)
@@ -43,7 +43,7 @@ class TestUtils(unittest.TestCase):
             'weight4': [2, 5, 10]
         })
         col_name = 'sub'
-        columns = ['weight1', 'weight2', 'weight3', 'weight4'];
+        columns = ['weight1', 'weight2', 'weight3', 'weight4']
         expected_data = sample_data.copy()
         expected_data[col_name] = [10, 10, 10]
         formatted_data = subtract(sample_data, col_name, columns)
@@ -69,7 +69,7 @@ class TestUtils(unittest.TestCase):
             'weight4': [2, 2, 2]
         })
         col_name = 'div'
-        columns = ['weight1', 'weight2', 'weight3', 'weight4'];
+        columns = ['weight1', 'weight2', 'weight3', 'weight4']
         expected_data = sample_data.copy()
         expected_data[col_name] = [16.0, 4.0, 8.0]
         formatted_data = divide(sample_data, col_name, columns)
@@ -95,7 +95,7 @@ class TestUtils(unittest.TestCase):
             'weight4': [2, 2, 2]
         })
         col_name = 'mul'
-        columns = ['weight1', 'weight2', 'weight3', 'weight4'];
+        columns = ['weight1', 'weight2', 'weight3', 'weight4']
         expected_data = sample_data.copy()
         expected_data[col_name] = [128, 32, 64]
         formatted_data = multiply(sample_data, col_name, columns)

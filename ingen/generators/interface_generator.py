@@ -45,11 +45,11 @@ class InterfaceGenerator(BaseInterfaceGenerator):
         validation_summaries = []
         validated_dataframe = None
         if sources is None:
-            log.info(f"Starting validations on Formatted data")
+            log.info("Starting validations on Formatted data")
             self.validations = Validation(df, columns, data=data)
             validated_dataframe, validation_summary = self.validations.apply_validations()
             validation_summaries.append(validation_summary)
-            log.info(f" Finished validations on Formatted data")
+            log.info(" Finished validations on Formatted data")
         else:
             for source in sources:
                 validation_list = source.fetch_validations()
