@@ -56,25 +56,29 @@ class InterfaceWriter:
             self._df.to_csv(path, sep, header=False, index=InterfaceWriter.SHOW_DATAFRAME_INDEX)
 
     def file_writer(self):
-        path = self._props.get('path')
-        if self._type == 'json':
-            json_writer = OldJSONWriter(self._df, self._type, self._props)
-            json_writer.write()
-        elif self._type == 'json_writer':
-            writer = JSONWriter(self._df, self._props, self._params)
-            writer.write()
-        elif self._type == 'rawdatastore':
-            df_writer = DataFrameWriter(self._df, self._props)
-            df_writer.write()
-        elif self._type == 'excel':
-            self.file_writer_excel(path)
-        elif self._type == 'delimited_file':
-            self.file_writer_delimited(path)
-            if self._apicall:
+        paths = self._props.get('path')
+        if not isinstance(paths, list):
+            paths = [paths]
+
+        for path in paths:
+            if self._type == 'json':
+                json_writer = OldJSONWriter(self._df, self._type, self._props)
+                json_writer.write()
+            elif self._type == 'json_writer':
                 writer = JSONWriter(self._df, self._props, self._params)
-                writer.writecsv()
-        else:
-            logger.error(f'Invalid {self._type} file type')
+                writer.write()
+            elif self._type == 'rawdatastore':
+                df_writer = DataFrameWriter(self._df, self._props)
+                df_writer.write()
+            elif self._type == 'excel':
+                self.file_writer_excel(path)
+            elif self._type == 'delimited_file':
+                self.file_writer_delimited(path)
+                if self._apicall:
+                    writer = JSONWriter(self._df, self._props, self._params)
+                    writer.writecsv()
+            else:
+                logger.error(f'Invalid {self._type} file type')
 
     def get_header(self):
         header = self._props['header']['function']
