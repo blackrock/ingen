@@ -25,7 +25,7 @@ class CSVFileReader(Reader):
         dtype = src.get('dtype')
         try:
             result = pd.read_csv(src['file_path'],
-                                 sep=src.get('delimiter'),
+                                 sep=src.get('delimiter', ','),
                                  index_col=False,
                                  skiprows=config['header_size'],
                                  skipfooter=config['trailer_size'],

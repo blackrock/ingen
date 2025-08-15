@@ -110,6 +110,30 @@ class TestFileReader(unittest.TestCase):
         )
 
     @patch('ingen.reader.file_reader.pd')
+    def test_default_delimiter_comma(self, mock_pandas):
+        source = {
+            'id': 'test-source',
+            'type': 'file',
+            'file_type': 'delimited_file',
+            # 'delimiter' intentionally omitted to test default
+            'file_path': 'random/path/to/file',
+            'columns': ['first_name', 'last_name']
+        }
+
+        reader = ReaderFactory.get_reader(source)
+        reader.read(source)
+
+        mock_pandas.read_csv.assert_called_with(
+            source['file_path'],
+            sep=',',
+            index_col=False,
+            skiprows=0,
+            skipfooter=0,
+            names=source['columns'],
+            dtype=None
+        )
+
+    @patch('ingen.reader.file_reader.pd')
     def test_column_dtype(self, mock_pandas):
         source = self._src
         reader = ReaderFactory.get_reader(source)
