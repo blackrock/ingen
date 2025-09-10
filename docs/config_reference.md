@@ -923,7 +923,8 @@ Expects all column values to be present in all columns of sources provided.
 	    args: [[COL_2, cusip], [COL_3,cusip]]
 'args' takes list of all sources along with the column name, in which we need to check whether all values of current column are present.
 
-Output
+**Output**
+
 The output object is used to declare how the output data should be persisted. The following code snippet shows an example of storing data into an excel file:
 output:
 	type: excel
@@ -932,12 +933,24 @@ output:
 The 'type' field can take two values:
 •	excel - for Excel sheets
 •	file - for any delimited files like csv, psv, etc
+
 The following example declares a CSV output
+```
 output:
-	type: file
-	props:
-		delimiter: ','
-		path: 'path/to/write/file.xls'
+  type: file
+  props:
+    delimiter: ','
+    path: 'path/to/write/file.xls'
+```
+
+For use cases where we need to generate the same output file in different locations, such as saving copies of the same data in multiple directories we can use list of paths in path.
+```
+output:
+  type: delimited_file
+  props:
+    delimiter: ','
+    path: [path/to/write/output.csv, another-path/to/write/output.csv]
+```
 
 **Header & Footer**
 

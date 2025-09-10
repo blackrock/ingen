@@ -276,6 +276,38 @@ class TestWriter(unittest.TestCase):
         writer.write()
         mock_writer.write.assert_called()
 
+    @patch('ingen.writer.writer.OldJSONWriter')
+    def test_file_writer_multiple_paths(self, mock_json_writer):
+        df = Mock()
+        output_type = 'json'
+        props = {
+            'path': ['../output/file1.json', '../output/file2.json'],
+            'type': 'json'
+        }
+
+        writer = InterfaceWriter(df, output_type, props, {})
+        writer.file_writer()
+
+        self.assertEqual(mock_json_writer.call_count, 2)
+        mock_json_writer.assert_any_call(df, output_type, props)
+        mock_json_writer.return_value.write_assert_called()
+
+    @patch('ingen.writer.writer.OldJSONWriter')
+    def test_file_writer_single_path(self, mock_json_writer):
+        # Arrange
+        df = Mock()
+        output_type = 'json'
+        props = {
+            'path': '../output/file1.json',  # path is now a string, not a list
+            'type': 'json'
+        }
+
+        writer = InterfaceWriter(df, output_type, props, {})
+        writer.file_writer()
+
+        self.assertEqual(mock_json_writer.call_count, 1)
+        mock_json_writer.assert_any_call(df, output_type, props)
+        mock_json_writer.return_value.write.assert_called()
 
 if __name__ == '__main__':
     unittest.main()
