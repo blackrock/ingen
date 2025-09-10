@@ -28,7 +28,7 @@ class XMLFileReader:
             if root_tag in data[parent_tag]:
                 xml_data = data[parent_tag][root_tag]
                 rows = []
-                if type(xml_data) is collections.OrderedDict:
+                if isinstance(xml_data, (dict, collections.OrderedDict)):
                     obj = xml_data
                     create_rows(rows, obj, columns)
                 else:
@@ -55,10 +55,10 @@ def get_record(obj, name, val_arr):
         if isinstance(obj, list):
             # for each obj in that list print elem
             get_list_record(obj, elem_name, val_arr)
-        elif isinstance(obj, collections.OrderedDict):
+        elif isinstance(obj, (dict, collections.OrderedDict)):
             if isinstance(obj.get(elem_name), str):
                 val_arr.append(obj.get(elem_name))
-            elif isinstance(obj.get(elem_name), collections.OrderedDict):
+            elif isinstance(obj.get(elem_name), (dict, collections.OrderedDict)):
                 val_arr.append(obj.get(elem_name).get('#text'))
             elif isinstance(obj.get(elem_name), type(None)):
                 val_arr.append('')

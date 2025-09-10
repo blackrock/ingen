@@ -898,7 +898,7 @@ interfaces:
 ```
 
 
-### Output
+**Output**
 
 The output object is used to declare how the output data should be persisted. The following code snippet shows an example of storing data into an excel file:
 output:
@@ -908,12 +908,24 @@ output:
 The 'type' field can take two values:
 •	excel - for Excel sheets
 •	file - for any delimited files like csv, psv, etc
+
 The following example declares a CSV output
+```
 output:
-	type: file
-	props:
-		delimiter: ','
-		path: 'path/to/write/file.xls'
+  type: file
+  props:
+    delimiter: ','
+    path: 'path/to/write/file.xls'
+```
+
+For use cases where we need to generate the same output file in different locations, such as saving copies of the same data in multiple directories we can use list of paths in path.
+```
+output:
+  type: delimited_file
+  props:
+    delimiter: ','
+    path: [path/to/write/output.csv, another-path/to/write/output.csv]
+```
 
 **Header & Footer**
 

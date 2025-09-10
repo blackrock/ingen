@@ -83,9 +83,13 @@ class MetaData:
         path = props.get("path")
         if path is None:
             return
+        if isinstance(path, str):
+            path = [path]
+
         run_date = self._params_map.get("run_date", date.today())
         path_parser = PathParser(run_date)
-        props["path"] = path_parser.parse(path)
+        parsed_paths = [path_parser.parse(p) for p in path]
+        props["path"] = parsed_paths
 
     def _initialize_output(self):
         output = self._configurations.get("output", {})
