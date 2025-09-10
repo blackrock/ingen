@@ -475,6 +475,52 @@ url_params: URL params can be fetched from a file, a database, or can be declare
 		    format	string	REQUIRED. Parameter for the formatting function
 		    The `format` parameter can accept a string, a list, or a dictionary. Refer below for the exact syntax.
 
+**JSON Array Expander**
+
+JSON Array Expander is used to expand JSON arrays stored as strings in a column into multiple rows (cartesian product). 
+For each JSON array, it creates separate rows for each object while preserving existing columns. The JSON column is 
+replaced with new columns from the parsed JSON objects.
+
+* `column`: *REQUIRED* column name containing JSON strings to expand
+* `include_columns`: list of specific JSON keys to include, or dict mapping JSON keys to output column names (optional)
+* `exclude_columns`: list of JSON keys to exclude (optional)
+
+```
+# List format - uses original JSON key names
+pre_processing:
+  - type: json_array_expander
+    config:
+      column: subjects
+      include_columns: ["subject", "marks", "grade", "semester"]
+
+
+# Dictionary format - maps JSON keys to custom column names
+pre_processing:
+  - type: json_array_expander
+    config:
+      column: subjects
+      include_columns:
+        subject: "subject_name"
+        marks: "score"
+        grade: "letter_grade"
+        semester: "term"
+```
+
+**Example:**
+
+Source data frame with JSON column:
+
+| student_id | subjects |
+|------------|----------|
+| STU001 | [{"subject": "Math", "marks": 85, "grade": "A", "semester": "Fall"}, {"subject": "Science", "marks": 92, "grade": "A+", "semester": "Fall"}] |
+
+After applying json_array_expander:
+
+| student_id | subject | marks | grade | semester |
+|------------|---------|-------|-------|----------|
+| STU001 | Math | 85 | A | Fall |
+| STU001 | Science | 92 | A+ | Fall |
+
 **Available formatters:**
 
 **Date** 
