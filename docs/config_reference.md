@@ -877,6 +877,27 @@ Expects all column values to be present in all columns of sources provided.
 	    args: [[COL_2, cusip], [COL_3,cusip]]
 'args' takes list of all sources along with the column name, in which we need to check whether all values of current column are present.
 
+### Post Processing
+
+Post processing is used to apply operations on the data frame after all the transformations are done. The operations can be anything from sorting the data frame to dropping columns. The following operations are supported:
+
+####  Pivot
+
+The `pivot` function pivots a DataFrame based on a specified column (`pivot_col`) 
+to create dynamic columns, using another column (`value_col`) to fill the values. It preserves rows 
+without dynamic attributes.
+
+```
+interfaces:
+  interface_name:
+    post_processing:
+      - type: pivot
+        processing_values: 
+          pivot_col: defn_name
+          value_col: defn_value
+```
+
+
 **Output**
 
 The output object is used to declare how the output data should be persisted. The following code snippet shows an example of storing data into an excel file:

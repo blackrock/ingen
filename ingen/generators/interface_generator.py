@@ -5,6 +5,7 @@ import logging
 
 from ingen.formatters.formatter import Formatter
 from ingen.generators.base_interface_generator import BaseInterfaceGenerator
+from ingen.post_processor.post_processor import PostProcessor
 from ingen.pre_processor.pre_processor import PreProcessor
 from ingen.validation.notification import email_attributes
 from ingen.validation.validations import Validation
@@ -16,11 +17,12 @@ log = logging.getLogger()
 class InterfaceGenerator(BaseInterfaceGenerator):
 
     def __init__(self, writer=InterfaceWriter, formatter=Formatter, pre_processor=PreProcessor,
-                 validations=Validation):
+                 validations=Validation, post_processor=PostProcessor):
         self.writer = writer
         self.formatter = formatter
         self.pre_processor = pre_processor
         self.validations = validations
+        self.post_processor = post_processor
 
     def read(self, sources):
         return {source.id: source.fetch() for source in sources}
@@ -76,3 +78,13 @@ class InterfaceGenerator(BaseInterfaceGenerator):
         props = destination.get('props', dict())
         writer = self.writer(data, output_type, props, params)
         writer.write()
+
+    def post_process(self, data, post_processes):
+        """
+        Responsible for post-processing data after preprocessing and formatting
+        :param data: A dataframe after formatting
+        :param post_processes: post_processes to perform after the data is formatted
+        """
+        post_processor = self.post_processor(post_processes, data)
+        processed_data = post_processor.apply_post_processing()
+        return processed_data

@@ -36,6 +36,7 @@ def main(
                 metadata.output,
                 metadata.params,
                 metadata.validation_action,
+                metadata.post_processes
             )
             end = time.time()
             logger.info(

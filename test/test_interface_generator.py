@@ -168,6 +168,7 @@ class TestInterfaceGenerator(unittest.TestCase):
         interface_name = 'json_interface'
         sources = [json_source]
         pre_processes = None
+        post_processes = None
         columns = [{'src_col_name': 'id',
                     'validations': [{'type': 'expect_column_values_to_not_be_null', 'severity': 'warning'}]},
                    {'src_col_name': 'attr1',
@@ -181,7 +182,7 @@ class TestInterfaceGenerator(unittest.TestCase):
         generator = InterfaceGenerator()
 
         interface = generator.generate(interface_name, sources, pre_processes, columns, destination, params,
-                                       validation_action)
+                                       validation_action, post_processes)
         self.assertEqual(json.loads(json_tbl), json.loads(interface))
 
 

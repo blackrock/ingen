@@ -17,6 +17,7 @@ class BaseInterfaceGenerator(ABC):
         destination,
         params,
         validation_action,
+        post_processes
     ):
         """
         Template method that defines the skeleton of interface generation
@@ -27,6 +28,7 @@ class BaseInterfaceGenerator(ABC):
         :param destination: defines the destination parameters
         :param params: has the command line arguments used while invoking
         :param validation_action: Defines the validation action in the form of sending email in case of validation failure
+        :param post_processes: post_processing steps, to be executed on the dataframe(s)
         """
         try:
             data = self.read(sources)
@@ -42,9 +44,10 @@ class BaseInterfaceGenerator(ABC):
             if "blocker" not in str(validation_summary):
                 processed_data = self.pre_process(pre_processes, data)
                 formatted_data = self.format(processed_data, columns, params)
+                post_processed_data = self.post_process(formatted_data, post_processes)
                 # validation on formatted data
                 validated_data, validation_summary_formatted = self.validate(
-                    formatted_data, columns, data=data
+                    post_processed_data, columns, data=data
                 )
                 validation_summary[interface_name] = validation_summary_formatted[0]
 
@@ -114,5 +117,15 @@ class BaseInterfaceGenerator(ABC):
         :param params: has the command line arguments used while invoking
         :param validation_action: contains type of validation action to trigger in case of validation failure
         :param validation_summary: Dictionary of source name and their validation summary
+        """
+        pass
+
+    @abstractmethod
+    def post_process(self, formatted_data, post_processes):
+        """
+        Responsible for preprocessing data after reading from source
+        :param post_processes: post_processes to perform after the data is formatted
+        :param formatted_data: A dataframe after executing the formatting step(s)
+        :return: A dataframe after executing the post_processing step(s)
         """
         pass
