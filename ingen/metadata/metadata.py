@@ -54,6 +54,10 @@ class MetaData:
         return self._sources
 
     @property
+    def post_processes(self):
+        return self._configurations.get('post_processing')
+
+    @property
     def params(self):
         return self._params_map
 
