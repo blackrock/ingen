@@ -30,11 +30,6 @@ class AsyncContextManagerMock(MagicMock):
         pass
 
 
-def get_future_response(response_body):
-    f = asyncio.Future()
-    f.set_result(response_body)
-    return f
-
 
 class MyTestCase(unittest.TestCase):
 
@@ -75,7 +70,11 @@ class MyTestCase(unittest.TestCase):
         http_response = HTTPResponse(200, empty_headers, response_body)
         expected_response = [response_body]
 
-        mock_http_retry_request.return_value = get_future_response(http_response)
+        # The mock should return a coroutine that resolves to the HTTPResponse
+        async def mock_response(*args, **kwargs):
+            return http_response
+        
+        mock_http_retry_request.side_effect = mock_response
 
         parsed_data = execute_requests(requests, self.request_params)
         self.assertListEqual(expected_response, parsed_data)
@@ -99,8 +98,17 @@ class MyTestCase(unittest.TestCase):
 
         expected_responses = [response_json_1, response_json_2]
 
-        mock_http_retry_request.side_effect = [get_future_response(http_response_1),
-                                               get_future_response(http_response_2)]
+        # The mock should return coroutines that resolve to HTTPResponse objects
+        responses = [http_response_1, http_response_2]
+        response_index = 0
+        
+        async def mock_response(*args, **kwargs):
+            nonlocal response_index
+            result = responses[response_index]
+            response_index += 1
+            return result
+
+        mock_http_retry_request.side_effect = mock_response
 
         parsed_data = execute_requests(requests, self.request_params)
         self.assertListEqual(expected_responses, parsed_data)
