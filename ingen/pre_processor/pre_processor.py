@@ -7,6 +7,7 @@ import time
 from ingen.pre_processor.aggregator import Aggregator
 from ingen.pre_processor.drop_duplicates import DropDuplicates
 from ingen.pre_processor.filter import Filter
+from ingen.pre_processor.json_array_expander import JsonArrayExpander
 from ingen.pre_processor.mask import Mask
 from ingen.pre_processor.melt import Melt
 from ingen.pre_processor.merger import Merger
@@ -23,7 +24,8 @@ class PreProcessor:
         "mask": Mask,
         "melt": Melt,
         "drop_duplicates": DropDuplicates,
-        "filter": Filter
+        "filter": Filter,
+        "json_array_expander": JsonArrayExpander
     }
 
     def __init__(self, pre_processes, source_data):
