@@ -70,7 +70,10 @@ def decryption_formatter(dataframe, col_id, format_options, runtime_params):
 def date_formatter(dataframe, col_id, date_format, runtime_params):
     source_date_format = date_format['src']
     final_date_format = date_format['des']
-    dataframe[col_id] = pd.to_datetime(dataframe[col_id], format=source_date_format)
+    if source_date_format == 'ms':
+        dataframe[col_id] = pd.to_datetime(dataframe[col_id], unit='ms')
+    else:
+        dataframe[col_id] = pd.to_datetime(dataframe[col_id], format=source_date_format)
     dataframe[col_id] = dataframe[col_id].map(lambda x: x.strftime(final_date_format) if pd.notnull(x) else '')
     return dataframe
 
