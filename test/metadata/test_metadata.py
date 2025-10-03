@@ -162,7 +162,7 @@ class TestMetaData(unittest.TestCase):
 
         output = metadata.output
 
-        expected_path = f"/some/path/name.csv"
+        expected_path = ["/some/path/name.csv"]
         self.assertEqual(expected_path, output.get("props").get("path"))
 
     def test_metadata_validation_action(self):
