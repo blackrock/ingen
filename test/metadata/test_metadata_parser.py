@@ -2,13 +2,12 @@
 #  All Rights Reserved.
 
 import os
-import unittest
 from datetime import date
 
 from ingen.metadata.metadata_parser import MetaDataParser
 
 
-class TestMetaDataParser(unittest.TestCase):
+class TestMetaDataParser:
     def setUp(self):
         script_dir = os.path.dirname(__file__)
         config_file_path = "../input/pos-ret.yml"
@@ -41,18 +40,15 @@ class TestMetaDataParser(unittest.TestCase):
     # this scenario checks when interface_list ia not provided, here all the interfaces present in our
     # interface metadata ('account' , 'positions') 2 will be fetched.
     def test_parse_config_reads_all_interfaces(self):
-        self.assertTrue(len(self.interfaces) == 2)
+        assert len(self.interfaces) == 2
 
     # this scenario checks when interface provided in the interface_list is present in our interface metadata-
     # here only 'account' is being fetched, although 'positions' is also  present in interface metadata
     def test_parse_config_reads_required_interfaces(self):
-        self.assertTrue(len(self.filtered_interfaces) == 1)
+        assert len(self.filtered_interfaces) == 1
 
     # this scenario checks when interface provided in the interface_list is not present in our interface metadata-
     # here tax-lots is not present in interface metadata, only 'positions', 'account' will ne fetched
     def test_parse_config_reads_certain_interfaces(self):
-        self.assertTrue(len(self.certain_interfaces) == 2)
+        assert len(self.certain_interfaces) == 2
 
-
-if __name__ == "__main__":
-    unittest.main()
