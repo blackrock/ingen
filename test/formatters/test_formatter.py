@@ -1,7 +1,6 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
 from unittest.mock import patch
 
 import pandas as pd
@@ -9,7 +8,7 @@ import pandas as pd
 from ingen.formatters.formatter import Formatter
 
 
-class TestFormatter(unittest.TestCase):
+class TestFormatter():
     def test_formatter_creates_an_id_col_map(self):
         columns = [
             {
@@ -27,7 +26,7 @@ class TestFormatter(unittest.TestCase):
             'price': 'PRICE'
         }
         formatter = Formatter(df, columns, {})
-        self.assertDictEqual(expected_map, formatter._id_name_map)
+        assert expected_map == formatter._id_name_map
 
     def test_default_column_names(self):
         df = pd.DataFrame({'price': [], 'ticket': []})
@@ -37,7 +36,7 @@ class TestFormatter(unittest.TestCase):
             'ticker': 'ticker'
         }
         formatter = Formatter(df, columns, {})
-        self.assertDictEqual(expected_map, formatter._id_name_map)
+        assert expected_map == formatter._id_name_map
 
     def test_default_name_formatter(self):
         df = pd.DataFrame({'price': [], 'ticker': []})
@@ -45,7 +44,7 @@ class TestFormatter(unittest.TestCase):
         formatter = Formatter(df, columns, {})
         expected_labels = list(formatter._id_name_map.values())
         formatter.apply_format()
-        self.assertListEqual(expected_labels, list(df.columns))
+        assert expected_labels == list(df.columns)
 
     @patch('ingen.formatters.formatter.get_formatter_from_type')
     def test_get_formatter_func_is_called(self, mock_get_formatter):
@@ -86,5 +85,4 @@ class TestFormatter(unittest.TestCase):
         mock_column_filter.assert_called_with(dataframe, column_names)
 
 
-if __name__ == '__main__':
-    unittest.main()
+ 

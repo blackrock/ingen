@@ -1,14 +1,13 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
 
 import pandas as pd
 
 from ingen.formatters.utils import *
 
 
-class TestUtils(unittest.TestCase):
+class TestUtils():
     def test_addition_function_with_multiple_rows(self):
         sample_data = pd.DataFrame({
             'weight1': [28, 39, 50],

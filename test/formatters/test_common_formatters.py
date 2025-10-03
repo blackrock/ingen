@@ -1,7 +1,6 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
-
-import unittest
+import pytest
 from datetime import date
 from unittest.mock import patch
 
@@ -9,7 +8,7 @@ from ingen.formatters.common_formatters import *
 from ingen.utils.utils import holiday_calendar
 
 
-class TestCommonFormatters(unittest.TestCase):
+class TestCommonFormatters():
 
     def test_column_filter(self):
         dataframe = pd.DataFrame({
@@ -18,7 +17,7 @@ class TestCommonFormatters(unittest.TestCase):
         })
         required_column_names = ['name', 'family']
         filtered_dataframe = column_filter(dataframe, required_column_names)
-        self.assertListEqual(required_column_names, list(filtered_dataframe.columns))
+        assert required_column_names == list(filtered_dataframe.columns)
 
     def test_column_filter_with_required_column_order(self):
         dataframe = pd.DataFrame({
@@ -29,7 +28,7 @@ class TestCommonFormatters(unittest.TestCase):
         })
         required_column_names = ['kingdom', 'family', 'name']
         filtered_dataframe = column_filter(dataframe, required_column_names)
-        self.assertListEqual(required_column_names, list(filtered_dataframe.columns))
+        assert required_column_names == list(filtered_dataframe.columns)
 
     def test_column_filter_with_extra_columns(self):
         dataframe = pd.DataFrame({
@@ -39,7 +38,7 @@ class TestCommonFormatters(unittest.TestCase):
         })
         required_column_names = ['name', 'family']
         filtered_dataframe = column_filter(dataframe, required_column_names)
-        self.assertListEqual(required_column_names, list(filtered_dataframe.columns))
+        assert required_column_names == list(filtered_dataframe.columns)
 
     def test_name_formatter_changes_column_label(self):
         df = pd.DataFrame({
@@ -54,7 +53,7 @@ class TestCommonFormatters(unittest.TestCase):
         }
         name_formatter(df, id_name_map)
         expected_column_labels = list(id_name_map.values())
-        self.assertListEqual(expected_column_labels, list(df.columns))
+        assert expected_column_labels == list(df.columns)
 
     def test_date_formatter_formats_date(self):
         df = pd.DataFrame({
@@ -63,7 +62,7 @@ class TestCommonFormatters(unittest.TestCase):
         date_format_dict = {"src": "%d%m%Y", "des": "%Y-%m-%d"}
         expected_date_column = pd.Series(["1995-09-09", "1995-10-09", "1995-11-09", ""])
         date_formatter(df, 'date', date_format_dict, {})
-        self.assertTrue(pd.Series.equals(expected_date_column, df['date']))
+        assert pd.Series.equals(expected_date_column, df['date'])
 
     def test_date_formatter_with_none(self):
         df = pd.DataFrame({
@@ -72,7 +71,7 @@ class TestCommonFormatters(unittest.TestCase):
         date_format_dict = {"src": "%d%m%Y", "des": "%Y-%m-%d"}
         expected_date_column = pd.Series(["1995-09-09", ""])
         date_formatter(df, 'date', date_format_dict, {})
-        self.assertTrue(pd.Series.equals(expected_date_column, df['date']))
+        assert pd.Series.equals(expected_date_column, df['date'])
 
     @patch.object(Cryptor, "_Cryptor__get_key", return_value=(bytes('34DDA783B8C979C881E0EB3C8185825B', 'utf-8'), 3))
     @patch.object(Cryptor, "_Cryptor__get_hmac_key",
@@ -84,7 +83,7 @@ class TestCommonFormatters(unittest.TestCase):
         """
         df = pd.DataFrame({"account_number": ["1232323", "23332211"]})
         en_df = encryption_formatter(df, "account_number", "test", None)
-        self.assertEqual(list(en_df.columns), ["account_number"])
+        assert list(en_df.columns) == ["account_number"]
 
     @patch.object(Cryptor, "_Cryptor__get_key", return_value=(bytes('34DDA783B8C979C881E0EB3C8185825B', 'utf-8'), 3))
     @patch.object(Cryptor, "_Cryptor__get_hmac_key",
@@ -102,15 +101,15 @@ class TestCommonFormatters(unittest.TestCase):
                                               'c3YjM0ZjkxNTA3OTlkIiwgImtleV92ZXJzaW9uIjogMywgImhtYWNfdmVyc2lvbiI6IDN9']})
         decrypt_df = decryption_formatter(df, "account_number", "test", None)
         data = decrypt_df['account_number'].to_numpy()
-        self.assertEqual(list(data), ["Hello", "World"])
-        self.assertEqual(list(decrypt_df.columns), ["account_number"])
+        assert list(data) == ["Hello", "World"]
+        assert list(decrypt_df.columns) == ["account_number"]
 
     def test_date_with_char_string(self):
         df = pd.DataFrame({
             "date": ["09091995", "abc"]
         })
         date_format_dict = {"src": "%d%m%Y", "des": "%Y-%m-%d"}
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             date_formatter(df, 'date', date_format_dict, {})
 
     def test_float_formatter_applies_given_format(self):
@@ -120,7 +119,7 @@ class TestCommonFormatters(unittest.TestCase):
         float_format = "${:,.2f}"
         expected_price_column = pd.Series(["$113.45", "$1,212.24", "$45.91"])
         float_formatter(df, 'price', float_format, {})
-        self.assertTrue(pd.Series.equals(df['price'], expected_price_column))
+        assert pd.Series.equals(df['price'], expected_price_column)
 
     def test_prefix_string_formatter(self):
         df = pd.DataFrame({
@@ -137,7 +136,7 @@ class TestCommonFormatters(unittest.TestCase):
         expected_output_column = pd.Series(
             ["16113419202113", "16113419201112", "1611341920045"])
         prefix_string_formatter(df, output_column, param, {})
-        self.assertTrue(pd.Series.equals(df['LOT_ID'], expected_output_column))
+        assert pd.Series.equals(df['LOT_ID'], expected_output_column)
 
     def test_concat_formatter(self):
         df = pd.DataFrame({
@@ -154,7 +153,7 @@ class TestCommonFormatters(unittest.TestCase):
         expected_output_column = pd.Series(
             ["13419202_113.452_G0250X107", "13419201_112.243_G0250X105", "13419200_45.908_G0250X103"])
         concat_formatter(df, output_column, param, {})
-        self.assertTrue(pd.Series.equals(df['LOT_ID'], expected_output_column))
+        assert pd.Series.equals(df['LOT_ID'], expected_output_column)
 
     def test_concat_formatter_with_different_data_types(self):
         data = pd.DataFrame({
@@ -190,8 +189,6 @@ class TestCommonFormatters(unittest.TestCase):
         expected_data[new_col_name] = pd.to_datetime(billing_date_val, format='%d/%m/%Y')
 
         formatted_data = business_day_formatter(sample_data, new_col_name, format_options, {})
-        print('formatted', formatted_data)
-        print(expected_data)
         pd.testing.assert_frame_equal(expected_data, formatted_data, check_dtype=False)
 
     def test_business_day_formatter_incorrect_column(self):
@@ -208,7 +205,7 @@ class TestCommonFormatters(unittest.TestCase):
 
         expected_data = sample_data.copy()
         expected_data[new_col_name] = pd.to_datetime(billing_date_val, format='%d/%m/%Y')
-        with self.assertRaisesRegex(KeyError, "Column 'days' not found."):
+        with pytest.raises(KeyError, match="Column 'days' not found"):
             business_day_formatter(sample_data, new_col_name, format_options, {})
 
     def test_last_date_of_prev_month(self):
@@ -276,7 +273,7 @@ class TestCommonFormatters(unittest.TestCase):
             'new_col_names': ['sub1', 'sub2']
         }
 
-        with self.assertRaisesRegex(KeyError, "Column 'Age' not found."):
+        with pytest.raises(KeyError, match="Column 'Age' not found"):
             split_column_formatter(data, 'Age', format_options, {})
 
     def test_split_column_formatter_empty_dataframe(self):
@@ -285,7 +282,7 @@ class TestCommonFormatters(unittest.TestCase):
         format_options = {
             'new_col_names': ['sub1', 'sub2']
         }
-        with self.assertRaisesRegex(ValueError, "Given Dataframe is Empty"):
+        with pytest.raises(ValueError, match="Given Dataframe is Empty"):
             split_column_formatter(data, 'subject', format_options, {})
 
     def test_add_trailing_zeros_formatter(self):
@@ -306,7 +303,7 @@ class TestCommonFormatters(unittest.TestCase):
         format_options = {
             'num_of_chars': 10
         }
-        with self.assertRaisesRegex(ValueError, "Given Dataframe is Empty"):
+        with pytest.raises(ValueError, match="Given Dataframe is Empty"):
             add_trailing_zeros_formatter(data, 'name', format_options, {})
 
     def test_add_trailing_zeros_formatter_wrong_col(self):
@@ -315,7 +312,7 @@ class TestCommonFormatters(unittest.TestCase):
         format_options = {
             'num_of_chars': 10
         }
-        with self.assertRaisesRegex(KeyError, "Column 'Age' not found."):
+        with pytest.raises(KeyError, match="Column 'Age' not found"):
             add_trailing_zeros_formatter(data, 'Age', format_options, {})
 
     def test_add_trailing_zeros_formatter_wrong_number_of_chars(self):
@@ -324,7 +321,7 @@ class TestCommonFormatters(unittest.TestCase):
         format_options = {
             'num_of_chars': -10
         }
-        with self.assertRaisesRegex(ValueError, "Number of characters in a string cannot be negative"):
+        with pytest.raises(ValueError, match="Number of characters in a string cannot be negative"):
             add_trailing_zeros_formatter(data, 'name', format_options, {})
 
     def test_spacing_formatter(self):
@@ -345,7 +342,7 @@ class TestCommonFormatters(unittest.TestCase):
         format_options = {
             'spacing': 20
         }
-        with self.assertRaisesRegex(ValueError, "Given Dataframe is Empty"):
+        with pytest.raises(ValueError, match="Given Dataframe is Empty"):
             spacing_formatter(data, 'name', format_options, {})
 
     def test_spacing_formatter_wrong_col(self):
@@ -354,7 +351,7 @@ class TestCommonFormatters(unittest.TestCase):
         format_options = {
             'spacing': 20
         }
-        with self.assertRaisesRegex(KeyError, "Column 'Age' not found."):
+        with pytest.raises(KeyError, match="Column 'Age' not found"):
             spacing_formatter(data, 'Age', format_options, {})
 
     def test_spacing_formatter_wrong_number_of_chars(self):
@@ -363,7 +360,7 @@ class TestCommonFormatters(unittest.TestCase):
         format_options = {
             'spacing': -10
         }
-        with self.assertRaisesRegex(ValueError, "Spaces cannot be negative"):
+        with pytest.raises(ValueError, match="Spaces cannot be negative"):
             spacing_formatter(data, 'name', format_options, {})
 
     def test_concat_formatter_with_only_one_column(self):
@@ -398,7 +395,7 @@ class TestCommonFormatters(unittest.TestCase):
             'separator': '_'
         }
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             concat_formatter(data, new_col_name, param, {})
 
         mock_logging.error.assert_called_with('Unknown column passed to concat formatter')
@@ -423,9 +420,9 @@ class TestCommonFormatters(unittest.TestCase):
 
     def test_get_formatter_name_returns_date_formatter(self):
         formatter_type = 'date'
-        self.assertEqual(get_formatter_from_type(formatter_type), date_formatter)
+        assert get_formatter_from_type(formatter_type) == date_formatter
         formatter_type = 'concat'
-        self.assertEqual(get_formatter_from_type(formatter_type), concat_formatter)
+        assert get_formatter_from_type(formatter_type) == concat_formatter
 
     def test_duplicate_formatter(self):
         original_col_name = 'original'
@@ -446,7 +443,7 @@ class TestCommonFormatters(unittest.TestCase):
         duplicate_col_name = 'duplicate'
         sample_dataframe = pd.DataFrame({original_col_name: [1, 2, 3, 5]})
 
-        with self.assertRaises(KeyError):
+        with pytest.raises(KeyError):
             duplicate_column_formatter(sample_dataframe, duplicate_col_name, 'unknown column name', {})
 
         mock_logging.error.assert_called_with('Cannot create duplicate of a nonexistent column')
@@ -462,10 +459,7 @@ class TestCommonFormatters(unittest.TestCase):
 
         formatted_dataframe = constant_formatter(sample_dataframe, new_col_name, const_string, {})
 
-        try:
-            pd.testing.assert_frame_equal(expected_dataframe, formatted_dataframe)
-        except AssertionError:
-            self.fail('formatted dataframe is not equal to the expected dataframe')
+        pd.testing.assert_frame_equal(expected_dataframe, formatted_dataframe)
 
     def test_empty_formatter(self):
         sample_dataframe = pd.DataFrame({'col': [1, 2, 3, 4]})
@@ -478,10 +472,7 @@ class TestCommonFormatters(unittest.TestCase):
 
         formatted_dataframe = constant_formatter(sample_dataframe, new_col_name, const_string, {})
 
-        try:
-            pd.testing.assert_frame_equal(expected_dataframe, formatted_dataframe)
-        except AssertionError:
-            self.fail('formatted dataframe is not equal to the expected dataframe')
+        pd.testing.assert_frame_equal(expected_dataframe, formatted_dataframe)
 
     def test_constant_date_formatter(self):
         sample_dataframe = pd.DataFrame({'col': [1, 2, 3, 4]})
@@ -535,7 +526,7 @@ class TestCommonFormatters(unittest.TestCase):
         format_options = [date_offset, date_format]
         expected_error_msg = 'Missing required formatting attributes for constant date formatter. It should be a ' \
                              'list of date_offset, date_format and calendar_country. e.g., [0, "%Y%m%d", "US"]'
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             formatted_dataframe = constant_date_formatter(sample_dataframe, new_col_name, format_options, {})
 
         mock_logging.error.assert_called_with(expected_error_msg)
@@ -572,7 +563,7 @@ class TestCommonFormatters(unittest.TestCase):
             'in': 'portfolio'
         }
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             group_percentage_formatter(sample_data, new_col_name, param, {})
 
         mock_logging.error.assert_called_with('Unknown column names provided for calculating grouped percentage.')
@@ -801,7 +792,7 @@ class TestCommonFormatters(unittest.TestCase):
             'column': 'missing_column'
         }
 
-        with self.assertRaisesRegex(KeyError, f"Column '{format_options['column']}' not found."):
+        with pytest.raises(KeyError, match=f"Column '{format_options['column']}' not found"):
             fill_empty_values(data, col_name, format_options, {})
 
     def test_fill_empty_values_with_single_column(self):
@@ -835,7 +826,7 @@ class TestCommonFormatters(unittest.TestCase):
             'value': 'xyz'
         }
 
-        with self.assertRaisesRegex(KeyError, f"Column '{col_name}' not found."):
+        with pytest.raises(KeyError, match=f"Column '{col_name}' not found"):
             fill_empty_values_with_custom_value(data, col_name, format_options, {})
 
     def test_business_day_formatter(self):
@@ -906,7 +897,7 @@ class TestCommonFormatters(unittest.TestCase):
             'to_value': ['xyz']
         }
 
-        with self.assertRaisesRegex(KeyError, f"Column '{col_name}' not found."):
+        with pytest.raises(KeyError, match=f"Column '{col_name}' not found"):
             replace_value(data, col_name, format_options, {})
 
     def test_runtime_date_formatter(self):
@@ -939,7 +930,7 @@ class TestCommonFormatters(unittest.TestCase):
             'des': '%Y-%m-%d'
         }
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             runtime_date(data, col_name, format_options, {'run_date': 'hello'})
 
     def test_fill_empty_values_with_condition(self):
@@ -1015,7 +1006,7 @@ class TestCommonFormatters(unittest.TestCase):
             'condition': {'match_col': 'TRADE TYPE', 'pattern': 'SELL'}
         }
 
-        with self.assertRaisesRegex(KeyError, f"Column '{col_name}' not found."):
+        with pytest.raises(KeyError, match=f"Column '{col_name}' not found."):
             fill_empty_values_with_custom_value(data, col_name, format_options, {})
 
     def test_uuid_formatter(self):
@@ -1029,9 +1020,9 @@ class TestCommonFormatters(unittest.TestCase):
         actual_data = add_uuid_col(data, new_col_name, None, None)
         end = time.time()
         print(f"UUID generation took {end - start:.2f} seconds.")
-        self.assertIsNotNone(actual_data[new_col_name])
-        self.assertEqual(len(actual_data[new_col_name]), col_length)
-        self.assertIsInstance(data[new_col_name][0], uuid.UUID)
+        assert actual_data[new_col_name] is not None
+        assert len(actual_data[new_col_name]) == col_length
+        assert isinstance(data[new_col_name][0], uuid.UUID)
 
     def test_extract_from_pattern(self):
         data = pd.DataFrame({
@@ -1152,7 +1143,7 @@ class TestCommonFormatters(unittest.TestCase):
         format_options = {
             'precision': 2
         }
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             float_precision(data, col_name, format_options, {})
 
     def test_drop_duplicates_default(self):
@@ -1247,7 +1238,6 @@ class TestCommonFormatters(unittest.TestCase):
         custom_formatter_func = self.custom_formatter
         add_formatter(formatter_type, custom_formatter_func)
 
-        self.assertEqual(get_formatter_from_type(formatter_type), custom_formatter_func)
+        assert get_formatter_from_type(formatter_type) == custom_formatter_func
 
-if __name__ == '__main__':
-    unittest.main()
+ 
