@@ -1,11 +1,9 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
 from pathlib import Path
 from pyexpat import ExpatError
-from typing import Dict, Union, List
-from unittest.mock import patch
+import pytest
 
 import pandas as pd
 
@@ -14,8 +12,8 @@ from ingen.reader.xml_file_reader import XMLFileReader
 THIS_DIR = Path(__file__).parent
 
 
-class TestXMLFileReader(unittest.TestCase):
-    def setUp(self):
+class TestXMLFileReader:
+    def setup_method(self):
         self.xml_src = {
             'id': 'order_xml',
             'type': 'file',
@@ -124,15 +122,21 @@ class TestXMLFileReader(unittest.TestCase):
         data = reader.read(source)
         pd.testing.assert_frame_equal(expected_data, data)
 
-    @patch('ingen.reader.xml_file_reader.logging')
-    def test_empty_xml_file(self, mock_logging):
+    def test_empty_xml_file(self, monkeypatch):
         source = self.xml_empty
+        
+        class LogStub:
+            def __init__(self):
+                self.messages = []
+            
+            def error(self, msg):
+                self.messages.append(msg)
+        
+        log_stub = LogStub()
+        monkeypatch.setattr("ingen.reader.xml_file_reader.logging", log_stub)
+        
         reader = XMLFileReader()
-        with self.assertRaises(ExpatError):
+        with pytest.raises(ExpatError):
             reader.read(source)
             error_msg = "XML file is empty"
-            mock_logging.error.assert_called_with(error_msg)
-
-
-if __name__ == '__main__':
-    unittest.main()
+            assert error_msg in log_stub.messages

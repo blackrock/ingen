@@ -1,16 +1,14 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
-
 import pandas as pd
 from pandas.testing import assert_frame_equal
 
 from ingen.reader.file_reader import ReaderFactory
 
 
-class TestJsonReader(unittest.TestCase):
-    def setUp(self):
+class TestJsonReader:
+    def setup_method(self):
         self.json_src = {
             'id': 'proposals',
             'type': 'file',
@@ -91,7 +89,3 @@ class TestJsonReader(unittest.TestCase):
             {'name': ['proposal_id_111'], 'cash_allocation': [20000], 'id': ['88877701000000BLANK'],
              'cusip': ['USD0000'], 'marketValue': [6920.2], 'quantity': [6920.2]})
         assert_frame_equal(data, expected_data, check_dtype=False)
-
-
-if __name__ == '__main__':
-    unittest.main()

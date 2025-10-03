@@ -1,26 +1,23 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
-from unittest.mock import patch
-
 import pandas as pd
+import pytest
 
 from ingen.reader.api_reader import APIReader
 from ingen.utils.app_http.http_request import HTTPRequest
 
 
-class TestAPIReader(unittest.TestCase):
+class TestAPIReader:
 
-    def setUp(self):
+    def setup_method(self):
         self.auth = {
             'type': 'BasicAuth',
             'username': 'TEST_USER',
             'pwd': 'TEST_PWD'
         }
 
-    @patch('ingen.reader.api_reader.execute_requests')
-    def test_array_response(self, mock_execute_requests):
+    def test_array_response(self, monkeypatch):
         mock_response = [
             {
                 "name": "abc",
@@ -31,7 +28,11 @@ class TestAPIReader(unittest.TestCase):
                 "rolno": 2
             }
         ]
-        mock_execute_requests.return_value = [mock_response]
+        
+        def mock_execute_requests(*args, **kwargs):
+            return [mock_response]
+        
+        monkeypatch.setattr("ingen.reader.api_reader.execute_requests", mock_execute_requests)
 
         expected_data = pd.DataFrame(
             {
@@ -43,8 +44,7 @@ class TestAPIReader(unittest.TestCase):
         data = reader.execute()
         pd.testing.assert_frame_equal(expected_data, data)
 
-    @patch('ingen.reader.api_reader.execute_requests')
-    def test_nested_response_when_data_key_empty(self, mock_execute_requests):
+    def test_nested_response_when_data_key_empty(self, monkeypatch):
         mock_json = [
             {
                 "type": "ModelPortfolioDto",
@@ -74,7 +74,11 @@ class TestAPIReader(unittest.TestCase):
             "treeId": ["0101"]
         })
         requests = [HTTPRequest(url="http://www.test-url.com", method="GET", auth=self.auth)]
-        mock_execute_requests.return_value = [mock_json]
+        
+        def mock_execute_requests(*args, **kwargs):
+            return [mock_json]
+        
+        monkeypatch.setattr("ingen.reader.api_reader.execute_requests", mock_execute_requests)
         source = {
             'data_node': ["classifications"],
         }
@@ -83,8 +87,7 @@ class TestAPIReader(unittest.TestCase):
         data = reader.execute(data_node=source['data_node'])
         pd.testing.assert_frame_equal(expected_data, data)
 
-    @patch('ingen.reader.api_reader.execute_requests')
-    def test_nested_response_when_data_node_empty(self, mock_execute_requests):
+    def test_nested_response_when_data_node_empty(self, monkeypatch):
         mock_json = [
             {
                 "type": "ModelPortfolioDto",
@@ -112,13 +115,16 @@ class TestAPIReader(unittest.TestCase):
         source = {
             'data_key': ["type", "productType", "attributesByCodeMap.FOA_flg.attributeTranslation"],
         }
-        mock_execute_requests.return_value = [mock_json]
+        
+        def mock_execute_requests(*args, **kwargs):
+            return [mock_json]
+        
+        monkeypatch.setattr("ingen.reader.api_reader.execute_requests", mock_execute_requests)
         reader = APIReader(requests)
         data = reader.execute(data_key=source['data_key'])
         pd.testing.assert_frame_equal(expected_data, data)
 
-    @patch('ingen.reader.api_reader.execute_requests')
-    def test_nested_response(self, mock_execute_requests):
+    def test_nested_response(self, monkeypatch):
         mock_json = [
             {
                 "type": "ModelPortfolioDto",
@@ -145,13 +151,16 @@ class TestAPIReader(unittest.TestCase):
             'data_node': ["classifications"],
             'data_key': ["classificationCode"]
         }
-        mock_execute_requests.return_value = [mock_json]
+        
+        def mock_execute_requests(*args, **kwargs):
+            return [mock_json]
+        
+        monkeypatch.setattr("ingen.reader.api_reader.execute_requests", mock_execute_requests)
         reader = APIReader(requests)
         data = reader.execute(source['data_node'], source['data_key'])
         pd.testing.assert_frame_equal(expected_data, data)
 
-    @patch('ingen.reader.api_reader.execute_requests')
-    def test_combine_list_responses(self, mock_execute_requests):
+    def test_combine_list_responses(self, monkeypatch):
         requests = [HTTPRequest(url="url1", method="GET", auth=self.auth),
                     HTTPRequest(url="url2", method="GET", auth=self.auth)]
         responses = [
@@ -162,13 +171,16 @@ class TestAPIReader(unittest.TestCase):
             "name": ["Abhijeet", "Ananya", "Sukanya"],
             "age": [24, 26, 32]
         })
-        mock_execute_requests.return_value = responses
+        
+        def mock_execute_requests(*args, **kwargs):
+            return responses
+        
+        monkeypatch.setattr("ingen.reader.api_reader.execute_requests", mock_execute_requests)
         reader = APIReader(requests)
         actual_dataframe = reader.execute()
         pd.testing.assert_frame_equal(expected_dataframe, actual_dataframe)
 
-    @patch('ingen.reader.api_reader.execute_requests')
-    def test_combine_simple_json_objects(self, mock_execute_requests):
+    def test_combine_simple_json_objects(self, monkeypatch):
         requests = [HTTPRequest(url="url1", method="GET", auth=self.auth),
                     HTTPRequest(url="url2", method="GET", auth=self.auth)]
         responses = [
@@ -179,13 +191,16 @@ class TestAPIReader(unittest.TestCase):
             "name": ["Abhijeet", "Ananya", "Sukanya"],
             "age": [24, 26, 32]
         })
-        mock_execute_requests.return_value = responses
+        
+        def mock_execute_requests(*args, **kwargs):
+            return responses
+        
+        monkeypatch.setattr("ingen.reader.api_reader.execute_requests", mock_execute_requests)
         reader = APIReader(requests)
         actual_dataframe = reader.execute()
         pd.testing.assert_frame_equal(expected_dataframe, actual_dataframe)
 
-    @patch('ingen.reader.api_reader.execute_requests')
-    def test_response_with_meta_field(self, mock_execute_requests):
+    def test_response_with_meta_field(self, monkeypatch):
         requests = [HTTPRequest(url="url1", method="GET", auth=self.auth),
                     HTTPRequest(url="url2", method="GET", auth=self.auth)]
         responses = [
@@ -201,7 +216,11 @@ class TestAPIReader(unittest.TestCase):
             "marks": [90, 78, 69, 68, 70, 78],
             "student_name": ["Abhijeet", "Abhijeet", "Ananya", "Ananya", "Sukanya", "Sukanya"]
         })
-        mock_execute_requests.return_value = responses
+        
+        def mock_execute_requests(*args, **kwargs):
+            return responses
+        
+        monkeypatch.setattr("ingen.reader.api_reader.execute_requests", mock_execute_requests)
         reader = APIReader(requests)
         source = {
             'data_node': ['subjects'],
@@ -211,8 +230,7 @@ class TestAPIReader(unittest.TestCase):
         actual_dataframe = reader.execute(data_node=['subjects'], data_key=source['data_key'], meta=source['meta'])
         pd.testing.assert_frame_equal(expected_dataframe, actual_dataframe)
 
-    @patch('ingen.reader.api_reader.execute_requests')
-    def test_response_with_meta_field_and_data_key(self, mock_execute_requests):
+    def test_response_with_meta_field_and_data_key(self, monkeypatch):
         requests = [HTTPRequest(url="url1", method="GET", auth=self.auth),
                     HTTPRequest(url="url2", method="GET", auth=self.auth)]
         responses = [
@@ -227,7 +245,11 @@ class TestAPIReader(unittest.TestCase):
             "name": ["maths", "science", "maths", "geography", "maths", "botany"],
             "student_name": ["Abhijeet", "Abhijeet", "Ananya", "Ananya", "Sukanya", "Sukanya"]
         })
-        mock_execute_requests.return_value = responses
+        
+        def mock_execute_requests(*args, **kwargs):
+            return responses
+        
+        monkeypatch.setattr("ingen.reader.api_reader.execute_requests", mock_execute_requests)
         reader = APIReader(requests)
         source = {
             'data_node': ['subjects'],
@@ -237,8 +259,7 @@ class TestAPIReader(unittest.TestCase):
         actual_dataframe = reader.execute(data_node=['subjects'], data_key=source['data_key'], meta=source['meta'])
         pd.testing.assert_frame_equal(expected_dataframe, actual_dataframe)
 
-    @patch('ingen.reader.api_reader.execute_requests')
-    def test_response_with_nested_meta_field(self, mock_execute_requests):
+    def test_response_with_nested_meta_field(self, monkeypatch):
         requests = [HTTPRequest(url="url1", method="GET", auth=self.auth),
                     HTTPRequest(url="url2", method="GET", auth=self.auth)]
         responses = [
@@ -254,7 +275,11 @@ class TestAPIReader(unittest.TestCase):
             "marks": [90, 78, 69, 68, 70, 78],
             "student_details.student_name": ["Abhijeet", "Abhijeet", "Ananya", "Ananya", "Sukanya", "Sukanya"]
         })
-        mock_execute_requests.return_value = responses
+        
+        def mock_execute_requests(*args, **kwargs):
+            return responses
+        
+        monkeypatch.setattr("ingen.reader.api_reader.execute_requests", mock_execute_requests)
         reader = APIReader(requests)
         source = {
             'data_node': ['subjects'],
@@ -264,30 +289,35 @@ class TestAPIReader(unittest.TestCase):
         actual_dataframe = reader.execute(data_node=['subjects'], data_key=source['data_key'], meta=source['meta'])
         pd.testing.assert_frame_equal(expected_dataframe, actual_dataframe)
 
-    @patch('ingen.reader.api_reader.execute_requests')
-    def test_combine_string_responses(self, mock_execute_requests):
+    def test_combine_string_responses(self, monkeypatch):
         requests = [HTTPRequest(url="url1", method="GET", auth=self.auth),
                     HTTPRequest(url="url2", method="GET", auth=self.auth)]
         responses = ["result1", "result2"]
         expected_dataframe = pd.DataFrame(responses)
-        mock_execute_requests.return_value = responses
+        
+        def mock_execute_requests(*args, **kwargs):
+            return responses
+        
+        monkeypatch.setattr("ingen.reader.api_reader.execute_requests", mock_execute_requests)
         reader = APIReader(requests)
         actual_dataframe = reader.execute(self.auth)
         pd.testing.assert_frame_equal(expected_dataframe, actual_dataframe)
 
-    @patch('ingen.reader.api_reader.execute_requests')
-    def test_combine_list_of_string_responses(self, mock_execute_requests):
+    def test_combine_list_of_string_responses(self, monkeypatch):
         requests = [HTTPRequest(url="url1", method="GET", auth=self.auth),
                     HTTPRequest(url="url2", method="GET", auth=self.auth)]
         responses = [["result1", "result1.2"], ["result2", "result2.2"]]
         expected_dataframe = pd.DataFrame(["result1", "result1.2", "result2", "result2.2"])
-        mock_execute_requests.return_value = responses
+        
+        def mock_execute_requests(*args, **kwargs):
+            return responses
+        
+        monkeypatch.setattr("ingen.reader.api_reader.execute_requests", mock_execute_requests)
         reader = APIReader(requests)
         actual_dataframe = reader.execute()
         pd.testing.assert_frame_equal(expected_dataframe, actual_dataframe)
 
-    @patch('ingen.reader.api_reader.execute_requests')
-    def test_combine_responses_with_response_to_list(self, mock_execute_requests):
+    def test_combine_responses_with_response_to_list(self, monkeypatch):
         requests = [HTTPRequest(url="http://www.test-url.com", method="GET", auth=self.auth)]
         responses = [{
             "bee12159-9fb9-4440-ae51-2c8f00312813": {
@@ -303,7 +333,11 @@ class TestAPIReader(unittest.TestCase):
             "firmName": ["David", "Jones"],
             "accInfoAccNumber": ["238792374", "234798237"]
         })
-        mock_execute_requests.return_value = responses
+        
+        def mock_execute_requests(*args, **kwargs):
+            return responses
+        
+        monkeypatch.setattr("ingen.reader.api_reader.execute_requests", mock_execute_requests)
         reader_params = {
             'response_to_list': True
         }
@@ -311,8 +345,7 @@ class TestAPIReader(unittest.TestCase):
         actual_dataframe = reader.execute()
         pd.testing.assert_frame_equal(expected_dataframe, actual_dataframe)
 
-    @patch('ingen.reader.api_reader.execute_requests')
-    def test_combine_responses_with_response_to_list_multiple(self, mock_execute_requests):
+    def test_combine_responses_with_response_to_list_multiple(self, monkeypatch):
         requests = [HTTPRequest(url="http://www.test-url.com/1", method="GET", auth=self.auth),
                     HTTPRequest(url="http://www.test-url.com/2", method="GET", auth=self.auth)]
         responses = [{
@@ -339,7 +372,11 @@ class TestAPIReader(unittest.TestCase):
             "firmName": ["David", "Jones", "Michael", "Kelly"],
             "accInfoAccNumber": ["238792374", "234798237", "238792374", "234798237"]
         })
-        mock_execute_requests.return_value = responses
+        
+        def mock_execute_requests(*args, **kwargs):
+            return responses
+        
+        monkeypatch.setattr("ingen.reader.api_reader.execute_requests", mock_execute_requests)
         reader_params = {
             'response_to_list': True
         }
@@ -347,16 +384,15 @@ class TestAPIReader(unittest.TestCase):
         actual_dataframe = reader.execute()
         pd.testing.assert_frame_equal(expected_dataframe, actual_dataframe)
 
-    @patch('ingen.reader.api_reader.execute_requests')
-    def test_empty_result(self, mock_execute_requests):
+    def test_empty_result(self, monkeypatch):
         requests = [HTTPRequest(url="http://www.test-url.com", method="GET", auth=self.auth)]
         empty_response = []
         empty_dataframe = pd.DataFrame()
-        mock_execute_requests.return_value = empty_response
+        
+        def mock_execute_requests(*args, **kwargs):
+            return empty_response
+        
+        monkeypatch.setattr("ingen.reader.api_reader.execute_requests", mock_execute_requests)
         reader = APIReader(requests)
         actual_dataframe = reader.execute()
         pd.testing.assert_frame_equal(empty_dataframe, actual_dataframe)
-
-
-if __name__ == '__main__':
-    unittest.main()
