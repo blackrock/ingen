@@ -1,29 +1,42 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
-from unittest.mock import patch, MagicMock
-
 from ingen.utils.properties import properties
 from ingen.validation import send_email
 
 
-class TestScript(unittest.TestCase):
+class TestScript:
 
-    def test_send_email(self):
+    def test_send_email(self, monkeypatch):
         body = "test_body"
         subject = "test_subject"
-        with patch('smtplib.SMTP', autospec=True) as mock_smtp:
-            send_email.send_email('to_address', body, subject)
-            instance = mock_smtp.return_value.__enter__.return_value
-            self.assertEqual(instance.send_message.call_count, 1)
+        
+        class MockSMTP:
+            def __init__(self, *args, **kwargs):
+                self.send_message_calls = 0
+            
+            def __enter__(self):
+                return self
+            
+            def __exit__(self, *args):
+                pass
+            
+            def send_message(self, *args, **kwargs):
+                self.send_message_calls += 1
+        
+        mock_smtp_instance = MockSMTP()
+        
+        def mock_smtp_constructor(*args, **kwargs):
+            return mock_smtp_instance
+        
+        monkeypatch.setattr("smtplib.SMTP", mock_smtp_constructor)
+        
+        send_email.send_email('to_address', body, subject)
+        assert mock_smtp_instance.send_message_calls == 1
 
-    def test_mail_server_other_host(self):
-        with patch('sys.platform', MagicMock(return_value='linux')):
-            fetched_value = send_email.determine_mailserver()
-            expected_value = properties.get_property('mail.smtp.host')
-            self.assertEqual(expected_value, fetched_value)
-
-
-if __name__ == '__main__':
-    unittest.main()
+    def test_mail_server_other_host(self, monkeypatch):
+        monkeypatch.setattr("sys.platform", "linux")
+        
+        fetched_value = send_email.determine_mailserver()
+        expected_value = properties.get_property('mail.smtp.host')
+        assert expected_value == fetched_value

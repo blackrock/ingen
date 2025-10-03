@@ -1,15 +1,13 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
-
 import great_expectations as ge
 import pandas as pd
 
 from ingen.validation.common_validations import *
 
 
-class TestCommonValidations(unittest.TestCase):
+class TestCommonValidations:
 
     def test_validate_when_severity_warning(self):
         dataframe = pd.DataFrame({
@@ -71,7 +69,7 @@ class TestCommonValidations(unittest.TestCase):
         validation_func(column_name, meta=validation_options)
         _, validation_summary = validate(dataframe, ge_dataframe)
         actual_validation_severity = validation_summary[0]
-        self.assertEqual(actual_validation_severity, 'severity : blocker')
+        assert actual_validation_severity == 'severity : blocker'
 
     def test_expect_column_values_to_not_be_null(self):
         dataframe = pd.DataFrame({
@@ -93,8 +91,8 @@ class TestCommonValidations(unittest.TestCase):
         expected_validate_dict = ge_dataframe_expected.validate()
         actual_validate_dict = ge_dataframe_arg.validate()
 
-        self.assertEqual(expected_validate_dict.get('results'), actual_validate_dict.get('results'))
-        self.assertEqual(expected_validate_dict.get('statistics'), actual_validate_dict.get('statistics'))
+        assert expected_validate_dict.get('results') == actual_validate_dict.get('results')
+        assert expected_validate_dict.get('statistics') == actual_validate_dict.get('statistics')
 
     def test_expect_column_values_to_match_regex_list(self):
         dataframe = pd.DataFrame({
@@ -119,8 +117,8 @@ class TestCommonValidations(unittest.TestCase):
         expected_validate_dict = ge_dataframe_expected.validate()
         actual_validate_dict = ge_dataframe_arg.validate()
 
-        self.assertEqual(expected_validate_dict.get('results'), actual_validate_dict.get('results'))
-        self.assertEqual(expected_validate_dict.get('statistics'), actual_validate_dict.get('statistics'))
+        assert expected_validate_dict.get('results') == actual_validate_dict.get('results')
+        assert expected_validate_dict.get('statistics') == actual_validate_dict.get('statistics')
 
     def test_expect_column_values_to_match_strftime_format(self):
         dataframe = pd.DataFrame({
@@ -146,8 +144,8 @@ class TestCommonValidations(unittest.TestCase):
         expected_validate_dict = ge_dataframe_expected.validate()
         actual_validate_dict = ge_dataframe_arg.validate()
 
-        self.assertEqual(expected_validate_dict.get('results'), actual_validate_dict.get('results'))
-        self.assertEqual(expected_validate_dict.get('statistics'), actual_validate_dict.get('statistics'))
+        assert expected_validate_dict.get('results') == actual_validate_dict.get('results')
+        assert expected_validate_dict.get('statistics') == actual_validate_dict.get('statistics')
 
     def test_expect_column_values_to_be_between(self):
         dataframe = pd.DataFrame({
@@ -175,8 +173,8 @@ class TestCommonValidations(unittest.TestCase):
         expected_validate_dict = ge_dataframe_expected.validate()
         actual_validate_dict = ge_dataframe_arg.validate()
 
-        self.assertEqual(expected_validate_dict.get('results'), actual_validate_dict.get('results'))
-        self.assertEqual(expected_validate_dict.get('statistics'), actual_validate_dict.get('statistics'))
+        assert expected_validate_dict.get('results') == actual_validate_dict.get('results')
+        assert expected_validate_dict.get('statistics') == actual_validate_dict.get('statistics')
 
     def test_expect_column_values_to_be_unique(self):
         dataframe = pd.DataFrame({
@@ -200,8 +198,8 @@ class TestCommonValidations(unittest.TestCase):
         expected_validate_dict = ge_dataframe_expected.validate()
         actual_validate_dict = ge_dataframe_arg.validate()
 
-        self.assertEqual(expected_validate_dict.get('results'), actual_validate_dict.get('results'))
-        self.assertEqual(expected_validate_dict.get('statistics'), actual_validate_dict.get('statistics'))
+        assert expected_validate_dict.get('results') == actual_validate_dict.get('results')
+        assert expected_validate_dict.get('statistics') == actual_validate_dict.get('statistics')
 
     def test_expect_column_value_lengths_to_equal(self):
         dataframe = pd.DataFrame({
@@ -227,5 +225,5 @@ class TestCommonValidations(unittest.TestCase):
         expected_validate_dict = ge_dataframe_expected.validate()
         actual_validate_dict = ge_dataframe_arg.validate()
 
-        self.assertEqual(expected_validate_dict.get('results'), actual_validate_dict.get('results'))
-        self.assertEqual(expected_validate_dict.get('statistics'), actual_validate_dict.get('statistics'))
+        assert expected_validate_dict.get('results') == actual_validate_dict.get('results')
+        assert expected_validate_dict.get('statistics') == actual_validate_dict.get('statistics')

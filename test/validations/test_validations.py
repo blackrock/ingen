@@ -1,14 +1,13 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
-
+import pytest
 import pandas as pd
 
 from ingen.validation.validations import Validation
 
 
-class TestValidations(unittest.TestCase):
+class TestValidations:
 
     def test_apply_validations_when_expect_column_values_to_not_be_null_with_no_null_values(self):
         columns = [
@@ -123,7 +122,7 @@ class TestValidations(unittest.TestCase):
         _, validation_summary = validations.apply_validations()
         expected_validation_msg = 'Validation failed for column ACCOUNT_ID for expectation type : expect_column_values_to_not_be_null'
         actual_validation_msg = validation_summary[1]
-        self.assertEqual(expected_validation_msg, actual_validation_msg)
+        assert expected_validation_msg == actual_validation_msg
 
     def test_apply_validations_when_type_none(self):
         columns = [
@@ -144,7 +143,7 @@ class TestValidations(unittest.TestCase):
         validations = Validation(dataframe, columns)
         column_name = 'ACCOUNT_ID'
         expectation_type = 'expect_not_present'
-        with self.assertRaisesRegex(ValueError, f"Invalid validation type: {expectation_type} on column {column_name}"):
+        with pytest.raises(ValueError, match=f"Invalid validation type: {expectation_type} on column {column_name}"):
             validations.apply_validations()
 
     def test_apply_validations_when_expect_column_values_to_match_regex_list_with_severity_critical(self):
@@ -193,7 +192,7 @@ class TestValidations(unittest.TestCase):
         _, validation_summary = validations.apply_validations()
         expected_validation_msg = 'Validation failed for column ACCOUNT_ID for expectation type : expect_column_values_to_match_regex_list'
         actual_validation_msg = validation_summary[1]
-        self.assertEqual(expected_validation_msg, actual_validation_msg)
+        assert expected_validation_msg == actual_validation_msg
 
     def test_expect_column_values_to_match_strftime_format_with_severity_critical(self):
         columns = [
@@ -241,7 +240,7 @@ class TestValidations(unittest.TestCase):
         _, validation_summary = validations.apply_validations()
         expected_validation_msg = 'Validation failed for column DATE for expectation type : expect_column_values_to_match_regex_list'
         actual_validation_msg = validation_summary[1]
-        self.assertEqual(expected_validation_msg, actual_validation_msg)
+        assert expected_validation_msg == actual_validation_msg
 
     def test_expect_column_values_to_be_between_with_severity_critical(self):
         columns = [
@@ -286,7 +285,7 @@ class TestValidations(unittest.TestCase):
         _, validation_summary = validations.apply_validations()
         expected_validation_msg = 'Validation failed for column WEIGHT for expectation type : expect_column_values_to_be_between'
         actual_validation_msg = validation_summary[1]
-        self.assertEqual(expected_validation_msg, actual_validation_msg)
+        assert expected_validation_msg == actual_validation_msg
 
     def test_expect_column_values_to_be_unique_with_severity_critical(self):
         columns = [
@@ -329,7 +328,7 @@ class TestValidations(unittest.TestCase):
         _, validation_summary = validations.apply_validations()
         expected_validation_msg = 'Validation failed for column WEIGHT for expectation type : expect_column_values_to_be_unique'
         actual_validation_msg = validation_summary[1]
-        self.assertEqual(expected_validation_msg, actual_validation_msg)
+        assert expected_validation_msg == actual_validation_msg
 
     def test_expect_column_value_lengths_to_equal_with_severity_critical(self):
         columns = [
@@ -351,7 +350,7 @@ class TestValidations(unittest.TestCase):
         _, validation_summary = validations.apply_validations()
         expected_validation_msg = 'Validation failed for column ACCOUNT_ID for expectation type : expect_column_value_lengths_to_equal'
         actual_validation_msg = validation_summary[1]
-        self.assertEqual(expected_validation_msg, actual_validation_msg)
+        assert expected_validation_msg == actual_validation_msg
 
     def test_expect_column_value_lengths_to_equal_with_severity_blocker(self):
         columns = [
@@ -373,7 +372,7 @@ class TestValidations(unittest.TestCase):
         _, validation_summary = validations.apply_validations()
         expected_validation_msg = 'Validation failed for column ACCOUNT_ID for expectation type : expect_column_value_lengths_to_equal'
         actual_validation_msg = validation_summary[1]
-        self.assertEqual(expected_validation_msg, actual_validation_msg)
+        assert expected_validation_msg == actual_validation_msg
 
     def test_expect_column_values_to_be_of_type_with_type_float_severity_as_critical(self):
         columns = [
@@ -395,7 +394,7 @@ class TestValidations(unittest.TestCase):
         _, validation_summary = validations.apply_validations()
         expected_validation_msg = 'Validation failed for column WEIGHT for expectation type : expect_column_values_to_be_of_type'
         actual_validation_msg = validation_summary[1]
-        self.assertEqual(expected_validation_msg, actual_validation_msg)
+        assert expected_validation_msg == actual_validation_msg
 
     def test_expect_column_values_to_be_of_type_with_type_int_severity_as_critical(self):
         columns = [
@@ -463,7 +462,7 @@ class TestValidations(unittest.TestCase):
         _, validation_summary = validations.apply_validations()
         expected_validation_msg = 'Validation failed for column WEIGHT for expectation type : expect_column_to_contain_values'
         actual_validation_msg = validation_summary[1]
-        self.assertEqual(expected_validation_msg, actual_validation_msg)
+        assert expected_validation_msg == actual_validation_msg
 
     def test_expect_column_values_to_be_present_in(self):
         columns = [
@@ -492,7 +491,7 @@ class TestValidations(unittest.TestCase):
         _, validation_summary = validations.apply_validations()
         expected_validation_msg = 'Validation failed for column CUSIP for expectation type : expect_column_values_to_be_present_in'
         actual_validation_msg = validation_summary[1]
-        self.assertEqual(expected_validation_msg, actual_validation_msg)
+        assert expected_validation_msg == actual_validation_msg
 
     def test_expect_column_values_to_be_present_in_when_given_source_wrong(self):
         columns = [
@@ -518,5 +517,5 @@ class TestValidations(unittest.TestCase):
             'ID': ['0', '1', '3', '0.3', '3.4']
         })
         validation = Validation(dataframe, columns, data=data)
-        with self.assertRaisesRegex(ValueError, "Invalid wrong_source or ID unable to find in source"):
+        with pytest.raises(ValueError, match="Invalid wrong_source or ID unable to find in source"):
             validation.apply_validations()
