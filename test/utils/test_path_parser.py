@@ -1,14 +1,12 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
 from datetime import date
-from unittest.mock import Mock, ANY
 
 from ingen.utils.path_parser import PathParser
 
 
-class MyTestCase(unittest.TestCase):
+class TestPathParser:
 
     def test_parse_date_in_path(self):
         date_format = "%d%m%Y"
@@ -19,7 +17,7 @@ class MyTestCase(unittest.TestCase):
         parser = PathParser(today)
         parsed_path = parser.parse(path)
 
-        self.assertEqual(expected_path, parsed_path)
+        assert parsed_path == expected_path
 
     def test_default_date_in_path(self):
         date_format = "%d%m%Y"
@@ -30,7 +28,7 @@ class MyTestCase(unittest.TestCase):
         parser = PathParser()
         parsed_path = parser.parse(path)
 
-        self.assertEqual(expected_path, parsed_path)
+        assert parsed_path == expected_path
 
     def test_parse_path_with_date_params(self):
         date_format = '%m%d%y'
@@ -39,15 +37,21 @@ class MyTestCase(unittest.TestCase):
         expected_path = f'file_name_{today.strftime(date_format)}.csv'
         path_parser = PathParser(today)
         formatted_path = path_parser.parse(path)
-        self.assertEqual(expected_path, formatted_path)
+        assert formatted_path == expected_path
 
     def test_interpolator_is_called(self):
-        mock_interpolator = Mock()
+        class InterpolatorStub:
+            def __init__(self):
+                self.interpolate_calls = []
+            
+            def interpolate(self, path, function_map):
+                self.interpolate_calls.append((path, function_map))
+                return path
+        
+        interpolator_stub = InterpolatorStub()
         path = "/some/path"
-        path_parser = PathParser(interpolator=mock_interpolator)
+        path_parser = PathParser(interpolator=interpolator_stub)
         path_parser.parse(path)
-        mock_interpolator.interpolate.assert_called_with(path, ANY)
-
-
-if __name__ == '__main__':
-    unittest.main()
+        
+        assert len(interpolator_stub.interpolate_calls) == 1
+        assert interpolator_stub.interpolate_calls[0][0] == path

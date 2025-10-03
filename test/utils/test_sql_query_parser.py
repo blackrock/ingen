@@ -3,45 +3,63 @@
 
 import datetime
 import os
-import unittest
-from unittest.mock import patch, Mock
+import pytest
 
 import pandas as pd
 
 from ingen.utils.sql_query_parser import SqlQueryParser
 
 
-class MyTestCase(unittest.TestCase):
-    def setUp(self):
+class TestSqlQueryParser:
+    
+    @pytest.fixture(autouse=True)
+    def setup(self):
         self.query_parser = SqlQueryParser()
 
     def test_parse_query_with_no_params(self):
         query = 'select top 10 * from positions'
         query_params = None
-        self.assertEqual(query, self.query_parser.parse_query(query, query_params))
+        assert query == self.query_parser.parse_query(query, query_params)
 
     def test_parse_query_with_query_params(self):
         query = 'select top 10 * from {table_name}'
         query_params = {'query_params': {'table_name': 'positions'}}
         expected_query = 'select top 10 * from positions'
-        self.assertEqual(expected_query, self.query_parser.parse_query(query, query_params))
+        assert expected_query == self.query_parser.parse_query(query, query_params)
 
-    @patch('ingen.utils.sql_query_parser.logging')
-    def test_parse_query_when_params_not_provided(self, mock_logging):
+    def test_parse_query_when_params_not_provided(self, monkeypatch):
         query = 'select top 10 * from {table_name}'
         no_query_params = None
         expected_error_msg = 'Error parsing sql query. Required query params not provided'
-        with self.assertRaisesRegex(KeyError, "'table_name'"):
+        
+        class LoggingStub:
+            def __init__(self):
+                self.error_calls = []
+            
+            def error(self, msg):
+                self.error_calls.append(msg)
+        
+        logging_stub = LoggingStub()
+        monkeypatch.setattr('ingen.utils.sql_query_parser.logging', logging_stub)
+        
+        with pytest.raises(KeyError, match="'table_name'"):
             self.query_parser.parse_query(query, no_query_params)
-        mock_logging.error.assert_called_with(expected_error_msg)
+        
+        assert expected_error_msg in logging_stub.error_calls
 
-    @patch('ingen.utils.sql_query_parser.ReaderFactory')
-    def test_parse_query_with_numbers_in_file(self, mock_reader_factory):
+    def test_parse_query_with_numbers_in_file(self, monkeypatch):
         data = {'ALIAS_CODE': (5005, 1234)}
         mock_file_data = pd.DataFrame(data)
-        mock_reader = Mock()
-        mock_reader_factory.get_reader.return_value = mock_reader
-        mock_reader.read.return_value = mock_file_data
+        
+        class ReaderStub:
+            def read(self, params):
+                return mock_file_data
+        
+        class ReaderFactoryStub:
+            def get_reader(self, params):
+                return ReaderStub()
+        
+        monkeypatch.setattr('ingen.utils.sql_query_parser.ReaderFactory', ReaderFactoryStub())
 
         cmd_line_query_params = None
         query = "select * from cusip_table, #temp_table temp_table where purpose = temp_table.alias_code"
@@ -57,7 +75,7 @@ class MyTestCase(unittest.TestCase):
                              'temp_table_cols': [{'name': 'alias_code', 'type': "int", "file_col": "ALIAS_CODE"}]}]
 
         actual_query = self.query_parser.parse_query(query, cmd_line_query_params, temp_table_param)
-        self.assertEqual(expected_query, actual_query)
+        assert expected_query == actual_query
 
     def test_parse_query_with_multiple_columns_in_file(self):
         script_dir = os.path.dirname(__file__)
@@ -81,10 +99,9 @@ class MyTestCase(unittest.TestCase):
                                  {'name': 'course_name', 'type': "varchar", 'size': 50, "file_col": "COURSE_NAME"}]}]
 
         actual_query = self.query_parser.parse_query(query, cmd_line_query_params, temp_table_param)
-        self.assertEqual(expected_query, actual_query)
+        assert expected_query == actual_query
 
-    @patch('ingen.utils.sql_query_parser.ReaderFactory')
-    def test_parse_query_with_dynamic_file_path(self, mock_reader_factory):
+    def test_parse_query_with_dynamic_file_path(self, monkeypatch):
         date_format = "%d%m%Y"
         date = datetime.date.today()
         source_file_path = f'../input/test_$date({date_format}).csv'
@@ -92,9 +109,24 @@ class MyTestCase(unittest.TestCase):
 
         data = {'CUSIP': ('BACH890LK', 'BHNK98J80')}
         mock_file_data = pd.DataFrame(data)
-        mock_reader = Mock()
-        mock_reader_factory.get_reader.return_value = mock_reader
-        mock_reader.read.return_value = mock_file_data
+        
+        class ReaderStub:
+            def __init__(self):
+                self.read_calls = []
+            
+            def read(self, params):
+                self.read_calls.append(params)
+                return mock_file_data
+        
+        class ReaderFactoryStub:
+            def __init__(self):
+                self.reader_stub = ReaderStub()
+            
+            def get_reader(self, params):
+                return self.reader_stub
+        
+        reader_factory_stub = ReaderFactoryStub()
+        monkeypatch.setattr('ingen.utils.sql_query_parser.ReaderFactory', reader_factory_stub)
 
         cmd_line_query_params = None
         query = "select * from cusip_table, #temp_table temp_table where bfm_cusip = temp_table.bcusip"
@@ -119,11 +151,10 @@ class MyTestCase(unittest.TestCase):
                                          {'name': 'bcusip', 'type': "varchar", 'size': 50, "file_col": "CUSIP"}]}
 
         actual_query = self.query_parser.parse_query(query, cmd_line_query_params, temp_table_param)
-        mock_reader.read.assert_called_with(expected_temp_table_param)
-        self.assertEqual(expected_query, actual_query)
+        assert expected_temp_table_param in reader_factory_stub.reader_stub.read_calls
+        assert expected_query == actual_query
 
-    @patch('ingen.utils.sql_query_parser.ReaderFactory')
-    def test_parse_query_with_dynamic_file_path_and_new_date(self, mock_reader_factory):
+    def test_parse_query_with_dynamic_file_path_and_new_date(self, monkeypatch):
         date_format = "%d%m%Y"
         date = datetime.datetime(2020, 9, 12)  # past date
         source_file_path = f'../input/test_$date({date_format}).csv'
@@ -131,9 +162,24 @@ class MyTestCase(unittest.TestCase):
 
         data = {'CUSIP': ('BACH890LK', 'BHNK98J80')}
         mock_file_data = pd.DataFrame(data)
-        mock_reader = Mock()
-        mock_reader_factory.get_reader.return_value = mock_reader
-        mock_reader.read.return_value = mock_file_data
+        
+        class ReaderStub:
+            def __init__(self):
+                self.read_calls = []
+            
+            def read(self, params):
+                self.read_calls.append(params)
+                return mock_file_data
+        
+        class ReaderFactoryStub:
+            def __init__(self):
+                self.reader_stub = ReaderStub()
+            
+            def get_reader(self, params):
+                return self.reader_stub
+        
+        reader_factory_stub = ReaderFactoryStub()
+        monkeypatch.setattr('ingen.utils.sql_query_parser.ReaderFactory', reader_factory_stub)
 
         cmd_line_query_params = {'run_date': date}
         query = "select * from cusip_table, #temp_table temp_table where bfm_cusip = temp_table.bcusip"
@@ -156,8 +202,8 @@ class MyTestCase(unittest.TestCase):
                                           {'name': 'bcusip', 'type': "varchar", 'size': 50, "file_col": "CUSIP"}]}
 
         actual_query = self.query_parser.parse_query(query, cmd_line_query_params, temp_table_params)
-        mock_reader.read.assert_called_with(expected_temp_table_params)
-        self.assertEqual(expected_query, actual_query)
+        assert expected_temp_table_params in reader_factory_stub.reader_stub.read_calls
+        assert expected_query == actual_query
 
     def test_parse_query_with_only_temp_table_query_params(self):
         script_dir = os.path.dirname(__file__)
@@ -175,7 +221,7 @@ class MyTestCase(unittest.TestCase):
                                    "default_val_if_empty": "temp_string"}]}]
         actual_query = self.query_parser.parse_query(query, cmd_line_query_params, temp_table_params)
         print(actual_query)
-        self.assertEqual(expected_query, actual_query)
+        assert expected_query == actual_query
 
     def test_parse_query_with_cmd_line_params_and_temp_table_query_params(self):
         script_dir = os.path.dirname(__file__)
@@ -193,10 +239,9 @@ class MyTestCase(unittest.TestCase):
                                    "default_val_if_empty": "temp_string"}]}]
 
         actual_query = self.query_parser.parse_query(query, cmd_line_query_params, temp_table_params)
-        self.assertEqual(expected_query, actual_query)
+        assert expected_query == actual_query
 
-    @patch('ingen.utils.sql_query_parser.ReaderFactory')
-    def test_parse_query_with_multiple_temp_table_params(self, mock_reader_factory):
+    def test_parse_query_with_multiple_temp_table_params(self, monkeypatch):
         query = "select distinct t.cusip from (select cusip from #temp1 union select cusip from #temp2) t"
 
         expected_query = "create table #temp1 (cusip varchar(9));" \
@@ -209,9 +254,16 @@ class MyTestCase(unittest.TestCase):
 
         data = {'cusip': ('abcd', 'abce')}
         mock_file_data = pd.DataFrame(data)
-        mock_reader = Mock()
-        mock_reader_factory.get_reader.return_value = mock_reader
-        mock_reader.read.return_value = mock_file_data
+        
+        class ReaderStub:
+            def read(self, params):
+                return mock_file_data
+        
+        class ReaderFactoryStub:
+            def get_reader(self, params):
+                return ReaderStub()
+        
+        monkeypatch.setattr('ingen.utils.sql_query_parser.ReaderFactory', ReaderFactoryStub())
 
         temp_table_params = [{'id': 'file1', 'type': 'file', 'file_type': 'delimited_file', 'delimiter': ',',
                               'file_path': 'test/path', 'temp_table_name': 'temp1',
@@ -225,8 +277,4 @@ class MyTestCase(unittest.TestCase):
                               }]
 
         actual_query = self.query_parser.parse_query(query, None, temp_table_params)
-        self.assertEqual(expected_query.lower(), actual_query.lower())
-
-
-if __name__ == '__main__':
-    unittest.main()
+        assert expected_query.lower() == actual_query.lower()

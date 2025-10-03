@@ -1,8 +1,7 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
-from unittest.mock import patch
+import pytest
 
 from ingen.formatters.formatter import Formatter
 from ingen.generators.interface_generator import InterfaceGenerator
@@ -14,8 +13,10 @@ class TestClass:
     pass
 
 
-class MyTestCase(unittest.TestCase):
-    def setUp(self):
+class TestRunConfiguration:
+    
+    @pytest.fixture(autouse=True)
+    def setup(self):
         config = {
             'formatter': 'CustomFormatter',
             'writer': 'CustomWriter',
@@ -23,27 +24,29 @@ class MyTestCase(unittest.TestCase):
         }
         self.config = RunConfiguration(config)
 
-    @patch('ingen.utils.run_configuration.generators')
-    def test_generator(self, mock_generators):
-        setattr(mock_generators, 'CustomGenerator', TestClass)
-        self.assertEqual(TestClass, self.config.generator)
+    def test_generator(self, monkeypatch):
+        class GeneratorsStub:
+            CustomGenerator = TestClass
+        
+        monkeypatch.setattr('ingen.utils.run_configuration.generators', GeneratorsStub())
+        assert self.config.generator == TestClass
 
-    @patch('ingen.utils.run_configuration.formatters')
-    def test_formatter(self, mock_formatters):
-        setattr(mock_formatters, 'CustomFormatter', TestClass)
-        self.assertEqual(TestClass, self.config.formatter)
+    def test_formatter(self, monkeypatch):
+        class FormattersStub:
+            CustomFormatter = TestClass
+        
+        monkeypatch.setattr('ingen.utils.run_configuration.formatters', FormattersStub())
+        assert self.config.formatter == TestClass
 
-    @patch('ingen.utils.run_configuration.writers')
-    def test_writer(self, mock_writers):
-        setattr(mock_writers, 'CustomWriter', TestClass)
-        self.assertEqual(TestClass, self.config.writer)
+    def test_writer(self, monkeypatch):
+        class WritersStub:
+            CustomWriter = TestClass
+        
+        monkeypatch.setattr('ingen.utils.run_configuration.writers', WritersStub())
+        assert self.config.writer == TestClass
 
     def test_defaults(self):
         config = RunConfiguration({})
-        self.assertEqual(InterfaceGenerator, config.generator)
-        self.assertEqual(InterfaceWriter, config.writer)
-        self.assertEqual(Formatter, config.formatter)
-
-
-if __name__ == '__main__':
-    unittest.main()
+        assert config.generator == InterfaceGenerator
+        assert config.writer == InterfaceWriter
+        assert config.formatter == Formatter

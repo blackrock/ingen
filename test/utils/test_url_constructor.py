@@ -1,9 +1,6 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
-from unittest.mock import patch, Mock
-
 import pandas as pd
 
 from ingen.data_source.mysql_source import MYSQLSource
@@ -11,7 +8,7 @@ from ingen.utils.url_constructor import FileSource
 from ingen.utils.url_constructor import UrlConstructor
 
 
-class MyTestCase(unittest.TestCase):
+class TestUrlConstructor:
     def test_url_constructor_with_no_params(self):
         url = "https://www.google.com"
         url_param = None
@@ -21,7 +18,7 @@ class MyTestCase(unittest.TestCase):
         constructor = UrlConstructor(url, url_param)
         constructed_urls = constructor.get_urls()
 
-        self.assertListEqual(expected_urls, constructed_urls)
+        assert constructed_urls == expected_urls
 
     def test_url_with_const_param(self):
         url = "https://www.google.com"
@@ -38,9 +35,9 @@ class MyTestCase(unittest.TestCase):
         constructor = UrlConstructor(url, url_params)
         constructed_urls = constructor.get_urls()
 
-        self.assertListEqual(expected_urls, constructed_urls)
+        assert constructed_urls == expected_urls
 
-    def test_url_with_file_source(self):
+    def test_url_with_file_source(self, monkeypatch):
         url = "https://www.google.com"
         url_params = [
             {
@@ -56,12 +53,15 @@ class MyTestCase(unittest.TestCase):
         file_source_result = pd.DataFrame(['Y', 'N'], columns=["column_name"])
         expected_urls = ["https://www.google.com?q=Y,N"]
 
-        with patch.object(FileSource, 'fetch', return_value=file_source_result):
-            constructor = UrlConstructor(url, url_params)
-            constructed_urls = constructor.get_urls()
-            self.assertListEqual(expected_urls, constructed_urls)
+        def mock_fetch(self, params):
+            return file_source_result
 
-    def test_batch_urls(self):
+        monkeypatch.setattr(FileSource, 'fetch', mock_fetch)
+        constructor = UrlConstructor(url, url_params)
+        constructed_urls = constructor.get_urls()
+        assert constructed_urls == expected_urls
+
+    def test_batch_urls(self, monkeypatch):
         url = "https://google.com"
         batch = {
             'size': 2,
@@ -81,10 +81,13 @@ class MyTestCase(unittest.TestCase):
         file_source_result = pd.DataFrame(['A1', 'A2', 'A3', 'A4'], columns=["column_name"])
         expected_urls = ["https://google.com?accountIds=A1,A2", "https://google.com?accountIds=A3,A4"]
 
-        with patch.object(FileSource, 'fetch', return_value=file_source_result):
-            constructor = UrlConstructor(url, url_params, batch)
-            constructed_urls = constructor.get_urls()
-            self.assertListEqual(expected_urls, constructed_urls)
+        def mock_fetch(self, params):
+            return file_source_result
+
+        monkeypatch.setattr(FileSource, 'fetch', mock_fetch)
+        constructor = UrlConstructor(url, url_params, batch)
+        constructed_urls = constructor.get_urls()
+        assert constructed_urls == expected_urls
 
     def test_url_params_are_safe(self):
         url = "https://google.com"
@@ -99,9 +102,9 @@ class MyTestCase(unittest.TestCase):
 
         constructor = UrlConstructor(url, url_params)
         constructed_urls = constructor.get_urls()
-        self.assertListEqual(expected_urls, constructed_urls)
+        assert constructed_urls == expected_urls
 
-    def test_empty_url_param(self):
+    def test_empty_url_param(self, monkeypatch):
         url = "https://google.com"
         url_params = [{
             "id": "query",
@@ -117,12 +120,16 @@ class MyTestCase(unittest.TestCase):
 
         db_source_result = pd.DataFrame()
         expected_urls = ["https://google.com?query=&loc=&add="]
-        with patch.object(MYSQLSource, 'fetch', return_value=db_source_result):
-            constructor = UrlConstructor(url, url_params)
-            constructed_urls = constructor.get_urls()
-            self.assertListEqual(expected_urls, constructed_urls)
+        
+        def mock_fetch(self, params):
+            return db_source_result
 
-    def test_url_with_none_dest_column(self):
+        monkeypatch.setattr(MYSQLSource, 'fetch', mock_fetch)
+        constructor = UrlConstructor(url, url_params)
+        constructed_urls = constructor.get_urls()
+        assert constructed_urls == expected_urls
+
+    def test_url_with_none_dest_column(self, monkeypatch):
         url = "https://www.google.com"
         url_params = [
             {
@@ -137,10 +144,13 @@ class MyTestCase(unittest.TestCase):
         file_source_result = pd.DataFrame(['Y', 'N'])
         expected_urls = ["https://www.google.com?q=Y,N"]
 
-        with patch.object(FileSource, 'fetch', return_value=file_source_result):
-            constructor = UrlConstructor(url, url_params)
-            constructed_urls = constructor.get_urls()
-            self.assertListEqual(expected_urls, constructed_urls)
+        def mock_fetch(self, params):
+            return file_source_result
+
+        monkeypatch.setattr(FileSource, 'fetch', mock_fetch)
+        constructor = UrlConstructor(url, url_params)
+        constructed_urls = constructor.get_urls()
+        assert constructed_urls == expected_urls
 
     def test_batch_with_path_params(self):
         url = "https://www.host.com"
@@ -157,10 +167,14 @@ class MyTestCase(unittest.TestCase):
         source_df = pd.DataFrame({
             'ids': [1, 2, 3, 4]
         })
-        mock_data_source_factory = Mock()
-        mock_data_source = Mock()
-        mock_data_source_factory.parse_source.return_value = mock_data_source
-        mock_data_source.fetch.return_value = source_df
+        
+        class DataSourceStub:
+            def fetch(self, params):
+                return source_df
+        
+        class DataSourceFactoryStub:
+            def parse_source(self, source_config):
+                return DataSourceStub()
 
         expected_urls = [
             'https://www.host.com/1',
@@ -169,10 +183,6 @@ class MyTestCase(unittest.TestCase):
             'https://www.host.com/4',
         ]
 
-        constructor = UrlConstructor(url, None, batch, source_factory=mock_data_source_factory)
+        constructor = UrlConstructor(url, None, batch, source_factory=DataSourceFactoryStub())
         constructed_urls = constructor.get_urls()
-        self.assertListEqual(constructed_urls, expected_urls)
-
-
-if __name__ == '__main__':
-    unittest.main()
+        assert constructed_urls == expected_urls
