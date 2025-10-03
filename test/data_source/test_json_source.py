@@ -1,16 +1,15 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
-
+import pytest
 import pandas as pd
 from pandas.testing import assert_frame_equal
 
 from ingen.data_source.json_source import JsonSource
 
 
-class TestJsonSource(unittest.TestCase):
-    def setUp(self):
+class TestJsonSource:
+    def setup_method(self):
         self._src = {
             'id': 'json_string',
             'type': 'json'
@@ -34,7 +33,7 @@ class TestJsonSource(unittest.TestCase):
 
     def test_source_fetch_empty_payload(self):
         self.source = JsonSource(self._src, "")
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             self.source.fetch()
 
     def test_source_fetch_malformed_payload(self):
@@ -42,12 +41,8 @@ class TestJsonSource(unittest.TestCase):
                         'missing': 'end'
                     """
         self.source = JsonSource(self._src, bad_payload)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             self.source.fetch()
 
     def test_source_fetch_validations(self):
-        self.assertEqual([], self.source.fetch_validations())
-
-
-if __name__ == '__main__':
-    unittest.main()
+        assert [] == self.source.fetch_validations()

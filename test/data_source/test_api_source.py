@@ -1,8 +1,7 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import Mock
 
 from ingen.data_source.api_source import APISource
 from ingen.utils.app_http.http_request import HTTPRequest
@@ -10,9 +9,9 @@ from ingen.utils.app_http.success_criterias import status_criteria, DEFAULT_STAT
 from ingen.utils.url_constructor import UrlConstructor
 
 
-class TestAPISource(unittest.TestCase):
+class TestAPISource:
 
-    def setUp(self):
+    def setup_method(self):
         self._src = {
             'id': 'test data source',
             'url': 'abc',
@@ -50,13 +49,15 @@ class TestAPISource(unittest.TestCase):
         }
         self.source = APISource(self._src)
 
-    @patch('ingen.data_source.api_source.APIReader')
-    def test_source_fetch(self, mock_api_reader):
+    def test_source_fetch(self, monkeypatch):
+        mock_api_reader = Mock()
+        mock_reader_obj = Mock()
+        mock_api_reader.return_value = mock_reader_obj
+        monkeypatch.setattr('ingen.data_source.api_source.APIReader', mock_api_reader)
+        
         url_constructor = UrlConstructor(self._src.get('url'), self._src.get('url_params'), self._src.get('batch'))
         urls = url_constructor.get_urls()
         requests = [HTTPRequest(url=url, method=self._src.get('method'), auth=self._src.get('auth')) for url in urls]
-        mock_reader_obj = Mock()
-        mock_api_reader.return_value = mock_reader_obj
 
         self.source.fetch()
 
@@ -73,7 +74,7 @@ class TestAPISource(unittest.TestCase):
         source_with_headers = APISource(source_config, interpolator=mock_interpolator)
         header_value = source_with_headers._headers.get('custom_header')
         expected_header_value = "mock_value"
-        self.assertEqual(expected_header_value, header_value)
+        assert expected_header_value == header_value
 
     def test_fetch_validation(self):
         config = {
@@ -88,8 +89,4 @@ class TestAPISource(unittest.TestCase):
 
         source = APISource(config)
         expected = source.fetch_validations()
-        self.assertEqual(config.get('src_data_checks'), expected)
-
-
-if __name__ == '__main__':
-    unittest.main()
+        assert config.get('src_data_checks') == expected

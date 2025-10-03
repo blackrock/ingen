@@ -1,16 +1,15 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import Mock
 
 from ingen.data_source.dataframe_store import store
 from ingen.data_source.rawdata_source import RawDataSource
 
 
-class TestRawDataStoreSource(unittest.TestCase):
+class TestRawDataStoreSource:
 
-    def setUp(self):
+    def setup_method(self):
         self._src = {
 
             'id': 'contact'
@@ -18,10 +17,12 @@ class TestRawDataStoreSource(unittest.TestCase):
         }
         self.source = RawDataSource(self._src)
 
-    @patch('ingen.data_source.rawdata_source.RawDataReader')
-    def test_source_fetch(self, mock_reader_class):
+    def test_source_fetch(self, monkeypatch):
+        mock_reader_class = Mock()
         mock_reader = Mock()
         mock_reader_class.return_value = mock_reader
+        monkeypatch.setattr('ingen.data_source.rawdata_source.RawDataReader', mock_reader_class)
+        
         result = self.source.fetch()
         mock_reader.read.assert_called_with(self._src.get('id'), store)
 
@@ -38,8 +39,4 @@ class TestRawDataStoreSource(unittest.TestCase):
 
         source = RawDataSource(config)
         expected = source.fetch_validations()
-        self.assertEqual(config.get('src_data_checks'), expected)
-
-
-if __name__ == '__main__':
-    unittest.main()
+        assert config.get('src_data_checks') == expected

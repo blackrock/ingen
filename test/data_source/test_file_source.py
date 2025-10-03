@@ -1,17 +1,16 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import Mock
 
 import pandas as pd
 
 from ingen.data_source.file_source import FileSource
 
 
-class TestFileSource(unittest.TestCase):
+class TestFileSource:
 
-    def setUp(self):
+    def setup_method(self):
         self._src = {
             'id': 'open_lot_file',
             'type': 'file',
@@ -26,11 +25,13 @@ class TestFileSource(unittest.TestCase):
         self.params_map = {'query_params': {'table_name': 'positions'}, 'infile': {}}
         self.source = FileSource(self._src, self.params_map)
 
-    @patch('ingen.data_source.file_source.ReaderFactory')
-    def test_source_fetch(self, mock_reader_factory):
+    def test_source_fetch(self, monkeypatch):
+        mock_reader_factory = Mock()
         fileReader = Mock()
         fileReader.read.return_value = pd.DataFrame()
         mock_reader_factory.get_reader.return_value = fileReader
+        monkeypatch.setattr('ingen.data_source.file_source.ReaderFactory', mock_reader_factory)
+        
         result = self.source.fetch()
         pd.testing.assert_frame_equal(result, pd.DataFrame())
 
@@ -48,8 +49,4 @@ class TestFileSource(unittest.TestCase):
 
         source = FileSource(config, params_map)
         expected = source.fetch_validations()
-        self.assertEqual(config.get('src_data_checks'), expected)
-
-
-if __name__ == '__main__':
-    unittest.main()
+        assert config.get('src_data_checks') == expected
