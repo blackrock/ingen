@@ -2,22 +2,55 @@
 #  All Rights Reserved.
 
 import asyncio
-import unittest
-from unittest.mock import MagicMock, Mock
+import pytest
 
 from ingen.utils.app_http.aiohttp_retry import http_retry_request
 
 
-class MockSession(MagicMock):
+class SessionStub:
     """
-    Helper class to create Mock for Async Context Manager
+    Helper class to create stub for Async Context Manager
     """
+    
+    def __init__(self):
+        self.get_calls = []
+        self.call_count = 0
+        self.response = None
 
     async def __aenter__(self, *args, **kwargs):
-        return self.__enter__(*args, **kwargs)
+        return self
 
     async def __aexit__(self, *args, **kwargs):
-        return self.__exit__(*args, **kwargs)
+        pass
+    
+    def get(self, *args, **kwargs):
+        self.get_calls.append((args, kwargs))
+        self.call_count += 1
+        return ResponseContextStub(self.response)
+
+
+class ResponseContextStub:
+    def __init__(self, response):
+        self.response = response
+    
+    async def __aenter__(self):
+        return self.response
+    
+    async def __aexit__(self, *args):
+        pass
+
+
+class ResponseStub:
+    def __init__(self, status=200, headers=None, data=None, should_raise=False):
+        self.status = status
+        self.headers = headers or {}
+        self.data = data
+        self.should_raise = should_raise
+    
+    async def json(self):
+        if self.should_raise:
+            raise Exception("Connection error")
+        return self.data
 
 
 def passing_success_criteria(response, option):
@@ -34,92 +67,83 @@ def failing_success_criteria(response, option):
     return False
 
 
-class MyTestCase(unittest.TestCase):
+class TestAiohttpRetry:
 
-    def setUp(self) -> None:
+    @pytest.fixture(autouse=True)
+    def setup(self):
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
-
-    def tearDown(self) -> None:
+        yield
         self.loop.close()
 
     def test_http_get_retry(self):
-        mock_session = MockSession()
-        mock_response = Mock()
-        future_json = asyncio.Future()
-        future_json.set_result({'data': 123})
-        mock_response.json.return_value = future_json
-        mock_response.status = 200
-        mock_response.headers = {'Content-Type': 'application/json'}
+        session_stub = SessionStub()
+        response_stub = ResponseStub(
+            status=200,
+            headers={'Content-Type': 'application/json'},
+            data={'data': 123}
+        )
+        session_stub.response = response_stub
 
-        mock_session.get.return_value.__enter__.return_value = mock_response
-        http_response = self.loop.run_until_complete(http_retry_request(mock_session,
+        http_response = self.loop.run_until_complete(http_retry_request(session_stub,
                                                                         'get',
                                                                         'test.com',
                                                                         retries=2,
                                                                         interval=1,
                                                                         success_criteria=passing_success_criteria))
 
-        self.assertEqual(http_response.status, 200)
-        self.assertDictEqual(http_response.headers, {'Content-Type': 'application/json'})
-        self.assertDictEqual(http_response.data, {'data': 123})
-        self.assertEqual(mock_session.get.call_count, 1)
+        assert http_response.status == 200
+        assert http_response.headers == {'Content-Type': 'application/json'}
+        assert http_response.data == {'data': 123}
+        assert session_stub.call_count == 1
 
     def test_http_retry_request_sends_none_when_success_criteria_fails(self):
-        mock_session = MockSession()
-        mock_response = Mock()
-        future_json = asyncio.Future()
-        future_json.set_result({'done': False})
-        mock_response.headers = {'Content-Type': 'application/json'}
-        mock_response.json.return_value = future_json
-        mock_session.get.return_value.__enter__.return_value = mock_response
-        http_response = self.loop.run_until_complete(http_retry_request(mock_session,
+        session_stub = SessionStub()
+        response_stub = ResponseStub(
+            headers={'Content-Type': 'application/json'},
+            data={'done': False}
+        )
+        session_stub.response = response_stub
+
+        http_response = self.loop.run_until_complete(http_retry_request(session_stub,
                                                                         'get',
                                                                         'test.com',
                                                                         retries=2,
                                                                         interval=1,
                                                                         success_criteria=failing_success_criteria))
 
-        self.assertIsNone(http_response)
+        assert http_response is None
         # one call + 2 retries
-        self.assertEqual(mock_session.get.call_count, 3)
+        assert session_stub.call_count == 3
 
     def test_http_retry_when_connection_exception_occurs(self):
-        mock_session = MockSession()
-        mock_response = Mock()
-        future_json = asyncio.Future()
-        future_json.set_exception(Exception)
-        mock_response.json.return_value = future_json
+        session_stub = SessionStub()
+        response_stub = ResponseStub(should_raise=True)
+        session_stub.response = response_stub
 
-        mock_session.get.return_value.__enter__.return_value = mock_response
-
-        with self.assertRaises(ConnectionError):
-            http_response = self.loop.run_until_complete(http_retry_request(mock_session,
+        with pytest.raises(ConnectionError):
+            http_response = self.loop.run_until_complete(http_retry_request(session_stub,
                                                                             'get',
                                                                             'test.com',
                                                                             retries=2,
                                                                             interval=1))
 
-        self.assertEqual(mock_session.get.call_count, 1)
+        assert session_stub.call_count == 1
 
     def test_http_retry_when_retry_is_zero(self):
-        mock_session = MockSession()
-        mock_response = Mock()
-        future_json = asyncio.Future()
-        future_json.set_result({'done': False})
-        mock_response.headers = {'Content-Type': 'application/json'}
-        mock_response.json.return_value = future_json
-        mock_session.get.return_value.__enter__.return_value = mock_response
-        http_response = self.loop.run_until_complete(http_retry_request(mock_session,
+        session_stub = SessionStub()
+        response_stub = ResponseStub(
+            headers={'Content-Type': 'application/json'},
+            data={'done': False}
+        )
+        session_stub.response = response_stub
+
+        http_response = self.loop.run_until_complete(http_retry_request(session_stub,
                                                                         'get',
                                                                         'test.com',
                                                                         retries=0,
                                                                         success_criteria=failing_success_criteria))
 
-        self.assertIsNone(http_response)
+        assert http_response is None
         # one call, no retries
-        self.assertEqual(mock_session.get.call_count, 1)
-
-
-if __name__ == '__main__':
-    unittest.main()
+        assert session_stub.call_count == 1

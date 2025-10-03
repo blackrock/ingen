@@ -2,8 +2,7 @@
 #  All Rights Reserved.
 
 import asyncio
-import unittest
-from unittest.mock import patch, MagicMock
+import pytest
 
 from aiohttp import BasicAuth
 
@@ -13,27 +12,10 @@ from ingen.utils.app_http.http_util import api_auth, execute_requests
 from ingen.utils.app_http.success_criterias import get_criteria_by_name, DEFAULT_STATUS_CRITERIA_OPTIONS
 
 
-class AsyncSessionMock(MagicMock):
-    async def __aenter__(self):
-        return self.aenter
+class TestHttpUtil:
 
-    async def __aexit__(self, *args):
-        pass
-
-
-class AsyncContextManagerMock(MagicMock):
-
-    async def __aenter__(self):
-        return self.aenter
-
-    async def __aexit__(self, *args):
-        pass
-
-
-
-class MyTestCase(unittest.TestCase):
-
-    def setUp(self) -> None:
+    @pytest.fixture(autouse=True)
+    def setup(self):
         self.auth = {'username': 'user', 'pwd': 'pwd', 'type': 'BasicAuth'}
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
@@ -44,23 +26,26 @@ class MyTestCase(unittest.TestCase):
             'success_criteria': get_criteria_by_name('status_criteria'),
             'criteria_options': DEFAULT_STATUS_CRITERIA_OPTIONS
         }
-
-    def tearDown(self) -> None:
+        yield
         self.loop.close()
 
-    @patch('ingen.utils.app_http.http_util.Properties')
-    def test_basic_auth(self, mock_properties):
+    def test_basic_auth(self, monkeypatch):
         auth_config = {
             'type': 'BasicAuth',
             'username': 'username',
             'pwd': 'password'
         }
-        mock_properties.get_property.return_value = 'username'
+        
+        class PropertiesStub:
+            @staticmethod
+            def get_property(key):
+                return 'username'
+        
+        monkeypatch.setattr('ingen.utils.app_http.http_util.Properties', PropertiesStub)
         auth = api_auth(auth_config)
-        self.assertIsInstance(auth, BasicAuth)
+        assert isinstance(auth, BasicAuth)
 
-    @patch('ingen.utils.app_http.http_util.http_retry_request')
-    def test_single_request(self, mock_http_retry_request):
+    def test_single_request(self, monkeypatch):
         requests = [HTTPRequest(url="www.test-url.com", method="GET")]
         response_body = {
             'name': 'Amit',
@@ -70,17 +55,16 @@ class MyTestCase(unittest.TestCase):
         http_response = HTTPResponse(200, empty_headers, response_body)
         expected_response = [response_body]
 
-        # The mock should return a coroutine that resolves to the HTTPResponse
-        async def mock_response(*args, **kwargs):
+        # The stub should return a coroutine that resolves to the HTTPResponse
+        async def stub_http_retry_request(*args, **kwargs):
             return http_response
         
-        mock_http_retry_request.side_effect = mock_response
+        monkeypatch.setattr('ingen.utils.app_http.http_util.http_retry_request', stub_http_retry_request)
 
         parsed_data = execute_requests(requests, self.request_params)
-        self.assertListEqual(expected_response, parsed_data)
+        assert parsed_data == expected_response
 
-    @patch('ingen.utils.app_http.http_util.http_retry_request')
-    def test_multiple_requests(self, mock_http_retry_request):
+    def test_multiple_requests(self, monkeypatch):
         requests = [
             HTTPRequest(url="www.test-url.com", method="GET"),
             HTTPRequest(url="www.test-url2.com", method="GET")
@@ -98,21 +82,17 @@ class MyTestCase(unittest.TestCase):
 
         expected_responses = [response_json_1, response_json_2]
 
-        # The mock should return coroutines that resolve to HTTPResponse objects
+        # The stub should return coroutines that resolve to HTTPResponse objects
         responses = [http_response_1, http_response_2]
         response_index = 0
         
-        async def mock_response(*args, **kwargs):
+        async def stub_http_retry_request(*args, **kwargs):
             nonlocal response_index
             result = responses[response_index]
             response_index += 1
             return result
 
-        mock_http_retry_request.side_effect = mock_response
+        monkeypatch.setattr('ingen.utils.app_http.http_util.http_retry_request', stub_http_retry_request)
 
         parsed_data = execute_requests(requests, self.request_params)
-        self.assertListEqual(expected_responses, parsed_data)
-
-
-if __name__ == '__main__':
-    unittest.main()
+        assert parsed_data == expected_responses

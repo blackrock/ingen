@@ -53,7 +53,7 @@ class TestUrlConstructor:
         file_source_result = pd.DataFrame(['Y', 'N'], columns=["column_name"])
         expected_urls = ["https://www.google.com?q=Y,N"]
 
-        def mock_fetch(self, params):
+        def mock_fetch(params):
             return file_source_result
 
         monkeypatch.setattr(FileSource, 'fetch', mock_fetch)
@@ -81,7 +81,7 @@ class TestUrlConstructor:
         file_source_result = pd.DataFrame(['A1', 'A2', 'A3', 'A4'], columns=["column_name"])
         expected_urls = ["https://google.com?accountIds=A1,A2", "https://google.com?accountIds=A3,A4"]
 
-        def mock_fetch(self, params):
+        def mock_fetch(params):
             return file_source_result
 
         monkeypatch.setattr(FileSource, 'fetch', mock_fetch)
@@ -144,7 +144,7 @@ class TestUrlConstructor:
         file_source_result = pd.DataFrame(['Y', 'N'])
         expected_urls = ["https://www.google.com?q=Y,N"]
 
-        def mock_fetch(self, params):
+        def mock_fetch(params):
             return file_source_result
 
         monkeypatch.setattr(FileSource, 'fetch', mock_fetch)
@@ -169,11 +169,11 @@ class TestUrlConstructor:
         })
         
         class DataSourceStub:
-            def fetch(self, params):
+            def fetch(self, params=None):
                 return source_df
         
         class DataSourceFactoryStub:
-            def parse_source(self, source_config):
+            def parse_source(self, source_config, params=None):
                 return DataSourceStub()
 
         expected_urls = [

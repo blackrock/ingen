@@ -201,7 +201,6 @@ class TestFileReader:
         data = reader.read(source)
         assert data.empty
 
-    @pytest.mark.skip(reason="Requires openpyxl module")
     def test_exception_incorrect_dtype_for_excel(self, monkeypatch):
         source = self.excel_src
         source['dtype'] = {
