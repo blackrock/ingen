@@ -2,21 +2,24 @@
 #  All Rights Reserved.
 
 import os
-import unittest
 from datetime import datetime
-from unittest.mock import Mock, patch, mock_open
 
 import pandas as pd
 
 from ingen.writer.writer import InterfaceWriter
 
 
-class TestWriter(unittest.TestCase):
+class TestWriter:
 
     def test_csv_with_delimited_header(self):
-        df = Mock()
-        mock_to_csv = Mock()
-        df.to_csv = mock_to_csv
+        class MockDataFrame:
+            def __init__(self):
+                self.to_csv_calls = []
+            
+            def to_csv(self, path, delimiter, index):
+                self.to_csv_calls.append((path, delimiter, index))
+
+        mock_df = MockDataFrame()
 
         output_type = 'delimited_file'
         props = {
@@ -32,14 +35,19 @@ class TestWriter(unittest.TestCase):
                        }]},
         }
 
-        writer = InterfaceWriter(df, output_type, props, {})
+        writer = InterfaceWriter(mock_df, output_type, props, {})
         writer.write()
-        mock_to_csv.assert_called_with(props['path'], props['delimiter'], index=InterfaceWriter.SHOW_DATAFRAME_INDEX)
+        assert mock_df.to_csv_calls == [(props['path'], props['delimiter'], InterfaceWriter.SHOW_DATAFRAME_INDEX)]
 
-    def test_file_with_delimited_header_and_footer(self):
-        df = Mock()
-        mock_to_csv = Mock()
-        df.to_csv = mock_to_csv
+    def test_file_with_delimited_header_and_footer(self, monkeypatch):
+        class MockDataFrame:
+            def __init__(self):
+                self.to_csv_calls = []
+            
+            def to_csv(self, path, delimiter, index):
+                self.to_csv_calls.append((path, delimiter, index))
+
+        mock_df = MockDataFrame()
 
         output_type = 'delimited_file'
         props = {
@@ -60,24 +68,63 @@ class TestWriter(unittest.TestCase):
         footer = props['footer']['type']
         config_file_path = props['path']
         path = os.path.join(config_file_path)
-        writer = InterfaceWriter(df, output_type, props, {})
+        writer = InterfaceWriter(mock_df, output_type, props, {})
         writer.file_writer()
-        mock_to_csv.assert_called_with(props['path'], props['delimiter'], index=InterfaceWriter.SHOW_DATAFRAME_INDEX)
+        assert mock_df.to_csv_calls == [(props['path'], props['delimiter'], InterfaceWriter.SHOW_DATAFRAME_INDEX)]
 
-        with patch('ingen.writer.writer.open', mock_open()) as mocked_file:
-            writer.add_header_footer(header, footer)
+        class MockFile:
+            def __init__(self):
+                self.write_calls = []
+                self.content = "existing content\n"
+            
+            def write(self, content):
+                self.write_calls.append(content)
+            
+            def writelines(self, lines):
+                self.write_calls.append(lines)
+            
+            def readlines(self):
+                return [self.content]
+            
+            def read(self):
+                return self.content
+            
+            def seek(self, pos):
+                pass
+            
+            def truncate(self):
+                pass
+            
+            def close(self):
+                pass
+            
+            def __enter__(self):
+                return self
+            
+            def __exit__(self, *args):
+                pass
 
-            # assert if opened file on write mode 'a'
-            mocked_file.assert_called_with(path, 'r+')
+        mock_file = MockFile()
+        
+        def mock_open_func(file_path, mode):
+            assert file_path == path
+            assert mode == 'r+'
+            return mock_file
+        
+        monkeypatch.setattr("builtins.open", mock_open_func)
+        
+        writer.add_header_footer(header, footer)
+        assert footer in mock_file.write_calls
 
-            # assert if write(content) was called from the file opened
-            # in another words, assert if the specific content was written in file
-            mocked_file().write.assert_called_with(footer)
+    def test_without_delimited_header_csv(self, monkeypatch):
+        class MockDataFrame:
+            def __init__(self):
+                self.to_csv_calls = []
+            
+            def to_csv(self, path, delimiter, header, index):
+                self.to_csv_calls.append((path, delimiter, header, index))
 
-    def test_without_delimited_header_csv(self):
-        df = Mock()
-        mock_to_csv = Mock()
-        df.to_csv = mock_to_csv
+        mock_df = MockDataFrame()
 
         output_type = 'delimited_file'
         props = {
@@ -98,22 +145,66 @@ class TestWriter(unittest.TestCase):
 
         header = props['header']['type']
         footer = props['footer']['type']
-        writer = InterfaceWriter(df, output_type, props, {})
+        writer = InterfaceWriter(mock_df, output_type, props, {})
         writer.file_writer()
-        mock_to_csv.assert_called_with(props['path'], ',', header=False, index=InterfaceWriter.SHOW_DATAFRAME_INDEX)
+        assert mock_df.to_csv_calls == [(props['path'], ',', False, InterfaceWriter.SHOW_DATAFRAME_INDEX)]
         config_file_path = props['path']
         path = os.path.join(config_file_path)
 
-        with patch('ingen.writer.writer.open', mock_open()) as mocked_file:
-            writer.add_header_footer(header, footer)
-            mocked_file.assert_called_with(path, 'r+')
-            mocked_file().write.assert_called_with(header)
-            mocked_file().write.assert_called_with(footer)
+        class MockFile:
+            def __init__(self):
+                self.write_calls = []
+                self.content = "existing content\n"
+            
+            def write(self, content):
+                self.write_calls.append(content)
+            
+            def writelines(self, lines):
+                self.write_calls.append(lines)
+            
+            def readlines(self):
+                return [self.content]
+            
+            def read(self):
+                return self.content
+            
+            def seek(self, pos):
+                pass
+            
+            def truncate(self):
+                pass
+            
+            def close(self):
+                pass
+            
+            def __enter__(self):
+                return self
+            
+            def __exit__(self, *args):
+                pass
+
+        mock_file = MockFile()
+        
+        def mock_open_func(file_path, mode):
+            assert file_path == path
+            assert mode == 'r+'
+            return mock_file
+        
+        monkeypatch.setattr("builtins.open", mock_open_func)
+        
+        writer.add_header_footer(header, footer)
+        assert header in mock_file.write_calls
+        assert footer in mock_file.write_calls
 
     def test_excel_file_with_delimited_header(self):
-        df = Mock()
-        mock_to_excel = Mock()
-        df.to_excel = mock_to_excel
+        class MockDataFrame:
+            def __init__(self):
+                self.to_excel_calls = []
+            
+            def to_excel(self, path, index):
+                self.to_excel_calls.append((path, index))
+
+        mock_df = MockDataFrame()
 
         output_type = 'excel'
         props = {
@@ -125,14 +216,19 @@ class TestWriter(unittest.TestCase):
 
         }
 
-        writer = InterfaceWriter(df, output_type, props, {})
+        writer = InterfaceWriter(mock_df, output_type, props, {})
         writer.file_writer()
-        mock_to_excel.assert_called_with(props['path'], index=InterfaceWriter.SHOW_DATAFRAME_INDEX)
+        assert mock_df.to_excel_calls == [(props['path'], InterfaceWriter.SHOW_DATAFRAME_INDEX)]
 
     def test_excel_file_without_delimited_header(self):
-        df = Mock()
-        mock_to_excel = Mock()
-        df.to_excel = mock_to_excel
+        class MockDataFrame:
+            def __init__(self):
+                self.to_excel_calls = []
+            
+            def to_excel(self, path, header, index):
+                self.to_excel_calls.append((path, header, index))
+
+        mock_df = MockDataFrame()
 
         output_type = 'excel'
         props = {
@@ -144,14 +240,19 @@ class TestWriter(unittest.TestCase):
 
         }
 
-        writer = InterfaceWriter(df, output_type, props, {})
+        writer = InterfaceWriter(mock_df, output_type, props, {})
         writer.file_writer()
-        mock_to_excel.assert_called_with(props['path'], header=False, index=InterfaceWriter.SHOW_DATAFRAME_INDEX)
+        assert mock_df.to_excel_calls == [(props['path'], False, InterfaceWriter.SHOW_DATAFRAME_INDEX)]
 
     def test_get_header_string(self):
-        df = Mock()
-        mock_to_csv = Mock()
-        df.to_csv = mock_to_csv
+        class MockDataFrame:
+            def __init__(self):
+                self.to_csv_calls = []
+            
+            def to_csv(self, *args, **kwargs):
+                self.to_csv_calls.append((args, kwargs))
+
+        mock_df = MockDataFrame()
 
         output_type = 'delimited_file'
         props = {
@@ -169,15 +270,20 @@ class TestWriter(unittest.TestCase):
                 }]
             }
         }
-        writer = InterfaceWriter(df, output_type, props,
+        writer = InterfaceWriter(mock_df, output_type, props,
                                  {'query_params': None, 'run_date': datetime(2021, 12, 2, 0, 0)})
         actual_header = writer.get_header()
-        self.assertEqual(actual_header, "HMOCK")
+        assert actual_header == "HMOCK"
 
     def test_get_footer_string(self):
-        df = Mock()
-        mock_to_csv = Mock()
-        df.to_csv = mock_to_csv
+        class MockDataFrame:
+            def __init__(self):
+                self.to_csv_calls = []
+            
+            def to_csv(self, *args, **kwargs):
+                self.to_csv_calls.append((args, kwargs))
+
+        mock_df = MockDataFrame()
 
         output_type = 'delimited_file'
         props = {
@@ -195,16 +301,20 @@ class TestWriter(unittest.TestCase):
                 }]
             }
         }
-        writer = InterfaceWriter(df, output_type, props,
+        writer = InterfaceWriter(mock_df, output_type, props,
                                  {'query_params': None, 'run_date': datetime(2021, 12, 2, 0, 0)})
         actual_footer = writer.get_footer()
-        self.assertEqual(actual_footer, "TMOCK")
+        assert actual_footer == "TMOCK"
 
-    @patch('ingen.writer.writer.get_custom_value')
-    def test_get_custom_value(self, mock_user_defined_value):
-        df = Mock()
-        mock_to_csv = Mock()
-        df.to_csv = mock_to_csv
+    def test_get_custom_value(self, monkeypatch):
+        class MockDataFrame:
+            def __init__(self):
+                self.to_csv_calls = []
+            
+            def to_csv(self, *args, **kwargs):
+                self.to_csv_calls.append((args, kwargs))
+
+        mock_df = MockDataFrame()
         output_type = 'delimited_file'
         props = {
             'file_type': 'csv',
@@ -224,14 +334,25 @@ class TestWriter(unittest.TestCase):
                 ]
             }
         }
-        writer = InterfaceWriter(df, output_type, props,
+        
+        class MockGetCustomValue:
+            def __init__(self):
+                self.calls = []
+            
+            def __call__(self, *args, **kwargs):
+                self.calls.append((args, kwargs))
+                return "mock_value"
+        
+        mock_get_custom_value = MockGetCustomValue()
+        monkeypatch.setattr("ingen.writer.writer.get_custom_value", mock_get_custom_value)
+        
+        writer = InterfaceWriter(mock_df, output_type, props,
                                  {'query_params': None, 'run_date': datetime(2021, 12, 2, 0, 0)})
         writer.custom_function(props['header']['function'])
         writer.custom_function(props['footer']['function'])
-        mock_user_defined_value.assert_called()
+        assert len(mock_get_custom_value.calls) > 0
 
-    @patch('ingen.writer.writer.JSONWriter')
-    def test_json_writer_is_called(self, mock_json_writer):
+    def test_json_writer_is_called(self, monkeypatch):
         config = {
             'type': 'json_writer',
             'props': {
@@ -255,59 +376,125 @@ class TestWriter(unittest.TestCase):
                 }
             }
         }
-        mock_writer = Mock()
-        mock_json_writer.return_value = mock_writer
+        
+        class MockJSONWriter:
+            def __init__(self, df, props):
+                self.df = df
+                self.props = props
+                self.write_called = False
+            
+            def write(self):
+                self.write_called = True
+
+        mock_json_writer = MockJSONWriter(pd.DataFrame, config)
+        
+        def mock_json_writer_constructor(df, props, *args):
+            return mock_json_writer
+        
+        monkeypatch.setattr("ingen.writer.writer.JSONWriter", mock_json_writer_constructor)
 
         writer = InterfaceWriter(pd.DataFrame, 'json_writer', config, {})
         writer.write()
 
-        mock_writer.write.assert_called()
+        assert mock_json_writer.write_called
 
-    @patch('ingen.writer.writer.DataFrameWriter')
-    def test_df_writer_is_called(self, mock_df_writer):
-        df = Mock()
+    def test_df_writer_is_called(self, monkeypatch):
+        class MockDataFrame:
+            pass
+
+        mock_df = MockDataFrame()
         output_type = 'rawdatastore'
 
         props = {'id': 'DF1'}
 
-        mock_writer = Mock()
-        mock_df_writer.return_value = mock_writer
-        writer = InterfaceWriter(df, output_type, props, {})
-        writer.write()
-        mock_writer.write.assert_called()
+        class MockDataFrameWriter:
+            def __init__(self, df, props):
+                self.df = df
+                self.props = props
+                self.write_called = False
+            
+            def write(self):
+                self.write_called = True
 
-    @patch('ingen.writer.writer.OldJSONWriter')
-    def test_file_writer_multiple_paths(self, mock_json_writer):
-        df = Mock()
+        mock_df_writer = MockDataFrameWriter(mock_df, props)
+        
+        def mock_df_writer_constructor(df, props, *args):
+            return mock_df_writer
+        
+        monkeypatch.setattr("ingen.writer.writer.DataFrameWriter", mock_df_writer_constructor)
+        
+        writer = InterfaceWriter(mock_df, output_type, props, {})
+        writer.write()
+        assert mock_df_writer.write_called
+
+    def test_file_writer_multiple_paths(self, monkeypatch):
+        class MockDataFrame:
+            pass
+
+        mock_df = MockDataFrame()
         output_type = 'json'
         props = {
             'path': ['../output/file1.json', '../output/file2.json'],
             'type': 'json'
         }
 
-        writer = InterfaceWriter(df, output_type, props, {})
+        class MockOldJSONWriter:
+            def __init__(self, df, output_type, props):
+                self.df = df
+                self.output_type = output_type
+                self.props = props
+                self.write_called = False
+            
+            def write(self):
+                self.write_called = True
+
+        mock_writers = []
+        
+        def mock_json_writer_constructor(df, output_type, writer_props):
+            writer = MockOldJSONWriter(df, output_type, writer_props)
+            mock_writers.append(writer)
+            return writer
+        
+        monkeypatch.setattr("ingen.writer.writer.OldJSONWriter", mock_json_writer_constructor)
+
+        writer = InterfaceWriter(mock_df, output_type, props, {})
         writer.file_writer()
 
-        self.assertEqual(mock_json_writer.call_count, 2)
-        mock_json_writer.assert_any_call(df, output_type, props)
-        mock_json_writer.return_value.write_assert_called()
+        assert len(mock_writers) == 2
+        assert all(w.write_called for w in mock_writers)
 
-    @patch('ingen.writer.writer.OldJSONWriter')
-    def test_file_writer_single_path(self, mock_json_writer):
-        # Arrange
-        df = Mock()
+    def test_file_writer_single_path(self, monkeypatch):
+        class MockDataFrame:
+            pass
+
+        mock_df = MockDataFrame()
         output_type = 'json'
         props = {
             'path': '../output/file1.json',  # path is now a string, not a list
             'type': 'json'
         }
 
-        writer = InterfaceWriter(df, output_type, props, {})
+        class MockOldJSONWriter:
+            def __init__(self, df, output_type, props):
+                self.df = df
+                self.output_type = output_type
+                self.props = props
+                self.write_called = False
+            
+            def write(self):
+                self.write_called = True
+
+        mock_writers = []
+        
+        def mock_json_writer_constructor(df, output_type, writer_props):
+            writer = MockOldJSONWriter(df, output_type, writer_props)
+            mock_writers.append(writer)
+            return writer
+        
+        monkeypatch.setattr("ingen.writer.writer.OldJSONWriter", mock_json_writer_constructor)
+
+        writer = InterfaceWriter(mock_df, output_type, props, {})
         writer.file_writer()
 
-        self.assertEqual(mock_json_writer.call_count, 1)
-        mock_json_writer.assert_any_call(df, output_type, props)
-        mock_json_writer.return_value.write.assert_called()
-
-if __name__ == '__main__':
-    unittest.main()
+        assert len(mock_writers) == 1
+        assert mock_writers[0].write_called

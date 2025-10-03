@@ -1,14 +1,13 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
-
+import pytest
 import pandas as pd
 
 from ingen.writer.json_writer.convertors.df_to_multiple_json_convertor import DFToMultipleJsonConvertor
 
 
-class TestMultipleJSONConvertor(unittest.TestCase):
+class TestMultipleJSONConvertor:
     def test_json_strings(self):
         df = pd.DataFrame({
             'id': [1, 2, 3],
@@ -36,7 +35,7 @@ class TestMultipleJSONConvertor(unittest.TestCase):
         convertor = DFToMultipleJsonConvertor()
         convertor_props = output_config.get('props').get('convertor_props')
         json_strings = convertor.convert(df, convertor_props)
-        self.assertListEqual(expected_json_strings, json_strings)
+        assert expected_json_strings == json_strings
 
     def test_missing_col(self):
         df = pd.DataFrame({
@@ -59,9 +58,5 @@ class TestMultipleJSONConvertor(unittest.TestCase):
         convertor = DFToMultipleJsonConvertor()
         convertor_props = output_config.get('props').get('convertor_props')
 
-        with self.assertRaises(KeyError):
+        with pytest.raises(KeyError):
             json_strings = convertor.convert(df, convertor_props)
-
-
-if __name__ == '__main__':
-    unittest.main()

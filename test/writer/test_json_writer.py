@@ -1,9 +1,7 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
-from unittest.mock import Mock
-
+import pytest
 import pandas as pd
 
 from ingen.writer.json_writer.convertors.convertor_factory import get_json_convertor
@@ -13,8 +11,8 @@ from ingen.writer.json_writer.destinations.file_destination import FileDestinati
 from ingen.writer.json_writer.json_writer import JSONWriter
 
 
-class MyTestCase(unittest.TestCase):
-    def setUp(self) -> None:
+class TestJSONWriter:
+    def setup_method(self):
         self.df = pd.DataFrame({
             'name': ['Ramesh', 'Suresh', 'Jaya', 'Rekha'],
             'marks': [20, 40, 50, 30]
@@ -45,16 +43,30 @@ class MyTestCase(unittest.TestCase):
         }
 
     def test_correct_convertor_and_destination_is_called(self):
-        mock_convertor_factory = Mock()
-        mock_convertor = Mock()
-        mock_convertor_factory.return_value = mock_convertor
+        class MockConvertor:
+            def __init__(self):
+                self.convert_calls = []
+            
+            def convert(self, df, props):
+                self.convert_calls.append((df, props))
+                return ["{'name': 'piyush', 'age': '26'}"]
 
-        mock_json_strings = ["{'name': 'piyush', 'age': '26'}"]
-        mock_convertor.convert.return_value = mock_json_strings
+        class MockDestination:
+            def __init__(self):
+                self.handle_calls = []
+            
+            def handle(self, json_strings, props):
+                self.handle_calls.append((json_strings, props))
 
-        mock_destination_factory = Mock()
-        mock_destination = Mock()
-        mock_destination_factory.return_value = mock_destination
+        mock_convertor = MockConvertor()
+        mock_destination = MockDestination()
+
+        def mock_convertor_factory(name, *args):
+            return mock_convertor
+
+        def mock_destination_factory(name, *args):
+            return mock_destination
+
         convertor_props = self.single_file_output_config.get('props').get('convertor_props')
         destination_props = self.single_file_output_config.get('props').get('destination_props')
 
@@ -63,8 +75,8 @@ class MyTestCase(unittest.TestCase):
                             json_destination_factory=mock_destination_factory)
         writer.write()
 
-        mock_convertor.convert.assert_called_with(self.df, convertor_props)
-        mock_destination.handle.assert_called_with(mock_json_strings, destination_props)
+        assert mock_convertor.convert_calls == [(self.df, convertor_props)]
+        assert mock_destination.handle_calls == [(["{'name': 'piyush', 'age': '26'}"], destination_props)]
 
     def test_json_writer_is_called_with_correct_args(self):
         no_destination_output_config = {
@@ -86,19 +98,15 @@ class MyTestCase(unittest.TestCase):
                 }
             }
         }
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             writer = JSONWriter(self.df, no_destination_output_config.get('props'))
 
     def test_json_convertor_factory(self):
         convertor_name = 'single'
         convertor = get_json_convertor(convertor_name)
-        self.assertIsInstance(convertor, DFToSingleJsonConvertor)
+        assert isinstance(convertor, DFToSingleJsonConvertor)
 
     def test_json_destination_factory(self):
         destination_name = 'file'
         destination = get_json_destination(destination_name)
-        self.assertIsInstance(destination, FileDestination)
-
-
-if __name__ == '__main__':
-    unittest.main()
+        assert isinstance(destination, FileDestination)

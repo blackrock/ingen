@@ -1,16 +1,13 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
-from unittest.mock import patch
-
 import pandas as pd
 
 from ingen.writer.split_file_writer import SplitFileWriter
 
 
-class TestSplitFileWriter(unittest.TestCase):
-    def setUp(self):
+class TestSplitFileWriter:
+    def setup_method(self):
         dummy_data1 = {
             'id': ['1', '2', '6', '7', '8'],
             'Feature1': ['ABC', 'XYZ', 'ABC', 'XYZ', 'ABC'],
@@ -39,16 +36,33 @@ class TestSplitFileWriter(unittest.TestCase):
 
     def test_get_filtered_results(self):
         result = self.writer.get_filtered_results('Feature1', 'ABC')
-        self.assertTrue(pd.DataFrame.equals(self.expected_df1.reset_index(drop=True), result.reset_index(drop=True)))
+        assert pd.DataFrame.equals(self.expected_df1.reset_index(drop=True), result.reset_index(drop=True))
 
-    @patch('ingen.writer.split_file_writer.InterfaceWriter', autospec=True)
-    def test_write(self, writer_mock):
+    def test_write(self, monkeypatch):
+        class MockInterfaceWriter:
+            def __init__(self, df, output_type, props, params):
+                self.df = df
+                self.output_type = output_type
+                self.props = props
+                self.params = params
+                self.write_called = False
+            
+            def write(self):
+                self.write_called = True
+
+        mock_writers = []
+        
+        def mock_interface_writer_constructor(df, output_type, props, params):
+            writer = MockInterfaceWriter(df, output_type, props, params)
+            mock_writers.append(writer)
+            return writer
+        
+        monkeypatch.setattr("ingen.writer.split_file_writer.InterfaceWriter", mock_interface_writer_constructor)
+        
         self.writer.write()
+        
+        # Verify that the second writer was called with the expected dataframe
         pd.testing.assert_frame_equal(
-            writer_mock.call_args[0][0],
+            mock_writers[1].df,
             self.expected_df2.reset_index(drop=True)
         )
-
-
-if __name__ == '__main__':
-    unittest.main()
