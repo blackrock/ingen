@@ -13,7 +13,7 @@ Unit tests for the cryptor methods.
 """
 
 
-@patch('ingen.lib.cryptor.get_property', side_effect=[
+@patch('ingen.lib.cryptor.properties.get_property', side_effect=[
     "misdb",
     "mock_keys",
     "POC_HMAC_DEV_KEK_TESTING",
