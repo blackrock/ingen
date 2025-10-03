@@ -1,11 +1,10 @@
-import unittest
-
+import pytest
 import pandas as pd
 
 from ingen.post_processor.common_post_processor import pivot_to_dynamic_columns
 from ingen.post_processor.post_processor import PostProcessor
 
-class TestPostProcessor(unittest.TestCase):
+class TestPostProcessor:
 
     def setUp(self):
         # Sample dataframe
@@ -29,25 +28,25 @@ class TestPostProcessor(unittest.TestCase):
     def test_init_with_valid_dataframe(self):
         # Test that initialization with a valid dataframe works
         processor = PostProcessor(self.post_processes, self.df)
-        self.assertEqual(processor._formatted_data.shape, self.df.shape)
+        assert processor._formatted_data.shape == self.df.shape
 
     def test_init_with_invalid_data(self):
         # Test that non-dataframe input raises a TypeError
         processor = PostProcessor(self.post_processes, "invalid_input")
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             processor.apply_post_processing()
 
     def test_init_with_empty_dataframe(self):
         # Test that empty dataframe raises a ValueError
         processor = PostProcessor(self.post_processes, pd.DataFrame())
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             processor.apply_post_processing()
 
     def test_get_processor_func_valid(self):
         # Test that the correct function is returned for valid post-processing type
         processor = PostProcessor(self.post_processes, self.df)
         func = processor.get_processor_func(self.post_processes[0])
-        self.assertEqual(func, pivot_to_dynamic_columns)
+        assert func == pivot_to_dynamic_columns
 
     def test_get_processor_func_invalid(self):
         # Test that invalid post-processing type raises a NameError
@@ -56,8 +55,5 @@ class TestPostProcessor(unittest.TestCase):
             "processing_values": {}
         }]
         processor = PostProcessor(invalid_post_process, self.df)
-        with self.assertRaises(NameError):
+        with pytest.raises(NameError):
             processor.get_processor_func(invalid_post_process[0])
-
-if __name__ == '__main__':
-    unittest.main()

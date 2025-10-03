@@ -1,12 +1,11 @@
-import unittest
-
+import pytest
 import numpy as np
 import pandas as pd
 
 from ingen.post_processor.common_post_processor import pivot_to_dynamic_columns
 
 
-class TestCommonPostProcessors(unittest.TestCase):
+class TestCommonPostProcessors:
 
     def test_pivot_to_dynamic_columns(self):
         data = {
@@ -76,11 +75,9 @@ class TestCommonPostProcessors(unittest.TestCase):
             'value_col': 'defn_value'
         }
 
-        try:
-            # Attempt to call the function with a missing 'defn_name' column
+        # Attempt to call the function with a missing 'defn_name' column
+        with pytest.raises(KeyError, match=r"Column defn_name not found\."):
             pivot_to_dynamic_columns(dataframe, config)
-        except KeyError as e:
-            assert str(e) == "'Column defn_name not found.'"
 
     def test_pivot_to_dynamic_columns_with_missing_value_col(self):
         data = {
@@ -95,12 +92,6 @@ class TestCommonPostProcessors(unittest.TestCase):
             'value_col': 'defn_value'
         }
 
-        try:
-            # Attempt to call the function with a missing 'defn_value' column
+        # Attempt to call the function with a missing 'defn_value' column
+        with pytest.raises(KeyError, match=r"Column defn_value not found\."):
             pivot_to_dynamic_columns(dataframe, config)
-        except KeyError as e:
-            assert str(e) == "'Column defn_value not found.'"
-
-
-if __name__ == '__main__':
-    unittest.main()
