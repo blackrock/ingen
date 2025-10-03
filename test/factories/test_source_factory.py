@@ -2,17 +2,15 @@
 #  All Rights Reserved.
 
 import os
-import unittest
-from unittest.mock import patch
 
 from ingen.data_source.file_source import FileSource
 from ingen.data_source.source_factory import SourceFactory
 
 
-class TestSourceFactory(unittest.TestCase):
+class TestSourceFactory:
 
-    @patch.dict(os.environ, {'FILE_SOURCE': 'test/file/path/name_$date(%d%m%Y).csv'})
-    def test_parse_source_for_file(self):
+    def test_parse_source_for_file(self, monkeypatch):
+        monkeypatch.setenv('FILE_SOURCE', 'test/file/path/name_$date(%d%m%Y).csv')
         environment_var = 'FILE_SOURCE'
         file_source = {
             'id': 'test_id',
@@ -23,9 +21,8 @@ class TestSourceFactory(unittest.TestCase):
         params_map = {'query_params': {'table_name': 'positions'}}
         sf = SourceFactory()
         file = sf.parse_source(file_source, params_map)
-        self.assertIsInstance(file, FileSource)
-        self.assertEqual(file._src, file_source)
+        assert isinstance(file, FileSource)
+        assert file._src == file_source
 
 
-if __name__ == "__main__":
-    unittest.main()
+ 
