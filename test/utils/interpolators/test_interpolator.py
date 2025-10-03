@@ -1,8 +1,7 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
-from unittest.mock import patch
+import pytest
 
 from ingen.utils.interpolators.Interpolator import Interpolator
 
@@ -15,8 +14,10 @@ def mock_get_property(token, params=None):
     return "mocked_token_value"
 
 
-class MyTestCase(unittest.TestCase):
-    def setUp(self) -> None:
+class TestInterpolator:
+    
+    @pytest.fixture(autouse=True)
+    def setup(self):
         self.interpolator = Interpolator()
 
     def test_interpolation(self):
@@ -26,11 +27,11 @@ class MyTestCase(unittest.TestCase):
             'sample_interpolator_function': sample_interpolator_function
         }
         parsed_str = self.interpolator.interpolate(string_val, function_map)
-        self.assertEqual(expected_val, parsed_str)
+        assert parsed_str == expected_val
 
     def test_interpolation_when_method_not_found(self):
         string_val = "a_$unknown_function(sample_arg)_b"
-        with self.assertRaisesRegex(KeyError, "No interpolator function found for 'unknown_function'"):
+        with pytest.raises(KeyError, match="No interpolator function found for 'unknown_function'"):
             function_map = {}
             self.interpolator.interpolate(string_val, function_map)
 
@@ -41,18 +42,16 @@ class MyTestCase(unittest.TestCase):
             'sample_interpolator_function': sample_interpolator_function
         }
         parsed_str = self.interpolator.interpolate(string_val, function_map)
-        self.assertEqual(expected_val, parsed_str)
+        assert parsed_str == expected_val
 
-    @patch('ingen.utils.interpolators.Interpolator.COMMON_INTERPOLATORS', {'token': mock_get_property})
-    def test_interpolation_with_common_interpolator_and_custom_interpolator(self):
+    def test_interpolation_with_common_interpolator_and_custom_interpolator(self, monkeypatch):
         string_val = "$token(sample_token)__$sample_interpolator_function(sample_arg)__"
         expected_val = "mocked_token_value__replaced_value__"
         function_map = {
             'sample_interpolator_function': sample_interpolator_function
         }
+        
+        monkeypatch.setattr('ingen.utils.interpolators.Interpolator.COMMON_INTERPOLATORS', {'token': mock_get_property})
+        
         parsed_str = self.interpolator.interpolate(string_val, function_map)
-        self.assertEqual(expected_val, parsed_str)
-
-
-if __name__ == '__main__':
-    unittest.main()
+        assert parsed_str == expected_val

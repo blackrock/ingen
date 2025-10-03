@@ -1,49 +1,72 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
-from unittest.mock import patch, Mock
+import pytest
 
 from ingen.utils.interpolators.common_interpolators import *
 
 
-class MyTestCase(unittest.TestCase):
+class TestCommonInterpolators:
 
-    @patch('ingen.utils.interpolators.common_interpolators.Properties')
-    def test_token_secret_missing_token(self, mock_properties):
+    def test_token_secret_missing_token(self, monkeypatch):
         token_name = 'UNKNOWN_TOKEN'
-        mock_properties.get_property.return_value = None
-        with self.assertRaisesRegex(ValueError, f"'{token_name}' not found"):
+        
+        class PropertiesStub:
+            @staticmethod
+            def get_property(token):
+                return None
+        
+        monkeypatch.setattr('ingen.utils.interpolators.common_interpolators.Properties', PropertiesStub)
+        
+        with pytest.raises(ValueError, match=f"'{token_name}' not found"):
             token_secret(token_name)
 
-    @patch('ingen.utils.interpolators.common_interpolators.datetime')
-    def test_timestamp_interpolator(self, mock_datetime):
+    def test_timestamp_interpolator(self, monkeypatch):
         format = '%d-%m-%Y %H:%M:%S'
         mock_datetime_obj = datetime.now()
-        mock_dt = Mock()
-        mock_dt.strftime.return_value = mock_datetime_obj
-        mock_datetime.now.return_value = mock_dt
+        
+        class DateTimeStub:
+            def __init__(self):
+                self.strftime_calls = []
+            
+            def strftime(self, fmt):
+                self.strftime_calls.append(fmt)
+                return mock_datetime_obj
+        
+        class DateTimeModuleStub:
+            def __init__(self):
+                self.dt_stub = DateTimeStub()
+            
+            def now(self):
+                return self.dt_stub
+        
+        datetime_stub = DateTimeModuleStub()
+        monkeypatch.setattr('ingen.utils.interpolators.common_interpolators.datetime', datetime_stub)
 
         actual_result = timestamp(format)
-        mock_dt.strftime.assert_called_with(format)
-        self.assertEqual(mock_datetime_obj, actual_result)
+        assert format in datetime_stub.dt_stub.strftime_calls
+        assert actual_result == mock_datetime_obj
 
-    @patch('ingen.utils.interpolators.common_interpolators.uuid')
-    def test_uuid(self, mock_uuid):
+    def test_uuid(self, monkeypatch):
         mock_uuid_obj = uuid.uuid4()
-        mock_uuid.uuid4.return_value = mock_uuid_obj
+        
+        class UuidStub:
+            def uuid4(self):
+                return mock_uuid_obj
+        
+        monkeypatch.setattr('ingen.utils.interpolators.common_interpolators.uuid', UuidStub())
 
         actual_uuid = uuid_func()
-        self.assertEqual(str(mock_uuid_obj), actual_uuid)
+        assert actual_uuid == str(mock_uuid_obj)
 
-    @patch('ingen.utils.interpolators.common_interpolators.get_infile')
-    def test_infile(self, params):
+    def test_infile(self, monkeypatch):
         mock_filename = 'mlone_restrictions01.xlsx'
         params = {'query_params': None, 'run_date': '09262022', 'infile': 'mlone_restrictions01.xlsx'}
 
+        def mock_get_infile(self, params):
+            return mock_filename
+        
+        monkeypatch.setattr('ingen.utils.interpolators.common_interpolators.get_infile', mock_get_infile)
+
         actual_filename = get_infile(self, params)
-        self.assertEqual(mock_filename, actual_filename)
-
-
-if __name__ == '__main__':
-    unittest.main()
+        assert actual_filename == mock_filename
