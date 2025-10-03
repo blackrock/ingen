@@ -2,7 +2,6 @@
 #  All Rights Reserved.
 import pytest
 from datetime import date
-from unittest.mock import patch
 
 from ingen.formatters.common_formatters import *
 from ingen.utils.utils import holiday_calendar
@@ -73,10 +72,17 @@ class TestCommonFormatters():
         date_formatter(df, 'date', date_format_dict, {})
         assert pd.Series.equals(expected_date_column, df['date'])
 
-    @patch.object(Cryptor, "_Cryptor__get_key", return_value=(bytes('34DDA783B8C979C881E0EB3C8185825B', 'utf-8'), 3))
-    @patch.object(Cryptor, "_Cryptor__get_hmac_key",
-                  return_value=(bytes('e4ee804adfbc82376daba92960449d', 'utf-8'), 3))
-    def test_encryption_formatter(self, mock_get_key, mock_get_hmac_key):
+    def test_encryption_formatter(self, monkeypatch):
+        monkeypatch.setattr(
+            Cryptor,
+            "_Cryptor__get_key",
+            lambda self, key_version=None: (bytes('34DDA783B8C979C881E0EB3C8185825B', 'utf-8'), 3),
+        )
+        monkeypatch.setattr(
+            Cryptor,
+            "_Cryptor__get_hmac_key",
+            lambda self, key_version=None: (bytes('e4ee804adfbc82376daba92960449d', 'utf-8'), 3),
+        )
         """
         Unit test the encryption formatter.
         :return: None
@@ -85,10 +91,17 @@ class TestCommonFormatters():
         en_df = encryption_formatter(df, "account_number", "test", None)
         assert list(en_df.columns) == ["account_number"]
 
-    @patch.object(Cryptor, "_Cryptor__get_key", return_value=(bytes('34DDA783B8C979C881E0EB3C8185825B', 'utf-8'), 3))
-    @patch.object(Cryptor, "_Cryptor__get_hmac_key",
-                  return_value=(bytes('e4ee804adfbc82376daba92960449d', 'utf-8'), 3))
-    def test_decryption_formatter(self, mock_get_key, mock_hmac_key):
+    def test_decryption_formatter(self, monkeypatch):
+        monkeypatch.setattr(
+            Cryptor,
+            "_Cryptor__get_key",
+            lambda self, key_version=None: (bytes('34DDA783B8C979C881E0EB3C8185825B', 'utf-8'), 3),
+        )
+        monkeypatch.setattr(
+            Cryptor,
+            "_Cryptor__get_hmac_key",
+            lambda self, key_version=None: (bytes('e4ee804adfbc82376daba92960449d', 'utf-8'), 3),
+        )
         """
         Unit test the decryption formatter.
         :return: None
@@ -382,8 +395,14 @@ class TestCommonFormatters():
 
         pd.testing.assert_frame_equal(expected_data, formatted_data)
 
-    @patch('ingen.formatters.common_formatters.log')
-    def test_concat_formatter_with_unknown_column(self, mock_logging):
+    def test_concat_formatter_with_unknown_column(self, monkeypatch):
+        class LogStub:
+            def __init__(self):
+                self.errors = []
+            def error(self, msg):
+                self.errors.append(msg)
+        log_stub = LogStub()
+        monkeypatch.setattr('ingen.formatters.common_formatters.log', log_stub)
         data = pd.DataFrame({
             'name': ['Arya', 'Jon', 'Khalisi'],
             'gender': ['F', 'M', 'F']
@@ -398,7 +417,7 @@ class TestCommonFormatters():
         with pytest.raises(ValueError):
             concat_formatter(data, new_col_name, param, {})
 
-        mock_logging.error.assert_called_with('Unknown column passed to concat formatter')
+        assert log_stub.errors == ['Unknown column passed to concat formatter']
 
     def test_concat_formatter_without_seperator(self):
         data = pd.DataFrame({
@@ -437,8 +456,14 @@ class TestCommonFormatters():
 
         pd.testing.assert_frame_equal(expected_dataframe, formatted_dataframe)
 
-    @patch('ingen.formatters.common_formatters.log')
-    def test_duplicate_formatter_with_missing_column(self, mock_logging):
+    def test_duplicate_formatter_with_missing_column(self, monkeypatch):
+        class LogStub:
+            def __init__(self):
+                self.errors = []
+            def error(self, msg):
+                self.errors.append(msg)
+        log_stub = LogStub()
+        monkeypatch.setattr('ingen.formatters.common_formatters.log', log_stub)
         original_col_name = 'original'
         duplicate_col_name = 'duplicate'
         sample_dataframe = pd.DataFrame({original_col_name: [1, 2, 3, 5]})
@@ -446,7 +471,7 @@ class TestCommonFormatters():
         with pytest.raises(KeyError):
             duplicate_column_formatter(sample_dataframe, duplicate_col_name, 'unknown column name', {})
 
-        mock_logging.error.assert_called_with('Cannot create duplicate of a nonexistent column')
+        assert log_stub.errors == ['Cannot create duplicate of a nonexistent column']
 
     def test_constant_string_formatter(self):
         sample_dataframe = pd.DataFrame({'col': [1, 2, 3, 4]})
@@ -517,8 +542,14 @@ class TestCommonFormatters():
         except AssertionError:
             self.fail('formatted dataframe is not equal to the expected dataframe')
 
-    @patch('ingen.formatters.common_formatters.log')
-    def test_missing_arguments_in_constant_date_formatter(self, mock_logging):
+    def test_missing_arguments_in_constant_date_formatter(self, monkeypatch):
+        class LogStub:
+            def __init__(self):
+                self.errors = []
+            def error(self, msg):
+                self.errors.append(msg)
+        log_stub = LogStub()
+        monkeypatch.setattr('ingen.formatters.common_formatters.log', log_stub)
         sample_dataframe = pd.DataFrame({'col': [1, 2, 3, 4]})
         new_col_name = 'DATE'
         date_offset = -1
@@ -529,7 +560,7 @@ class TestCommonFormatters():
         with pytest.raises(ValueError):
             formatted_dataframe = constant_date_formatter(sample_dataframe, new_col_name, format_options, {})
 
-        mock_logging.error.assert_called_with(expected_error_msg)
+        assert log_stub.errors == [expected_error_msg]
 
     def test_group_percentage_formatter(self):
         sample_data = pd.DataFrame({
@@ -550,8 +581,14 @@ class TestCommonFormatters():
         formatted_data = group_percentage_formatter(sample_data, new_col_name, param, {})
         pd.testing.assert_frame_equal(expected_data, formatted_data)
 
-    @patch('ingen.formatters.common_formatters.log')
-    def test_group_percentage_with_missing_columns(self, mock_logging):
+    def test_group_percentage_with_missing_columns(self, monkeypatch):
+        class LogStub:
+            def __init__(self):
+                self.errors = []
+            def error(self, msg):
+                self.errors.append(msg)
+        log_stub = LogStub()
+        monkeypatch.setattr('ingen.formatters.common_formatters.log', log_stub)
         sample_data = pd.DataFrame({
             'portfolio': ['ABC', 'ABC', 'ABC', 'XYZ', 'XYZ', 'MNO'],
             'cusip': ['GOOGL', 'TSLA', 'APPL', 'GOOGL', 'MSFT', 'GOOGL'],
@@ -566,7 +603,7 @@ class TestCommonFormatters():
         with pytest.raises(ValueError):
             group_percentage_formatter(sample_data, new_col_name, param, {})
 
-        mock_logging.error.assert_called_with('Unknown column names provided for calculating grouped percentage.')
+        assert log_stub.errors == ['Unknown column names provided for calculating grouped percentage.']
 
     def test_date_diff_formatter(self):
         sample_data = pd.DataFrame({
@@ -813,8 +850,14 @@ class TestCommonFormatters():
         formatted_data = fill_empty_values_with_custom_value(data, col_name, format_options, {})
         pd.testing.assert_frame_equal(expected_data, formatted_data)
 
-    @patch('ingen.formatters.common_formatters.log')
-    def test_fill_empty_values_with_single_column_when_col_not_available(self, mock_logging):
+    def test_fill_empty_values_with_single_column_when_col_not_available(self, monkeypatch):
+        class LogStub:
+            def __init__(self):
+                self.errors = []
+            def error(self, msg):
+                self.errors.append(msg)
+        log_stub = LogStub()
+        monkeypatch.setattr('ingen.formatters.common_formatters.log', log_stub)
         data = pd.DataFrame({
             'name': ['Angela', 'Mathews', 'Chris', 'Jade', 'Rohit'],
             'vacation_city': ['New York', 'Sydney', 'Perth', np.NaN, 'Mumbai'],
@@ -992,8 +1035,14 @@ class TestCommonFormatters():
         formatted_data = conditional_replace_formatter(data, col_name, format_options, {})
         pd.testing.assert_frame_equal(expected_data, formatted_data)
 
-    @patch('ingen.formatters.common_formatters.log')
-    def test_conditional_replace_formatter_when_col_not_available(self, mock_logging):
+    def test_conditional_replace_formatter_when_col_not_available(self, monkeypatch):
+        class LogStub:
+            def __init__(self):
+                self.errors = []
+            def error(self, msg):
+                self.errors.append(msg)
+        log_stub = LogStub()
+        monkeypatch.setattr('ingen.formatters.common_formatters.log', log_stub)
         data = pd.DataFrame({
             'name': ['Angela', 'Mathews', 'Chris', 'Jade', 'Rohit'],
             'vacation_city': ['New York', 'Sydney', 'Perth', np.NaN, 'Mumbai'],
@@ -1070,9 +1119,12 @@ class TestCommonFormatters():
         indexed_dataframe = current_timestamp(data, col_name, {}, {})
         pd.testing.assert_frame_equal(expected_data, indexed_dataframe)
 
-    @patch('ingen.formatters.common_formatters.Properties')
-    def test_get_running_environment(self, mock_properties):
-        mock_properties.get_property.return_value = 'DEV'
+    def test_get_running_environment(self, monkeypatch):
+        class PropertiesStub:
+            @staticmethod
+            def get_property(key):
+                return 'DEV'
+        monkeypatch.setattr('ingen.formatters.common_formatters.Properties', PropertiesStub)
         data = pd.DataFrame({
             'External_Id': ['test1', 'test2', 'test3'],
         })
