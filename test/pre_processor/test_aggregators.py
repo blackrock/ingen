@@ -1,15 +1,13 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
-
 import pandas as pd
 from pandas.core.groupby.generic import DataFrameGroupBy
 
 from ingen.pre_processor.aggregators import *
 
 
-class TestAggregators(unittest.TestCase):
+class TestAggregators:
     def test_group_by(self):
         config = {'cols': ['acc', 'cusip']}
 
@@ -20,7 +18,7 @@ class TestAggregators(unittest.TestCase):
 
         df1 = pd.DataFrame(dummy_data1, columns=['acc', 'cusip', 'quantity'])
         result = groupby(config, df1)
-        self.assertTrue(isinstance(result, DataFrameGroupBy))
+        assert isinstance(result, DataFrameGroupBy)
 
     def test_agg(self):
         config = {'operation': 'sum', 'col': 'quantity'}
@@ -35,14 +33,14 @@ class TestAggregators(unittest.TestCase):
         expected_result = grouped.agg('sum', 'quantity')
         result = agg(config, grouped)
 
-        self.assertTrue(pd.DataFrame.equals(expected_result, result))
+        pd.testing.assert_frame_equal(expected_result, result)
 
     def test_get_aggregator(self):
         aggregator_type = 'groupby'
-        self.assertEqual(get_aggregator(aggregator_type), groupby)
+        assert get_aggregator(aggregator_type) == groupby
 
         aggregator_type = 'agg'
-        self.assertEqual(get_aggregator(aggregator_type), agg)
+        assert get_aggregator(aggregator_type) == agg
 
     def custom_aggregator(config, data):
         return data
@@ -52,4 +50,4 @@ class TestAggregators(unittest.TestCase):
         custom_aggregator_func = self.custom_aggregator
         add_aggregator(aggregator_type, custom_aggregator_func)
 
-        self.assertEqual(get_aggregator(aggregator_type), custom_aggregator_func)
+        assert get_aggregator(aggregator_type) == custom_aggregator_func

@@ -1,14 +1,15 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
+import logging
+import pytest
 
 import pandas as pd
 
 from ingen.pre_processor.json_array_expander import JsonArrayExpander
 
 
-class TestJsonArrayExpander(unittest.TestCase):
+class TestJsonArrayExpander:
 
     def setUp(self):
         self.expander = JsonArrayExpander()
@@ -288,7 +289,7 @@ class TestJsonArrayExpander(unittest.TestCase):
         })
         pd.testing.assert_frame_equal(result.sort_index(axis=1), expected.sort_index(axis=1))
 
-    def test_conflicting_filters(self):
+    def test_conflicting_filters(self, caplog):
         """Test warning when both include and exclude filters are specified."""
         df = pd.DataFrame({
             'portfolio': ['A'],
@@ -300,7 +301,7 @@ class TestJsonArrayExpander(unittest.TestCase):
             'exclude_columns': ['sector']
         }
 
-        with self.assertLogs(level='WARNING') as log_context:
+        with caplog.at_level(logging.WARNING):
             result = self.expander.execute(config, {}, df)
 
         # Should use include_columns and ignore exclude_columns
@@ -312,10 +313,9 @@ class TestJsonArrayExpander(unittest.TestCase):
         pd.testing.assert_frame_equal(result.sort_index(axis=1), expected.sort_index(axis=1))
 
         # Check warning was logged
-        self.assertTrue(any('Both include_columns and exclude_columns specified' in record.message
-                            for record in log_context.records))
+        assert any('Both include_columns and exclude_columns specified' in message for message in caplog.messages)
 
-    def test_no_matching_include_columns(self):
+    def test_no_matching_include_columns(self, caplog):
         """Test warning when include_columns don't match any JSON keys."""
         df = pd.DataFrame({
             'portfolio': ['A'],
@@ -326,7 +326,7 @@ class TestJsonArrayExpander(unittest.TestCase):
             'include_columns': ['nonexistent_key']
         }
 
-        with self.assertLogs(level='WARNING') as log_context:
+        with caplog.at_level(logging.WARNING):
             result = self.expander.execute(config, {}, df)
 
         expected = pd.DataFrame({
@@ -335,10 +335,9 @@ class TestJsonArrayExpander(unittest.TestCase):
         pd.testing.assert_frame_equal(result, expected)
 
         # Check warning was logged
-        self.assertTrue(any('No keys found matching include_columns' in record.message
-                            for record in log_context.records))
+        assert any('No keys found matching include_columns' in message for message in caplog.messages)
 
-    def test_all_keys_excluded(self):
+    def test_all_keys_excluded(self, caplog):
         """Test warning when exclude_columns excludes all available keys."""
         df = pd.DataFrame({
             'portfolio': ['A'],
@@ -349,7 +348,7 @@ class TestJsonArrayExpander(unittest.TestCase):
             'exclude_columns': ['ticker', 'weight']
         }
 
-        with self.assertLogs(level='WARNING') as log_context:
+        with caplog.at_level(logging.WARNING):
             result = self.expander.execute(config, {}, df)
 
         expected = pd.DataFrame({
@@ -358,8 +357,7 @@ class TestJsonArrayExpander(unittest.TestCase):
         pd.testing.assert_frame_equal(result, expected)
 
         # Check warning was logged
-        self.assertTrue(any('All keys excluded by exclude_columns' in record.message
-                            for record in log_context.records))
+        assert any('All keys excluded by exclude_columns' in message for message in caplog.messages)
 
     def test_whitespace_only_json_strings(self):
         """Test handling of whitespace-only JSON strings."""
@@ -379,10 +377,8 @@ class TestJsonArrayExpander(unittest.TestCase):
 
     def test_missing_config_error(self):
         """Test error when config is None"""
-        with self.assertRaises(ValueError) as context:
+        with pytest.raises(ValueError, match="Configuration is required"):
             self.expander.execute(None, {}, pd.DataFrame())
-
-        self.assertIn("Configuration is required", str(context.exception))
 
     def test_missing_column_config_error(self):
         """Test error when column is not specified in config"""
@@ -395,10 +391,8 @@ class TestJsonArrayExpander(unittest.TestCase):
             "holdings": ['[{"cusip": "12345"}]']
         })
 
-        with self.assertRaises(ValueError) as context:
+        with pytest.raises(ValueError, match="Column configuration not found"):
             self.expander.execute(config, {}, data)
-
-        self.assertIn("Column configuration not found", str(context.exception))
 
     def test_nested_config_structure(self):
         """Test handling of nested config structure"""
@@ -531,15 +525,13 @@ class TestJsonArrayExpander(unittest.TestCase):
         end_time = time.time()
 
         # Should complete in reasonable time (less than 5 seconds)
-        self.assertLess(end_time - start_time, 5.0)
+        assert end_time - start_time < 5.0
 
         # Should have 2000 rows (2 holdings per portfolio * 1000 portfolios)
-        self.assertEqual(len(result), 2000)
+        assert len(result) == 2000
 
         # Should have correct columns
         expected_columns = {'portfolio', 'extra_col', 'ticker', 'weight'}
-        self.assertEqual(set(result.columns), expected_columns)
+        assert set(result.columns) == expected_columns
 
 
-if __name__ == '__main__':
-    unittest.main()

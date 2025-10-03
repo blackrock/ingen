@@ -1,14 +1,12 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
-
 import pandas as pd
 
 from ingen.pre_processor.melt import Melt
 
 
-class TestDFMelt(unittest.TestCase):
+class TestDFMelt:
 
     def test_column_to_row_formatter_for_specific_columns(self):
         sample_data = pd.DataFrame({
@@ -24,7 +22,7 @@ class TestDFMelt(unittest.TestCase):
                   'include_keys': ['abc', 'def', 'mno']}
         obj = Melt()
         result = obj.execute(config, {'source1': sample_data}, None)
-        self.assertTrue(pd.DataFrame.equals(expected_data.reset_index(drop=True), result.reset_index(drop=True)))
+        pd.testing.assert_frame_equal(expected_data.reset_index(drop=True), result.reset_index(drop=True))
 
     def test_column_to_row_formatter_for_all_columns(self):
         sample_data = pd.DataFrame({
@@ -41,4 +39,4 @@ class TestDFMelt(unittest.TestCase):
                   'include_keys': []}
         obj = Melt()
         result = obj.execute(config, {'source1': sample_data}, None)
-        self.assertTrue(pd.DataFrame.equals(expected_data.reset_index(drop=True), result.reset_index(drop=True)))
+        pd.testing.assert_frame_equal(expected_data.reset_index(drop=True), result.reset_index(drop=True))

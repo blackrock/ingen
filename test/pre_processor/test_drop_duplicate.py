@@ -1,14 +1,12 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
-
 import pandas as pd
 
 from ingen.pre_processor.drop_duplicates import DropDuplicates
 
 
-class MyTestCase(unittest.TestCase):
+class TestDropDuplicates:
     def test_drop_duplicate_on_single_column(self):
         config = {
             'type': 'drop_duplicates',
@@ -133,6 +131,3 @@ class MyTestCase(unittest.TestCase):
         actual_data = pre_processor.execute(config, sources_data=[data], data=data)
         pd.testing.assert_frame_equal(expected_data, actual_data)
 
-
-if __name__ == '__main__':
-    unittest.main()

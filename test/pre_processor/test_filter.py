@@ -1,14 +1,12 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
-
 import pandas as pd
 
 from ingen.pre_processor.filter import Filter
 
 
-class TestDFFilter(unittest.TestCase):
+class TestDFFilter:
     def test_filter_by_columnwise_and(self):
         config = {
             'operator': 'and',

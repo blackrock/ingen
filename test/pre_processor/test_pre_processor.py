@@ -1,7 +1,7 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
+import pytest
 from unittest.mock import patch, Mock
 
 import pandas as pd
@@ -11,7 +11,7 @@ from ingen.pre_processor.merger import Merger
 from ingen.pre_processor.pre_processor import PreProcessor
 
 
-class TestPreProcessor(unittest.TestCase):
+class TestPreProcessor:
 
     @patch('ingen.pre_processor.pre_processor.PreProcessor.get_processor')
     def test_pre_process_calls_execute_when_preprocessing_present(self, pre_processor_mock):
@@ -35,8 +35,7 @@ class TestPreProcessor(unittest.TestCase):
 
         obj = PreProcessor(config, source_data)
         result = obj.pre_process()
-
-        self.assertTrue(pd.DataFrame.equals(source_data['source1'], result))
+        pd.testing.assert_frame_equal(source_data['source1'], result)
         processor_mock.execute.assert_not_called()
 
     @patch('ingen.pre_processor.pre_processor.PreProcessor.get_processor')
@@ -59,20 +58,20 @@ class TestPreProcessor(unittest.TestCase):
         processor = obj.get_processor(config)
         processor2 = obj2.get_processor(config2)
 
-        self.assertTrue(isinstance(processor, Merger))
-        self.assertTrue(isinstance(processor2, Aggregator))
+        assert isinstance(processor, Merger)
+        assert isinstance(processor2, Aggregator)
 
     def test_get_processor_raises_exception_when_type_not_known(self):
         config = {'type': 'abcd', 'source': ['source1'], 'key_column': 'id'}
         data = {'source1': pd.DataFrame(), 'source2': pd.DataFrame()}
         obj = PreProcessor(config, data)
         message = "pre-processing abcd is not recognized"
-        with self.assertRaisesRegex(NameError, message):
+        with pytest.raises(NameError, match=message):
             obj.get_processor(config)
 
     def test_empty_source_data(self):
         config = {'type': 'any_pre_processor_type'}
         data = []
         error_message = 'Source data cannot be empty'
-        with self.assertRaisesRegex(ValueError, error_message):
-            pre_processor = PreProcessor(config, data)
+        with pytest.raises(ValueError, match=error_message):
+            PreProcessor(config, data)

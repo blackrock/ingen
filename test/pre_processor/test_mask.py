@@ -1,14 +1,12 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
-
 import pandas as pd
 
 from ingen.pre_processor.mask import Mask
 
 
-class MyTestCase(unittest.TestCase):
+class TestMask:
     def test_mask(self):
         positions = pd.DataFrame({'PORTFOLIO_ID': [1, 2, 3, 4, 5], 'CURRENCY': ['USD'] * 5})
         accounts = pd.DataFrame({'ACCOUNT_ID': [1, 2, 5], 'MKT_VALUE': [200, 456.34, 234.56]})
@@ -46,5 +44,3 @@ class MyTestCase(unittest.TestCase):
         pd.testing.assert_frame_equal(expected_dataframe, masked_data)
 
 
-if __name__ == '__main__':
-    unittest.main()

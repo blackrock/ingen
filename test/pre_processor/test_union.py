@@ -1,7 +1,7 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
+import pytest
 
 import numpy as np
 import pandas as pd
@@ -9,7 +9,7 @@ import pandas as pd
 from ingen.pre_processor.union import Union
 
 
-class TestDFUnion(unittest.TestCase):
+class TestDFUnion:
 
     def test_union_with_multiple_df(self):
         dummy_data1 = {
@@ -42,7 +42,7 @@ class TestDFUnion(unittest.TestCase):
         config = {'type': 'union', 'source': ['source1', 'source2', 'source3']}
         obj = Union()
         result = obj.execute(config, {'source1': df1, 'source2': df2, 'source3': df3}, None)
-        self.assertTrue(pd.DataFrame.equals(expected_df.reset_index(drop=True), result.reset_index(drop=True)))
+        pd.testing.assert_frame_equal(expected_df.reset_index(drop=True), result.reset_index(drop=True))
 
     def test_union_with_multiple_df_diff_cols(self):
         dummy_data1 = {
@@ -71,7 +71,7 @@ class TestDFUnion(unittest.TestCase):
         obj = Union()
         result = obj.execute(config, {'source1': df1, 'source2': df2}, None)
 
-        self.assertTrue(pd.DataFrame.equals(expected_df.reset_index(drop=True), result.reset_index(drop=True)))
+        pd.testing.assert_frame_equal(expected_df.reset_index(drop=True), result.reset_index(drop=True))
 
     def test_union_with_columns(self):
         dummy_data1 = {
@@ -96,7 +96,7 @@ class TestDFUnion(unittest.TestCase):
         config = {'type': 'union', 'source': ['source1', 'source2'], 'direction': 1}
         obj = Union()
         result = obj.execute(config, {'source1': df1, 'source2': df2}, None)
-        self.assertTrue(pd.DataFrame.equals(expected_df, result))
+        pd.testing.assert_frame_equal(expected_df, result)
 
     def test_union_with_columns_with_unequal_rows(self):
         dummy_data1 = {
@@ -121,7 +121,7 @@ class TestDFUnion(unittest.TestCase):
         config = {'type': 'union', 'source': ['source1', 'source2'], 'direction': 1}
         obj = Union()
         result = obj.execute(config, {'source1': df1, 'source2': df2}, None)
-        self.assertTrue(pd.DataFrame.equals(expected_df, result))
+        pd.testing.assert_frame_equal(expected_df, result)
 
     def test_union_with_invalid_axis_value(self):
         dummy_data1 = {
@@ -138,5 +138,5 @@ class TestDFUnion(unittest.TestCase):
 
         config = {'type': 'union', 'source': ['source1', 'source2'], 'direction': 'c'}
         obj = Union()
-        with self.assertRaises(KeyError):
+        with pytest.raises(KeyError):
             obj.execute(config, {'source1': df1, 'source2': df2}, None)

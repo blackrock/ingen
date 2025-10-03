@@ -1,15 +1,14 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
-import unittest
-
+import pytest
 import numpy as np
 import pandas as pd
 
 from ingen.pre_processor.merger import Merger
 
 
-class TestDFMerger(unittest.TestCase):
+class TestDFMerger:
 
     def test_merge_without_keys(self):
         dummy_data1 = {
@@ -37,7 +36,7 @@ class TestDFMerger(unittest.TestCase):
         merger = Merger()
         result = merger.execute(config, {'source1': df1, 'source2': df2}, df1)
 
-        self.assertTrue(pd.DataFrame.equals(result_df, result))
+        pd.testing.assert_frame_equal(result_df, result)
 
     def test_left_outer_merge(self):
         dataframe1 = pd.DataFrame({
@@ -156,7 +155,7 @@ class TestDFMerger(unittest.TestCase):
                   'right_key': right_key}
 
         merger = Merger()
-        with self.assertRaisesRegex(KeyError, f"Column '{left_key}' not present in left dataframe"):
+        with pytest.raises(KeyError, match=f"Column '{left_key}' not present in left dataframe"):
             merger.execute(config, {'dataframe2': dataframe2}, dataframe1)
 
     def test_missing_keys_right(self):
@@ -179,7 +178,7 @@ class TestDFMerger(unittest.TestCase):
                   'right_key': right_key}
 
         merger = Merger()
-        with self.assertRaisesRegex(KeyError, f"Column '{right_key}' not present in right dataframe"):
+        with pytest.raises(KeyError, match=f"Column '{right_key}' not present in right dataframe"):
             merger.execute(config, {'dataframe2': dataframe2}, dataframe1)
 
     def test_merge_with_multiple_column_merge(self):
@@ -210,5 +209,3 @@ class TestDFMerger(unittest.TestCase):
         pd.testing.assert_frame_equal(expected_df, actual_data)
 
 
-if __name__ == '__main__':
-    unittest.main()
