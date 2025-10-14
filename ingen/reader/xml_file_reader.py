@@ -13,7 +13,7 @@ import xmltodict
 class XMLFileReader:
 
     def read(self, src):
-        xml_file = open(src['file_path'], 'r')
+        xml_file = open(src['file_path'], 'r', encoding=src['file_encoding'])
         try:
             data = xmltodict.parse(xml_file.read())
             tree = et.parse(src['file_path'])
