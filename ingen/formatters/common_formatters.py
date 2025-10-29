@@ -581,7 +581,7 @@ def prefix_string_formatter(dataframe, col_name, config, runtime_params):
     start = config.get('prefix', None)
 
     if any([column not in dataframe for column in columns]):
-        log.error('Unknown column passed to concat formatter')
+        log.error('Unknown column passed to prefix_string formatter')
         raise ValueError
 
     dataframe[col_name] = dataframe[columns].astype(str).agg(separator.join, axis=1)
@@ -605,7 +605,7 @@ def suffix_string_formatter(dataframe, col_name, config, runtime_params):
     end = config.get('suffix', '')
 
     if any([column not in dataframe for column in columns]):
-        log.error('Unknown column passed to concat formatter')
+        log.error('Unknown column passed to suffix_string formatter')
         raise ValueError
 
     dataframe[col_name] = dataframe[columns].astype(str).agg(separator.join, axis=1)
