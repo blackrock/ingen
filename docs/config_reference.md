@@ -831,6 +831,18 @@ The following example concatenates "161"+fc_ofc_no + fc_no
 	         columns: [ 'fc_ofc_no', 'fc_no' ]
 	         prefix: '161'
 
+**Suffix_string**
+
+The purpose of this formatter is to append string and multiple column data into a single column with the string appended at the end.
+The following example concatenates fc_ofc_no + fc_no + "2025" 
+
+	 - src_col_name: 'Unique_ID__c'
+	   formatters:
+	     - type: suffix_string
+	       format:
+	         columns: [ 'fc_ofc_no', 'fc_no' ]
+	         suffix: '2025'
+
 **Validations**
 
 	Field Name	Type	Description

@@ -1249,5 +1249,23 @@ class TestCommonFormatters(unittest.TestCase):
 
         self.assertEqual(get_formatter_from_type(formatter_type), custom_formatter_func)
 
+    def test_suffix_string_formatter(self):
+        df = pd.DataFrame({
+            "candidate": ["Harry", "Luna", "Draco", "Cedric"],
+            "house": ["Gryffindor", "Ravenclaw", "Slytherin", "Hufflepuff"],
+
+        })
+        output_column = 'ID'
+        input_columns = ['candidate', 'house']
+        param = {
+            'columns': input_columns,
+            'suffix': '_WZD',
+            'separator': '_'
+        }
+        expected_output_column = pd.Series(
+            ["Harry_Gryffindor_WZD", "Luna_Ravenclaw_WZD", "Draco_Slytherin_WZD", "Cedric_Hufflepuff_WZD"])
+        suffix_string_formatter(df, output_column, param, {})
+        self.assertTrue(pd.Series.equals(df['ID'], expected_output_column))
+
 if __name__ == '__main__':
     unittest.main()

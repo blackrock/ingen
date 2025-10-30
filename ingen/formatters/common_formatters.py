@@ -581,11 +581,35 @@ def prefix_string_formatter(dataframe, col_name, config, runtime_params):
     start = config.get('prefix', None)
 
     if any([column not in dataframe for column in columns]):
-        log.error('Unknown column passed to concat formatter')
+        log.error('Unknown column passed to prefix_string formatter')
         raise ValueError
 
     dataframe[col_name] = dataframe[columns].astype(str).agg(separator.join, axis=1)
     dataframe[col_name] = start + dataframe[col_name].astype(str)
+
+    return dataframe
+
+
+def suffix_string_formatter(dataframe, col_name, config, runtime_params):
+    """
+    Concatenates the provided columns, appends the string as suffix and adds as a new column to the dataframe
+    :param dataframe: original data frame
+    :param col_name: name of the new column
+    :param config: a dictionary containing list of formatter attributes
+    :param runtime_params: command line arguments
+    :return: dataframe with a new concatenated column
+    """
+    default_separator = ''
+    separator = config.get('separator', default_separator)
+    columns = config.get('columns')
+    end = config.get('suffix', '')
+
+    if any([column not in dataframe for column in columns]):
+        log.error('Unknown column passed to suffix_string formatter')
+        raise ValueError
+
+    dataframe[col_name] = dataframe[columns].astype(str).agg(separator.join, axis=1)
+    dataframe[col_name] = dataframe[col_name].astype(str) + end
 
     return dataframe
 
@@ -623,6 +647,7 @@ formatter_map = {
     'get_running_environment': get_running_environment,
     'drop_duplicates': drop_duplicates,
     'prefix_string': prefix_string_formatter,
+    'suffix_string': suffix_string_formatter
 
 }
 
