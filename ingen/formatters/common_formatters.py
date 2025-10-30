@@ -17,7 +17,7 @@ from ingen.lib.cryptor import Cryptor
 
 pd.options.mode.chained_assignment = None
 from ingen.utils.properties import Properties
-from ingen.utils.utils import get_business_day
+from ingen.utils.utils import get_business_day, compare
 
 log = logging.getLogger()
 
@@ -99,6 +99,34 @@ def constant_date_formatter(dataframe, col, format_options, runtime_params):
 
     dataframe[col] = get_business_day(datetime.today() + timedelta(date_offset), 'next', calendar_country).strftime(
         date_format)
+    return dataframe
+
+
+def constant_condition_formatter(dataframe, col_name, config, runtime_params):
+    condition = config.get('condition')
+    if condition is not None and 'match_override' in condition and 'pattern' in condition:
+        override_params = runtime_params.get('override_params') if runtime_params else None
+        override_key = condition.get('match_override')
+        override_value = None
+        if isinstance(override_params, dict):
+            override_value = override_params.get(override_key)
+        matches = bool(re.match(str(condition.get('pattern')), str(override_value)))
+        if not matches:
+            return dataframe
+
+    compare_lst = config.get('compare')
+    match_col = config.get('match_col')
+    vals = config.get('values')
+    if not vals or len(vals) > 2:
+        raise ValueError("Values does not exist or have too many elements")
+
+    cond_results = compare(dataframe, match_col, compare_lst)
+    if len(vals) == 1:
+        if col_name in dataframe:
+            match_col = col_name
+        dataframe[col_name] = dataframe[match_col].mask(cond_results, vals[0])
+    if len(vals) == 2:
+        dataframe[col_name] = cond_results.map({True: vals[0], False: vals[1]})
     return dataframe
 
 

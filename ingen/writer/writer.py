@@ -50,10 +50,11 @@ class InterfaceWriter:
     def file_writer_delimited(self, path):
         logger.info(f"writing file to {path}")
         sep = self._props['delimiter'] if 'delimiter' in self._props else ','
+        encoding = self._props.get('encoding', 'utf-8')
         if self.header and self.header.get('type') == 'delimited_result_header':
-            self._df.to_csv(path, sep, index=InterfaceWriter.SHOW_DATAFRAME_INDEX)
+            self._df.to_csv(path, sep, index=InterfaceWriter.SHOW_DATAFRAME_INDEX, encoding=encoding)
         else:
-            self._df.to_csv(path, sep, header=False, index=InterfaceWriter.SHOW_DATAFRAME_INDEX)
+            self._df.to_csv(path, sep, header=False, index=InterfaceWriter.SHOW_DATAFRAME_INDEX, encoding=encoding)
 
     def file_writer(self):
         paths = self._props.get('path')
@@ -92,7 +93,8 @@ class InterfaceWriter:
 
     def add_header_footer(self, header, footer):
         path = self._props['path']
-        file = open(path, 'r+')
+        encoding = self._props.get('encoding', 'utf-8')
+        file = open(path, 'r+', encoding=encoding)
         if header != '':
             lines = file.readlines()
             file.seek(0)

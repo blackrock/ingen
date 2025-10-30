@@ -16,19 +16,28 @@ class UrlConstructor:
     """
     URL_PARAM_SEPARATOR = "&"
 
-    def __init__(self, url, url_query_params, batch=None, run_date=date.today(), source_factory=SourceFactory()):
+    def __init__(
+            self,
+            url,
+            url_query_params,
+            batch=None,
+            run_date=date.today(),
+            params_map=None,
+            source_factory=SourceFactory()):
         """
         Initialize with a base url and a list of url params. Optionally, at most one param can be used to create a
         batch of urls
         :param url: base url
-        :param url_query_params: list of url params containing id and it's type
+        :param url_query_params: list of url params containing id, and it's type
         :param batch: url_param id and batch_size
         :param run_date: run date passed via cmd line param
+        :param params_map: command line parameters
         """
         self.base_url = url
         self.url_query_params = url_query_params
         self.batch_config = batch
         self.run_date = run_date
+        self.params_map = params_map
         self.source_factory = source_factory
 
     def get_urls(self):
@@ -142,7 +151,15 @@ class UrlConstructor:
         return key + "=" + value
 
     def get_file_value(self, param):
-        source = FileSource(param, {'run_date': self.run_date})
+        infile = self.params_map.get('infile')
+        if isinstance(infile, dict) and param.get('id') in infile:
+            param = dict(infile)
+            param['file_path'] = infile[param.get('id')]
+            param['use_infile'] = True
+
+        params = dict(self.params_map)
+        params.setdefault('run_date', self.run_date)
+        source = FileSource(param, params)
         data = source.fetch()
         return self.dest_column_of_data(data, param.get("dest_column"))
 

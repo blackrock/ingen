@@ -30,7 +30,8 @@ class APISource(DataSource):
         super().__init__(source.get('id'))
         if params_map is None:
             params_map = {}
-        self._interpolator = interpolator
+        self.params_map = params_map
+        self._interpolator = interpolator if interpolator.params is not None else Interpolator(params_map)
         self._url = source.get('url')
         self._url_params = source.get('url_params')
         self._batch = source.get('batch')
@@ -65,7 +66,7 @@ class APISource(DataSource):
 
         :return: A DataFrame created using the result of the request made to the API
         """
-        url_constructor = UrlConstructor(self._url, self._url_params, self._batch, self._run_date)
+        url_constructor = UrlConstructor(self._url, self._url_params, self._batch, self._run_date, self.params_map)
         urls = url_constructor.get_urls()
         requests = [HTTPRequest(url=url,
                                 method=self._method,

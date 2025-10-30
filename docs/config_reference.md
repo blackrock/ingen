@@ -843,6 +843,12 @@ The following example concatenates fc_ofc_no + fc_no + "2025"
 	         columns: [ 'fc_ofc_no', 'fc_no' ]
 	         suffix: '2025'
 
+**Conditional Formatting with `constant_condition`**
+
+The `compare` function allows for flexible conditional formatting with the following operators:
+- `==`, `!=`, `<`, `<=`, `>`, `>=`, `in`
+The comparison can be performed for existing column `match_col`, or commandline argument using `match_override`.
+
 **Validations**
 
 	Field Name	Type	Description
@@ -1442,4 +1448,30 @@ $function_name(args)
 	timestamp	format of date	Takes the date format and returns the current timestamp	$timestamp(FORMAT)
 	uuid	NA	Generates random UUID using uuid4() inbuilt function	$uuid()
 	*only available in file path names
+
+
+**Command-line Overrides**
+
+For passing value to override in config using interpolator, inject value to API url_params and perform conditional column operations, commandline overrides can be used.
+
+- `--infile`: Can be either a single file path or key-value pairs in the format `source_id=file_path`
+    - Example: `--infile source1=data1.json source2=data2.json`
+    - When using with the `infile` interpolator, the source_id is used to look up the corresponding file path
+
+- `--override_params`: Key-value pairs that can be used by interpolators and formatters
+    - Example: `--override_params env=prod region=us-west-1`
+    - These parameters can be accessed using the `override` interpolator in the config file
+
+**Interpolators with command-line overrides**
+
+New interpolators have been added to support dynamic values in the configuration:
+
+1. `infile`: Retrieves a filename from the `--infile` argument
+    - If `--infile` is a single value: Returns the basename of the file
+    - If `--infile` contains key-value pairs: Uses the provided key to look up the corresponding file path
+    - Example: `{infile:source1}` would return `data1.json` when run with `--infile source1=data1.json`
+
+2. `override`: Retrieves values from the `--override_params` argument
+    - Example: `{override:env}` would return `prod` when run with `--override_params env=prod`
+    - Returns an empty string if the key is not found
 

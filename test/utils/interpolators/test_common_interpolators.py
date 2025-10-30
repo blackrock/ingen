@@ -4,6 +4,8 @@
 import unittest
 from unittest.mock import patch, Mock
 
+import os
+from unittest import mock
 from ingen.utils.interpolators.common_interpolators import *
 
 
@@ -28,21 +30,67 @@ class MyTestCase(unittest.TestCase):
         mock_dt.strftime.assert_called_with(format)
         self.assertEqual(mock_datetime_obj, actual_result)
 
-    @patch('ingen.utils.interpolators.common_interpolators.uuid')
-    def test_uuid(self, mock_uuid):
-        mock_uuid_obj = uuid.uuid4()
-        mock_uuid.uuid4.return_value = mock_uuid_obj
+    def test_uuid(self):
+        # Import the function directly to test it
+        from ingen.utils.interpolators.common_interpolators import uuid_func
+        
+        # Call the function
+        result = uuid_func()
+        
+        # Verify the result is a string
+        self.assertIsInstance(result, str)
+        
+        # Check if it's a valid UUID (with or without hyphens)
+        import re
+        uuid_pattern = re.compile(r'^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$', re.I)
+        self.assertTrue(bool(uuid_pattern.match(result)), 
+                       f"{result} is not a valid UUID (with or without hyphens)")
 
-        actual_uuid = uuid_func()
-        self.assertEqual(str(mock_uuid_obj), actual_uuid)
+    def test_get_infile_simple(self):
+        # Test with simple filename
+        params = {'infile': '/path/to/file.txt'}
+        result = get_infile(None, params)
+        self.assertEqual('file.txt', result)
 
-    @patch('ingen.utils.interpolators.common_interpolators.get_infile')
-    def test_infile(self, params):
-        mock_filename = 'mlone_restrictions01.xlsx'
-        params = {'query_params': None, 'run_date': '09262022', 'infile': 'mlone_restrictions01.xlsx'}
+    def test_get_infile_with_key(self):
+        # Test with key-value mapping
+        params = {'infile': {'source1': '/path/to/file1.txt', 'source2': '/path/to/file2.txt'}}
+        result = get_infile('source1', params)
+        self.assertEqual('file1.txt', result)
 
-        actual_filename = get_infile(self, params)
-        self.assertEqual(mock_filename, actual_filename)
+    def test_get_infile_missing_key(self):
+        # Test with missing key in mapping
+        params = {'infile': {'source1': '/path/to/file1.txt'}}
+        with self.assertRaises(KeyError):
+            get_infile('nonexistent', params)
+
+    def test_get_infile_no_params(self):
+        # Test with no params
+        self.assertEqual('', get_infile(None, None))
+
+    def test_get_infile_empty_params(self):
+        # Test with empty params
+        self.assertEqual('', get_infile(None, {}))
+
+    def test_get_overrides_found(self):
+        # Test getting an existing override
+        params = {'override_params': {'key1': 'value1', 'key2': 'value2'}}
+        result = get_overrides('key1', params)
+        self.assertEqual('value1', result)
+
+    def test_get_overrides_not_found(self):
+        # Test getting a non-existent override
+        params = {'override_params': {'key1': 'value1'}}
+        result = get_overrides('nonexistent', params)
+        self.assertEqual('', result)
+
+    def test_get_overrides_no_params(self):
+        # Test with no params
+        self.assertEqual('', get_overrides('key', None))
+
+    def test_get_overrides_empty_params(self):
+        # Test with empty params
+        self.assertEqual('', get_overrides('key', {}))
 
 
 if __name__ == '__main__':

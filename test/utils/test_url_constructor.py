@@ -18,7 +18,7 @@ class MyTestCase(unittest.TestCase):
 
         expected_urls = ["https://www.google.com"]
 
-        constructor = UrlConstructor(url, url_param)
+        constructor = UrlConstructor(url, url_param, params_map={})
         constructed_urls = constructor.get_urls()
 
         self.assertListEqual(expected_urls, constructed_urls)
@@ -57,7 +57,7 @@ class MyTestCase(unittest.TestCase):
         expected_urls = ["https://www.google.com?q=Y,N"]
 
         with patch.object(FileSource, 'fetch', return_value=file_source_result):
-            constructor = UrlConstructor(url, url_params)
+            constructor = UrlConstructor(url, url_params, params_map={})
             constructed_urls = constructor.get_urls()
             self.assertListEqual(expected_urls, constructed_urls)
 
@@ -82,7 +82,7 @@ class MyTestCase(unittest.TestCase):
         expected_urls = ["https://google.com?accountIds=A1,A2", "https://google.com?accountIds=A3,A4"]
 
         with patch.object(FileSource, 'fetch', return_value=file_source_result):
-            constructor = UrlConstructor(url, url_params, batch)
+            constructor = UrlConstructor(url, url_params, batch, params_map={})
             constructed_urls = constructor.get_urls()
             self.assertListEqual(expected_urls, constructed_urls)
 
@@ -138,7 +138,7 @@ class MyTestCase(unittest.TestCase):
         expected_urls = ["https://www.google.com?q=Y,N"]
 
         with patch.object(FileSource, 'fetch', return_value=file_source_result):
-            constructor = UrlConstructor(url, url_params)
+            constructor = UrlConstructor(url, url_params, params_map={})
             constructed_urls = constructor.get_urls()
             self.assertListEqual(expected_urls, constructed_urls)
 
@@ -169,7 +169,7 @@ class MyTestCase(unittest.TestCase):
             'https://www.host.com/4',
         ]
 
-        constructor = UrlConstructor(url, None, batch, source_factory=mock_data_source_factory)
+        constructor = UrlConstructor(url, None, batch, params_map={}, source_factory=mock_data_source_factory)
         constructed_urls = constructor.get_urls()
         self.assertListEqual(constructed_urls, expected_urls)
 

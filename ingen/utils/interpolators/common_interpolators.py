@@ -45,9 +45,27 @@ def get_infile(args, params):
     """
     return file name from command line parameters
     """
+    infile = params.get('infile') if params else None
+    if infile is None:
+        return ''
 
-    file_name = os.path.basename(params['infile'])
-    return file_name
+    if isinstance(infile, dict):
+        if args is None or args == '':
+            raise ValueError("infile interpolator requires a key when --infile is provided as a mapping")
+        if args not in infile:
+            raise KeyError(f"No infile override found for '{args}'")
+        return os.path.basename(infile[args])
+    
+    # Handle the case when infile is a simple string path
+    return os.path.basename(infile)
+
+
+def get_overrides(args, params):
+    """
+    return overrides from command line parameters
+    """
+    override_params = params.get('override_params') if params else None
+    return override_params.get(args, '') if override_params else ''
 
 
 COMMON_INTERPOLATORS = {
@@ -55,6 +73,7 @@ COMMON_INTERPOLATORS = {
     'token_secret': token_secret,
     'timestamp': timestamp,
     'uuid': uuid_func,
-    'infile': get_infile
+    'infile': get_infile,
+    'override': get_overrides
 
 }

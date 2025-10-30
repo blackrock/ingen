@@ -106,7 +106,8 @@ class TestFileReader(unittest.TestCase):
             skiprows=0,
             skipfooter=0,
             names=source['columns'],
-            dtype=None
+            dtype=None,
+            encoding='utf-8'
         )
 
     @patch('ingen.reader.file_reader.pd')
@@ -122,7 +123,8 @@ class TestFileReader(unittest.TestCase):
             skiprows=1,
             skipfooter=1,
             names=source['columns'],
-            dtype=source['dtype']
+            dtype=source['dtype'],
+            encoding='utf-8'
         )
 
     @patch('ingen.reader.file_reader.pd')
@@ -216,7 +218,8 @@ class TestFileReader(unittest.TestCase):
                                                 dtype=source['dtype'],
                                                 skiprows=1,
                                                 skipfooter=1,
-                                                names=source['columns']
+                                                names=source['columns'],
+                                                encoding='utf-8'
                                                 )
 
     @patch('ingen.reader.file_reader.pd')
@@ -243,7 +246,8 @@ class TestFileReader(unittest.TestCase):
                                                 dtype=source['dtype'],
                                                 skiprows=1,
                                                 skipfooter=1,
-                                                names=source['columns']
+                                                names=source['columns'],
+                                                encoding='utf-8'
                                                 )
 
     @patch('ingen.reader.file_reader.logging')

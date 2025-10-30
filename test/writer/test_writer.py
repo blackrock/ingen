@@ -34,7 +34,7 @@ class TestWriter(unittest.TestCase):
 
         writer = InterfaceWriter(df, output_type, props, {})
         writer.write()
-        mock_to_csv.assert_called_with(props['path'], props['delimiter'], index=InterfaceWriter.SHOW_DATAFRAME_INDEX)
+        mock_to_csv.assert_called_with(props['path'], props['delimiter'], index=InterfaceWriter.SHOW_DATAFRAME_INDEX, encoding='utf-8')
 
     def test_file_with_delimited_header_and_footer(self):
         df = Mock()
@@ -62,13 +62,13 @@ class TestWriter(unittest.TestCase):
         path = os.path.join(config_file_path)
         writer = InterfaceWriter(df, output_type, props, {})
         writer.file_writer()
-        mock_to_csv.assert_called_with(props['path'], props['delimiter'], index=InterfaceWriter.SHOW_DATAFRAME_INDEX)
+        mock_to_csv.assert_called_with(props['path'], props['delimiter'], index=InterfaceWriter.SHOW_DATAFRAME_INDEX, encoding='utf-8')
 
         with patch('ingen.writer.writer.open', mock_open()) as mocked_file:
             writer.add_header_footer(header, footer)
 
             # assert if opened file on write mode 'a'
-            mocked_file.assert_called_with(path, 'r+')
+            mocked_file.assert_called_with(path, 'r+', encoding='utf-8')
 
             # assert if write(content) was called from the file opened
             # in another words, assert if the specific content was written in file
@@ -100,13 +100,13 @@ class TestWriter(unittest.TestCase):
         footer = props['footer']['type']
         writer = InterfaceWriter(df, output_type, props, {})
         writer.file_writer()
-        mock_to_csv.assert_called_with(props['path'], ',', header=False, index=InterfaceWriter.SHOW_DATAFRAME_INDEX)
+        mock_to_csv.assert_called_with(props['path'], ',', header=False, index=InterfaceWriter.SHOW_DATAFRAME_INDEX, encoding='utf-8')
         config_file_path = props['path']
         path = os.path.join(config_file_path)
 
         with patch('ingen.writer.writer.open', mock_open()) as mocked_file:
             writer.add_header_footer(header, footer)
-            mocked_file.assert_called_with(path, 'r+')
+            mocked_file.assert_called_with(path, 'r+', encoding='utf-8')
             mocked_file().write.assert_called_with(header)
             mocked_file().write.assert_called_with(footer)
 
