@@ -20,8 +20,7 @@ class TestFileSource(unittest.TestCase):
             'file_path': 'test',
             'skip_header_size': 1,
             'skip_trailer_size': 1,
-            'columns': ['col1', 'col2']
-
+            'columns': ['col1', 'col2'],
         }
         self.params_map = {'query_params': {'table_name': 'positions'}, 'infile': {}}
         self.source = FileSource(self._src, self.params_map)
