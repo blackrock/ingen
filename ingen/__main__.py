@@ -109,5 +109,10 @@ if __name__ == "__main__":
             f"Use poller $infile when source use_infile is turned on, overwrite source file_path: {args.infile}"
         )
     main(
-        args.config_path, args.query_params, args.run_date, args.interfaces, args.infile, args.override_params
+        args.config_path,
+        args.query_params,
+        args.run_date,
+        args.interfaces,
+        args.infile,
+        override_params=args.override_params
     )

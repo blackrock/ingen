@@ -15,7 +15,7 @@ class TestJsonReader(unittest.TestCase):
             'id': 'proposals',
             'type': 'file',
             'file_type': 'json',
-            'file_path': './test/input/test_json.json',
+            'file_path': './input/test_json.json',
             'record_path': 'positions',
             'meta': ["id", "cash_allocation"],
             'meta_prefix': 'position'
@@ -25,7 +25,7 @@ class TestJsonReader(unittest.TestCase):
             'id': 'proposals',
             'type': 'file',
             'file_type': 'json',
-            'file_path': './test/input/test_json1.json',
+            'file_path': './input/test_json1.json',
             'record_path': 'positions',
             'meta': ["name", "cash_allocation"],
             'meta_prefix': None
@@ -35,7 +35,7 @@ class TestJsonReader(unittest.TestCase):
             'id': 'proposals',
             'type': 'file',
             'file_type': 'json',
-            'file_path': './test/input/test_json.json',
+            'file_path': './input/test_json.json',
             'record_path': 'positions',
             'meta': None,
             'meta_prefix': 'position'
@@ -45,7 +45,7 @@ class TestJsonReader(unittest.TestCase):
             'id': 'proposals',
             'type': 'file',
             'file_type': 'json',
-            'file_path': './test/input/test_json2.json',
+            'file_path': './input/test_json2.json',
             'record_path': None,
         }
 

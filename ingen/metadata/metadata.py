@@ -80,6 +80,8 @@ class MetaData:
         return sources
 
     def _validate_path(self, props):
+        if self._infile and 'output' in self._infile:
+            props['path'] = self._infile['output']
         path = props.get("path")
         if path is None:
             return

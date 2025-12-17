@@ -151,15 +151,7 @@ class UrlConstructor:
         return key + "=" + value
 
     def get_file_value(self, param):
-        infile = self.params_map.get('infile')
-        if isinstance(infile, dict) and param.get('id') in infile:
-            param = dict(infile)
-            param['file_path'] = infile[param.get('id')]
-            param['use_infile'] = True
-
-        params = dict(self.params_map)
-        params.setdefault('run_date', self.run_date)
-        source = FileSource(param, params)
+        source = FileSource(param, self.params_map)
         data = source.fetch()
         return self.dest_column_of_data(data, param.get("dest_column"))
 
