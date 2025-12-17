@@ -66,9 +66,7 @@ class APISource(DataSource):
 
         :return: A DataFrame created using the result of the request made to the API
         """
-        # Interpolate the URL to replace any tokens
-        interpolated_url = self._interpolator.interpolate(self._url) if self._url else None
-        
+        interpolated_url = self._interpolator.interpolate(self._url)
         url_constructor = UrlConstructor(interpolated_url, self._url_params, self._batch, self._run_date, self.params_map)
         urls = url_constructor.get_urls()
         requests = [HTTPRequest(url=url,

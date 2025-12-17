@@ -43,20 +43,15 @@ def uuid_func(args=None, params=None):
 
 def get_infile(args, params):
     """
-    return file name from command line parameters
+    return file path from command line parameters
     """
-    infile = params.get('infile') if params else None
-    if infile is None:
+    infile = params.get('infile')
+    if not infile:
         return ''
-
     if isinstance(infile, dict):
-        if args is None or args == '':
-            raise ValueError("infile interpolator requires a key when --infile is provided as a mapping")
-        if args not in infile:
-            raise KeyError(f"No infile override found for '{args}'")
-        return os.path.basename(infile[args])
-    
-    # Handle the case when infile is a simple string path
+        if args and args in infile:
+            return os.path.basename(infile[args])
+        return ''
     return os.path.basename(infile)
 
 

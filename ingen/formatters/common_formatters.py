@@ -647,6 +647,7 @@ def override_formatter(dataframe, col, ovr_key, runtime_params):
         dataframe[col] = override_params.get(ovr_key)
     return dataframe
 
+
 formatter_map = {
     'date': date_formatter,
     'float': float_formatter,

@@ -847,7 +847,38 @@ The following example concatenates fc_ofc_no + fc_no + "2025"
 
 The `compare` function allows for flexible conditional formatting with the following operators:
 - `==`, `!=`, `<`, `<=`, `>`, `>=`, `in`
-The comparison can be performed for existing column `match_col`, or commandline argument using `match_override`.
+The comparison can be performed for column `match_col` and applied values can be defined with `value`.
+
+      - src_col_name: 'MATCH_COL'
+        formatters:
+          - type: 'constant_condition'
+            format:
+              match_col: col2
+              compare: ['==', 'x2']
+              values: ['Yes', 'No']
+Additionally, this can be combined commandline argument `--override_params` using `match_override` to decide when to skip formatting with `constant_condition`
+
+        formatters:
+          - type: 'constant'
+            format: 'Original'
+          - type: 'constant_condition'
+            format:
+              match_col: col2
+              compare: ['!=', 'x2']
+              values: ['True', 'False']
+              match_override: skip_col
+              pattern: "^Y$"
+Here, `constant_condition` will be skipped if `skip_col` is present in `--override_params` with value `Y`.
+
+**override**
+
+The purpose of this formatter is to create new column with a constant value passed via commandline argument.
+
+      - src_col_name: 'CONST_OVR_COL'
+        formatters:
+         - type: 'override'
+           format: 'col_value'
+Here, `col_value` is passed in `--override_params` commandline argument.
 
 **Validations**
 
@@ -1470,8 +1501,8 @@ New interpolators have been added to support dynamic values in the configuration
     - If `--infile` is a single value: Returns the basename of the file
     - If `--infile` contains key-value pairs: Uses the provided key to look up the corresponding file path
     - Example: `{infile:source1}` would return `data1.json` when run with `--infile source1=data1.json`
+    - Infile is supported for sourceId, url_params->Ids and output keys.
 
 2. `override`: Retrieves values from the `--override_params` argument
     - Example: `{override:env}` would return `prod` when run with `--override_params env=prod`
     - Returns an empty string if the key is not found
-
