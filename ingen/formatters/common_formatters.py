@@ -419,11 +419,16 @@ def replace_value(dataframe, col_name, format_options, runtime_params):
         :param runtime_params: command line arguments
     :return: new dataframe with 'from_value' replaced in column 'col_name' with the 'to_value'
     """
+    replace_missing = format_options.get('replace_missing', False)
     if col_name not in dataframe.columns:
         raise KeyError(f"Column '{col_name}' not found.")
     for from_value, to_value in zip(format_options.get('from_value'), format_options.get('to_value')):
-        dataframe[col_name] = dataframe[col_name].replace(
-            {from_value: to_value})
+        if replace_missing and from_value is None:
+            # Replace all missing values (None, NaN) - useful for merge operations
+            dataframe[col_name] = dataframe[col_name].fillna(to_value)
+        else: 
+            dataframe[col_name] = dataframe[col_name].replace(
+                {from_value: to_value})
     return dataframe
 
 
@@ -532,6 +537,23 @@ def sub_string(dataframe, col_name, format_options, runtime_params):
     dataframe[col_name] = dataframe[col_name].astype(str).str[start:end]
     return dataframe
 
+def decode_bytes_formatter(dataframe, col_name, format_options, runtime_params):
+    'Decode bytes in a column using the provided encoding.'
+    encoding = format_options.get('encoding', 'utf-8')
+    strip_whitespace = format_options.get('strip_whitespace', True)
+    if col_name not in dataframe.columns:
+        raise KeyError (f"Column '{col_name}' not found.")
+    def decode(value):
+        if isinstance(value, bytes):
+            decoded = value.decode(encoding, errors='replace')
+        else:
+            decoded = value
+        if strip_whitespace and isinstance(decoded, str):
+            return decoded.strip()
+        return decoded
+    dataframe[col_name] = dataframe[col_name].map(decode)
+    return dataframe
+
 
 def float_precision(dataframe, col_name, format_options, runtime_params):
     """
@@ -610,6 +632,7 @@ formatter_map = {
     'conditional_replace_formatter': conditional_replace_formatter,
     'bus_day': business_day_formatter,
     'split_col': split_column_formatter,
+    'decode_bytes': decode_bytes_formatter,
     'float_precision': float_precision,
     'extract_from_pattern': extract_from_pattern,
     'index_counter': index_counter,
