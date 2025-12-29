@@ -1,4 +1,4 @@
-aiohttp>=3.10.2
+aiohttp==3.7.*
 great_expectations==0.15.*
 holidays==0.27.*
 hvac==0.11.*
