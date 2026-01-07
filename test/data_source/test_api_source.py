@@ -70,7 +70,7 @@ class TestAPISource(unittest.TestCase):
         source_config['headers'] = {
             'custom_header': '$token(token_name)'
         }
-        source_with_headers = APISource(source_config, interpolator=mock_interpolator)
+        source_with_headers = APISource(source_config)
         header_value = source_with_headers._headers.get('custom_header')
         expected_header_value = "mock_value"
         self.assertEqual(expected_header_value, header_value)

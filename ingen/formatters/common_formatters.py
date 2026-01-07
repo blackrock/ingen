@@ -17,7 +17,7 @@ from ingen.lib.cryptor import Cryptor
 
 pd.options.mode.chained_assignment = None
 from ingen.utils.properties import Properties
-from ingen.utils.utils import get_business_day
+from ingen.utils.utils import get_business_day, compare
 
 log = logging.getLogger()
 
@@ -614,6 +614,40 @@ def suffix_string_formatter(dataframe, col_name, config, runtime_params):
     return dataframe
 
 
+def constant_condition_formatter(dataframe, col_name, config, runtime_params):
+    if 'match_override' in config and 'pattern' in config:
+        override_params = runtime_params.get('override_params') if runtime_params else None
+        skip_key = config.get('match_override')
+        skip_value = None
+        if isinstance(override_params, dict):
+            skip_value = override_params.get(skip_key)
+        match = bool(re.match(str(config.get('pattern')), str(skip_value)))
+        if match:
+            return dataframe
+
+    compare_lst = config.get('compare')
+    match_col = config.get('match_col')
+    vals = config.get('values')
+    if not vals or len(vals) > 2:
+        raise ValueError("Values does not exist or have too many elements")
+
+    cond_results = compare(dataframe, match_col, compare_lst)
+    if len(vals) == 1:
+        if col_name in dataframe:
+            match_col = col_name
+        dataframe[col_name] = dataframe[match_col].mask(cond_results, vals[0])
+    if len(vals) == 2:
+        dataframe[col_name] = cond_results.map({True: vals[0], False: vals[1]})
+    return dataframe
+
+
+def override_formatter(dataframe, col, ovr_key, runtime_params):
+    override_params = runtime_params.get('override_params') if runtime_params else None
+    if isinstance(override_params, dict):
+        dataframe[col] = override_params.get(ovr_key)
+    return dataframe
+
+
 formatter_map = {
     'date': date_formatter,
     'float': float_formatter,
@@ -647,8 +681,9 @@ formatter_map = {
     'get_running_environment': get_running_environment,
     'drop_duplicates': drop_duplicates,
     'prefix_string': prefix_string_formatter,
-    'suffix_string': suffix_string_formatter
-
+    'suffix_string': suffix_string_formatter,
+    'constant_condition': constant_condition_formatter,
+    'override': override_formatter
 }
 
 

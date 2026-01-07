@@ -28,8 +28,13 @@ class FileSource(DataSource):
         """
         super().__init__(source.get('id'))
         self.interpolator = interpolator
-        if params_map.get('infile') and source['use_infile']:
-            source['file_path'] = params_map['infile']
+        infile = params_map.get('infile') if params_map else None
+        if infile and source.get('use_infile'):
+            if isinstance(infile, dict):
+                if self.id in infile:
+                    source['file_path'] = infile[self.id]
+            else:
+                source['file_path'] = infile
             self._src = source
         else:
             self._src = self.format_file_path(source, params_map)

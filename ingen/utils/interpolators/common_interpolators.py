@@ -43,11 +43,24 @@ def uuid_func(args=None, params=None):
 
 def get_infile(args, params):
     """
-    return file name from command line parameters
+    return file path from command line parameters
     """
+    infile = params.get('infile')
+    if not infile:
+        return ''
+    if isinstance(infile, dict):
+        if args and args in infile:
+            return os.path.basename(infile[args])
+        return ''
+    return os.path.basename(infile)
 
-    file_name = os.path.basename(params['infile'])
-    return file_name
+
+def get_overrides(args, params):
+    """
+    return overrides from command line parameters
+    """
+    override_params = params.get('override_params') if params else None
+    return override_params.get(args, '') if override_params else ''
 
 
 COMMON_INTERPOLATORS = {
@@ -55,6 +68,7 @@ COMMON_INTERPOLATORS = {
     'token_secret': token_secret,
     'timestamp': timestamp,
     'uuid': uuid_func,
-    'infile': get_infile
+    'infile': get_infile,
+    'override': get_overrides
 
 }

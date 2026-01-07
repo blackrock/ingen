@@ -4,6 +4,8 @@
 import unittest
 from unittest.mock import patch, Mock
 
+import os
+from unittest import mock
 from ingen.utils.interpolators.common_interpolators import *
 
 
@@ -36,14 +38,26 @@ class MyTestCase(unittest.TestCase):
         actual_uuid = uuid_func()
         self.assertEqual(str(mock_uuid_obj), actual_uuid)
 
-    @patch('ingen.utils.interpolators.common_interpolators.get_infile')
-    def test_infile(self, params):
-        mock_filename = 'mlone_restrictions01.xlsx'
-        params = {'query_params': None, 'run_date': '09262022', 'infile': 'mlone_restrictions01.xlsx'}
+    def test_get_infile_simple(self):
+        params = {'infile': '/path/to/file.txt'}
+        result = get_infile(None, params)
+        self.assertEqual('file.txt', result)
 
-        actual_filename = get_infile(self, params)
-        self.assertEqual(mock_filename, actual_filename)
+    def test_get_infile_with_key(self):
+        params = {'infile': {'source1': '/path/to/file1.txt', 'source2': '/path/to/file2.txt'}}
+        result = get_infile('source1', params)
+        self.assertEqual('file1.txt', result)
 
+    def test_get_infile_no_params(self):
+        self.assertEqual('', get_infile(None, {}))
+
+    def test_get_overrides_found(self):
+        params = {'override_params': {'key1': 'value1', 'key2': 'value2'}}
+        result = get_overrides('key1', params)
+        self.assertEqual('value1', result)
+
+    def test_get_overrides_no_params(self):
+        self.assertEqual('', get_overrides('key', None))
 
 if __name__ == '__main__':
     unittest.main()

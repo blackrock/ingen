@@ -20,7 +20,7 @@ class APISource(DataSource):
     This class represents a API source
     """
 
-    def __init__(self, source, params_map=None, interpolator=Interpolator()):
+    def __init__(self, source, params_map=None):
         """
         Loads a API source
 
@@ -30,7 +30,8 @@ class APISource(DataSource):
         super().__init__(source.get('id'))
         if params_map is None:
             params_map = {}
-        self._interpolator = interpolator
+        self.params_map = params_map
+        self._interpolator = Interpolator(params_map) if params_map else Interpolator()
         self._url = source.get('url')
         self._url_params = source.get('url_params')
         self._batch = source.get('batch')
@@ -65,13 +66,14 @@ class APISource(DataSource):
 
         :return: A DataFrame created using the result of the request made to the API
         """
-        url_constructor = UrlConstructor(self._url, self._url_params, self._batch, self._run_date)
+        interpolated_url = self._interpolator.interpolate(self._url)
+        url_constructor = UrlConstructor(interpolated_url, self._url_params, self._batch, self._run_date, self.params_map)
         urls = url_constructor.get_urls()
         requests = [HTTPRequest(url=url,
-                                method=self._method,
-                                headers=self._headers,
-                                auth=self._auth,
-                                data=self._req_data) for url in urls]
+                              method=self._method,
+                              headers=self._headers,
+                              auth=self._auth,
+                              data=self._req_data) for url in urls]
         url_reader = APIReader(requests, self.reader_params)
         return self.fetch_data(url_reader)
 

@@ -3,7 +3,11 @@
 
 import argparse
 import datetime
+import operator
 from datetime import date
+
+import numpy as np
+import pandas as pd
 
 import holidays
 
@@ -52,6 +56,46 @@ def get_business_day(input_date, offset='next', country=None):
         return input_date
 
 
+ops = {
+    '==': operator.eq,
+    '!=': operator.ne,
+    '<': operator.lt,
+    '<=': operator.le,
+    '>': operator.gt,
+    '>=': operator.ge,
+    'in': operator.contains
+}
+
+
+def compare(dataframe, match_col, compare_lst):
+    if match_col not in dataframe:
+        raise ValueError(f'Column {match_col} not found in dataframe')
+    elif not compare_lst or len(compare_lst) != 2:
+        raise ValueError("Comparison input does not exist or is incomplete")
+
+    try:
+        compare_oper = ops[compare_lst[0]]
+    except KeyError:
+        raise ValueError(f"Operator {compare_lst[0]} is not valid")
+
+    compare_val = compare_lst[1]
+    cond_results = pd.Series(False, index=np.arange(dataframe[match_col].size), name=None)  
+    if compare_val is None:
+        if compare_oper == operator.eq:
+            cond_results = dataframe[match_col].isna()
+        elif compare_oper == operator.ne:
+            cond_results = dataframe[match_col].notna()
+    elif compare_oper is operator.contains:
+        if not isinstance(compare_val, list):
+            raise ValueError("The second value under compare isn't in list format")
+        cond_results = dataframe[match_col].isin(compare_val)
+    else:
+        cond_results = compare_oper(dataframe[match_col], compare_val)
+    
+    cond_results.name = None
+    return cond_results
+
+
 class KeyValue(argparse.Action):
     """
     A utility class to create dict-like key value pairs from command lines arguments
@@ -69,3 +113,22 @@ class KeyValue(argparse.Action):
         for value in values:
             key, value = value.split('=')
             getattr(namespace, self.dest)[key] = value
+
+
+class KeyValueOrString(argparse.Action):
+    """
+    A utility class to handle cases where a command line argument is either a single value, a list of key value pairs
+    separated by = or None.
+    """
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        if values is None:
+            setattr(namespace, self.dest, None)
+        elif len(values) == 1 and '=' not in values[0]:
+            setattr(namespace, self.dest, values[0])
+        else:
+            setattr(namespace, self.dest, dict())
+
+            for value in values:
+                key, value = value.split('=', 1)
+                getattr(namespace, self.dest)[key] = value

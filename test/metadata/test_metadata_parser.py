@@ -4,6 +4,7 @@
 import os
 import unittest
 from datetime import date
+from unittest.mock import patch, MagicMock
 
 from ingen.metadata.metadata_parser import MetaDataParser
 
@@ -14,11 +15,13 @@ class TestMetaDataParser(unittest.TestCase):
         config_file_path = "../input/pos-ret.yml"
         required_interfaces = ["account"]
         run_date = date.today()
+        override_params = {'key1': 'value1', 'key2': 'value2'}
         self.parser_for_filtered_interfaces = MetaDataParser(
             os.path.join(script_dir, config_file_path),
             {"date": "12/09/1995"},
             run_date,
             required_interfaces,
+            override_params=override_params
         )
         certain_interfaces_list = ["positions", "account", "tax-lots"]
         self.parser_for_certain_interfaces = MetaDataParser(

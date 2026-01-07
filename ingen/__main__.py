@@ -7,17 +7,17 @@ import time
 from datetime import date
 
 from ingen.metadata.metadata_parser import MetaDataParser
-from ingen.utils.utils import KeyValue
+from ingen.utils.utils import KeyValue, KeyValueOrString
 from ingen.logger import init_logging
 
 logger = logging.getLogger()
 
 
 def main(
-    config_path, query_params, run_date, interfaces, infile=None, dynamic_data=None
+    config_path, query_params, run_date, interfaces, infile=None, dynamic_data=None, override_params=None
 ):
     parser = MetaDataParser(
-        config_path, query_params, run_date, interfaces, infile, dynamic_data
+        config_path, query_params, run_date, interfaces, infile, dynamic_data, override_params
     )
     metadata_list = parser.parse_metadata()
     run_config = parser.run_config
@@ -79,7 +79,16 @@ def create_arg_parser():
         "all interfaces listed in the config file will be generated",
     )
     parser.add_argument(
-        "--infile", help="filepath to the JSON file to be used in JSON source"
+        "--infile",
+        nargs="*",
+        action=KeyValueOrString,
+        help="Either a single filepath override, or key=value pairs mapping source_id to filepath"
+    )
+    parser.add_argument(
+        "--override_params",
+        nargs="*",
+        action=KeyValue,
+        help="Key value pairs used by runtime overrides (interpolators/formatters)",
     )
     return parser
 
@@ -100,5 +109,10 @@ if __name__ == "__main__":
             f"Use poller $infile when source use_infile is turned on, overwrite source file_path: {args.infile}"
         )
     main(
-        args.config_path, args.query_params, args.run_date, args.interfaces, args.infile
+        args.config_path,
+        args.query_params,
+        args.run_date,
+        args.interfaces,
+        args.infile,
+        override_params=args.override_params
     )

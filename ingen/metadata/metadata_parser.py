@@ -24,6 +24,7 @@ class MetaDataParser:
         selected_interfaces,
         infile=None,
         dynamic_data=None,
+        override_params=None,
     ):
         """Initializes a metadata parser
 
@@ -34,6 +35,7 @@ class MetaDataParser:
             selected_interfaces: List of interface names. This should be a subset of names declared in the metadata file
             infile: A file path passed from command line to load a File Source
             dynamic_data: JSON String passed from command line to load a JSON Source
+            override_params: Key Value pairs passed from CLI that is used to replace keys with values in config
         """
         self._filepath = filepath
         self._run_date = run_date
@@ -42,6 +44,7 @@ class MetaDataParser:
         self._run_config = None
         self._infile = infile
         self._dynamic_data = dynamic_data
+        self._override_params = override_params
 
     @property
     def run_config(self):
@@ -77,6 +80,7 @@ class MetaDataParser:
                 "query_params": self._query_params,
                 "run_date": self._run_date,
                 "infile": self._infile,
+                "override_params": self._override_params,
             }
 
             interface_configs = [

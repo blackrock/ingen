@@ -1267,5 +1267,95 @@ class TestCommonFormatters(unittest.TestCase):
         suffix_string_formatter(df, output_column, param, {})
         self.assertTrue(pd.Series.equals(df['ID'], expected_output_column))
 
+    def test_constant_condition_formatter_basic(self):
+        df = pd.DataFrame({
+            'status': ['active', 'inactive', 'active', 'pending']
+        })
+        config = {
+            'match_col': 'status',
+            'compare': ['==', 'active'],
+            'values': ['YES', 'NO']
+        }
+        result = constant_condition_formatter(df, 'is_active', config, None)
+        expected = pd.Series(['YES', 'NO', 'YES', 'NO'], name='is_active')
+        pd.testing.assert_series_equal(result['is_active'], expected)
+
+    def test_constant_condition_formatter_single_value(self):
+        df = pd.DataFrame({
+            'amount': [100, 200, 300, 400],
+            'status': ['active', 'inactive', 'active', 'pending']
+        })
+        config = {
+            'match_col': 'status',
+            'compare': ['==', 'active'],
+            'values': [1000]  # Only one value provided
+        }
+        result = constant_condition_formatter(df, 'amount', config, None)
+        expected = pd.Series([1000, 200, 1000, 400], name='amount')
+        pd.testing.assert_series_equal(result['amount'], expected)
+
+    def test_constant_condition_formatter_match_override_skip(self):
+        df = pd.DataFrame({
+            'status': ['active', 'inactive']
+        })
+        config = {
+            'match_override': 'type',
+            'pattern': 'skip_me',
+            'match_col': 'status',
+            'compare': ['==', 'active'],
+            'values': ['YES', 'NO']
+        }
+        runtime_params = {
+            'override_params': {
+                'type': 'skip_me'  # This matches the pattern, so formatter should skip
+            }
+        }
+        result = constant_condition_formatter(df.copy(), 'is_active', config, runtime_params)
+        pd.testing.assert_frame_equal(result, df)  # Should be unchanged
+
+    def test_constant_condition_formatter_match_override_no_skip(self):
+        df = pd.DataFrame({
+            'status': ['active', 'inactive']
+        })
+        config = {
+            'condition': {
+                'match_override': 'type',
+                'pattern': 'skip_me'
+            },
+            'match_col': 'status',
+            'compare': ['==', 'active'],
+            'values': ['YES', 'NO']
+        }
+        runtime_params = {
+            'override_params': {
+                'type': 'process_me'  # Doesn't match pattern, so formatter should run
+            }
+        }
+        result = constant_condition_formatter(df, 'is_active', config, runtime_params)
+        expected = pd.Series(['YES', 'NO'], name='is_active')
+        pd.testing.assert_series_equal(result['is_active'], expected)
+
+    def test_override_formatter_with_valid_params(self):
+        df = pd.DataFrame({'A': [1, 2, 3]})
+        runtime_params = {
+            'override_params': {
+                'test_key': 'test_value',
+                'other_key': 'other_value'
+            }
+        }
+        result = override_formatter(df.copy(), 'A', 'test_key', runtime_params)
+        expected = pd.Series(['test_value'] * 3, name='A')
+        pd.testing.assert_series_equal(result['A'], expected)
+
+    def test_override_formatter_with_missing_key(self):
+        df = pd.DataFrame({'A': [1, 2, 3]})
+        runtime_params = {
+            'override_params': {
+                'other_key': 'other_value'
+            }
+        }
+        result = override_formatter(df.copy(), 'A', 'non_existent_key', runtime_params)
+        pd.testing.assert_series_equal(result['A'], pd.Series([None, None, None], dtype=object, name='A'))
+
 if __name__ == '__main__':
     unittest.main()

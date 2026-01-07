@@ -843,6 +843,43 @@ The following example concatenates fc_ofc_no + fc_no + "2025"
 	         columns: [ 'fc_ofc_no', 'fc_no' ]
 	         suffix: '2025'
 
+**Conditional Formatting with `constant_condition`**
+
+The `compare` function allows for flexible conditional formatting with the following operators:
+- `==`, `!=`, `<`, `<=`, `>`, `>=`, `in`
+The comparison can be performed for column `match_col` and applied values can be defined with `value`.
+
+      - src_col_name: 'MATCH_COL'
+        formatters:
+          - type: 'constant_condition'
+            format:
+              match_col: col2
+              compare: ['==', 'x2']
+              values: ['Yes', 'No']
+Additionally, this can be combined commandline argument `--override_params` using `match_override` to decide when to skip formatting with `constant_condition`
+
+        formatters:
+          - type: 'constant'
+            format: 'Original'
+          - type: 'constant_condition'
+            format:
+              match_col: col2
+              compare: ['!=', 'x2']
+              values: ['True', 'False']
+              match_override: skip_col
+              pattern: "^Y$"
+Here, `constant_condition` will be skipped if `skip_col` is present in `--override_params` with value `Y`.
+
+**override**
+
+The purpose of this formatter is to create new column with a constant value passed via commandline argument.
+
+      - src_col_name: 'CONST_OVR_COL'
+        formatters:
+         - type: 'override'
+           format: 'col_value'
+Here, `col_value` is passed in `--override_params` commandline argument.
+
 **Validations**
 
 	Field Name	Type	Description
@@ -1443,3 +1480,29 @@ $function_name(args)
 	uuid	NA	Generates random UUID using uuid4() inbuilt function	$uuid()
 	*only available in file path names
 
+
+**Command-line Overrides**
+
+For passing value to override in config using interpolator, inject value to API url_params and perform conditional column operations, commandline overrides can be used.
+
+- `--infile`: Can be either a single file path or key-value pairs in the format `source_id=file_path`
+    - Example: `--infile source1=data1.json source2=data2.json`
+    - When using with the `infile` interpolator, the source_id is used to look up the corresponding file path
+
+- `--override_params`: Key-value pairs that can be used by interpolators and formatters
+    - Example: `--override_params env=prod region=us-west-1`
+    - These parameters can be accessed using the `override` interpolator in the config file
+
+**Interpolators with command-line overrides**
+
+New interpolators have been added to support dynamic values in the configuration:
+
+1. `infile`: Retrieves a filename from the `--infile` argument
+    - If `--infile` is a single value: Returns the basename of the file
+    - If `--infile` contains key-value pairs: Uses the provided key to look up the corresponding file path
+    - Example: `{infile:source1}` would return `data1.json` when run with `--infile source1=data1.json`
+    - Infile is supported for sourceId, url_params->Ids and output keys.
+
+2. `override`: Retrieves values from the `--override_params` argument
+    - Example: `{override:env}` would return `prod` when run with `--override_params env=prod`
+    - Returns an empty string if the key is not found

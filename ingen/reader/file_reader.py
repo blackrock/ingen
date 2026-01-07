@@ -23,6 +23,7 @@ class CSVFileReader(Reader):
     def read(self, src):
         config = get_config(src)
         dtype = src.get('dtype')
+        encoding = src.get('encoding', 'utf-8')
         try:
             result = pd.read_csv(src['file_path'],
                                  sep=src.get('delimiter'),
@@ -30,7 +31,8 @@ class CSVFileReader(Reader):
                                  skiprows=config['header_size'],
                                  skipfooter=config['trailer_size'],
                                  names=config['all_cols'],
-                                 dtype=dtype)
+                                 dtype=dtype,
+                                 encoding=encoding)
         except TypeError:
             logging.error(self.DTYPE_LOG_MSG)
             raise
@@ -80,11 +82,13 @@ class FixedWidthFileReader(Reader):
         dtype = src.get('dtype')
         file_path = src.get('file_path')
         colspecs = src.get('col_specification')
+        encoding = src.get('encoding', 'utf-8')
         try:
             result = pd.read_fwf(file_path,
                                  index_col=False,
                                  colspecs=colspecs,
                                  dtype=dtype,
+                                 encoding=encoding,
                                  skiprows=config['header_size'],
                                  skipfooter=config['trailer_size'],
                                  names=config['all_cols'])
