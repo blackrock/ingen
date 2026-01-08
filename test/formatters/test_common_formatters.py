@@ -908,6 +908,52 @@ class TestCommonFormatters(unittest.TestCase):
 
         with self.assertRaisesRegex(KeyError, f"Column '{col_name}' not found."):
             replace_value(data, col_name, format_options, {})
+        
+    
+    def test_replace_formatter_with_replace_missing_nan(self): 
+        data = pd.DataFrame({
+            'value': [np.nan, 'hello', np.nan, 'world']
+        })
+        expected_data = pd.DataFrame({
+            'value': ['', 'hello', '', 'world']
+        })
+        format_options = {
+            'from_value': [None],
+            'to_value': [''],
+            'replace_missing': True
+        }
+        formatted_data = replace_value(data, 'value', format_options, {})
+        pd.testing.assert_frame_equal(expected_data, formatted_data)
+        
+    def test_replace_formatter_with_replace_missing_none(self): 
+        data = pd.DataFrame({
+            'value': [None, 'hello', None, 'world']
+        })
+        expected_data = pd.DataFrame({
+            'value': ['EMPTY', 'hello', 'EMPTY', 'world']
+        })
+        format_options = {
+            'from_value': [None],
+            'to_value': ['EMPTY'],
+            'replace_missing': True
+        }
+        formatted_data = replace_value(data, 'value', format_options, {})
+        pd.testing.assert_frame_equal(expected_data, formatted_data)
+
+    def test_replace_formatter_with_replace_missing_empty(self):
+        data = pd.DataFrame({
+            'value': ['', 'hello', '', 'world']
+        })
+        expected_data = pd.DataFrame({
+            'value': ['EMPTY', 'hello', 'EMPTY', 'world']
+        })
+        format_options = {
+            'from_value': [''],
+            'to_value': ['EMPTY'],
+            'replace_missing': True
+        }
+        formatted_data = replace_value(data, 'value', format_options, {})
+        pd.testing.assert_frame_equal(expected_data, formatted_data)
 
     def test_runtime_date_formatter(self):
         data = pd.DataFrame({
@@ -1000,6 +1046,36 @@ class TestCommonFormatters(unittest.TestCase):
 
         formatted_data = conditional_replace_formatter(data, col_name, format_options, {})
         pd.testing.assert_frame_equal(expected_data, formatted_data)
+
+    def test_decode_bytes_formatter_basic(self):
+        data = pd.DataFrame({
+            'value': [b'hello', b'world']
+        })
+        expected_data = pd.DataFrame({
+            'value': ['hello', 'world']
+        })
+        format_options = {'encoding': 'utf-8'}
+        formatted_data = decode_bytes_formatter(data, 'value', format_options, {})
+        pd.testing.assert_frame_equal(expected_data, formatted_data)
+
+    def test_decode_bytes_formatter_with_missing_column(self):
+        data = pd.DataFrame({
+            'value': [b'hello', b'world']
+        })
+        format_options = {'encoding': 'utf-8'}
+        with self.assertRaises(KeyError):
+            decode_bytes_formatter(data, 'missing_column', format_options, {})
+
+    def test_decode_bytes_formatter_with_invalid_encoding(self):
+        data = pd.DataFrame({
+            'value': [b'hello', b'world']
+        })
+        expected_data = pd.DataFrame({
+            'value': ['hello', 'world']
+        })
+        format_options = {'encoding': 'invalid-encoding'}
+        with self.assertRaises(LookupError):
+            decode_bytes_formatter(data, 'value', format_options, {})
 
     @patch('ingen.formatters.common_formatters.log')
     def test_conditional_replace_formatter_when_col_not_available(self, mock_logging):
