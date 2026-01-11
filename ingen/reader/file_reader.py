@@ -26,7 +26,7 @@ class CSVFileReader(Reader):
         encoding = src.get('encoding', 'utf-8')
         try:
             result = pd.read_csv(src['file_path'],
-                                 sep=src.get('delimiter'),
+                                 sep=src.get('delimiter', ','),
                                  index_col=False,
                                  skiprows=config['header_size'],
                                  skipfooter=config['trailer_size'],
