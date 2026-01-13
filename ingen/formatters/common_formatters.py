@@ -423,6 +423,7 @@ def replace_value(dataframe, col_name, format_options, runtime_params):
     :return: new dataframe with 'from_value' replaced in column 'col_name' with the 'to_value'
     """
     replace_missing = format_options.get('replace_missing', False)
+    search_list = format_options.get('search_list', False)
     if col_name not in dataframe.columns:
         raise KeyError(f"Column '{col_name}' not found.")
     for from_value, to_value in zip(format_options.get('from_value'), format_options.get('to_value')):
@@ -432,7 +433,14 @@ def replace_value(dataframe, col_name, format_options, runtime_params):
         else: 
             dataframe[col_name] = dataframe[col_name].replace(
                 {from_value: to_value})
+        if search_list:
+            dataframe[col_name] = dataframe[col_name].apply(lambda elem: replace_in_list(elem, from_value, to_value))
     return dataframe
+
+def replace_in_list(row, from_value, to_value):
+    if not isinstance (row, list):
+        return row
+    return [to_value if elem == from_value else elem for elem in row]
 
 
 def extract_from_pattern(dataframe, col_name, format_options, runtime_params):
