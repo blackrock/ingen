@@ -422,7 +422,9 @@ def replace_value(dataframe, col_name, format_options, runtime_params):
         :param runtime_params: command line arguments
     :return: new dataframe with 'from_value' replaced in column 'col_name' with the 'to_value'
     """
+    # replace_missing: boolean, if True and from_value is None will replace NaN with to_value
     replace_missing = format_options.get('replace_missing', False)
+    # boolean, if True will attempt to replace values inside list-type cells
     search_list = format_options.get('search_list', False)
     if col_name not in dataframe.columns:
         raise KeyError(f"Column '{col_name}' not found.")
