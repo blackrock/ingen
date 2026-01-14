@@ -908,8 +908,28 @@ class TestCommonFormatters(unittest.TestCase):
 
         with self.assertRaisesRegex(KeyError, f"Column '{col_name}' not found."):
             replace_value(data, col_name, format_options, {})
-        
-    
+
+    def test_replace_formatter_with_search_list(self):
+        data = pd.DataFrame({
+            'name': ['Angela', 'Mathews', ['Chris', 'Jade', 'Rohit']],
+            'vacation_city': ['New York', 'Sydney', ['Perth', 'abc', 'Mumbai']],
+            'default_city': ['New York', 'Manhattan', ['Jerusalem', 'Kolkata', 'Pune']]
+        })
+        expected_data = pd.DataFrame({
+            'name': ['Angela', 'Mathews', ['Chris', 'Jade', 'Rohit']],
+            'vacation_city': ['New York', 'Sydney', ['Perth', 'xyz', 'Mumbai']],
+            'default_city': ['New York', 'Manhattan', ['Jerusalem', 'Kolkata', 'Pune']]
+        })
+
+        col_name = 'vacation_city'
+        format_options = {
+            'from_value': ['abc'],
+            'to_value': ['xyz'],
+            'search_list': True
+        }
+        formatted_data = replace_value(data, col_name, format_options, {})
+        pd.testing.assert_frame_equal(expected_data, formatted_data)
+
     def test_replace_formatter_with_replace_missing_nan(self): 
         data = pd.DataFrame({
             'value': [np.nan, 'hello', np.nan, 'world']
