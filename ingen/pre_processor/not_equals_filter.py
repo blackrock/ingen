@@ -15,6 +15,7 @@ class NotEqualsFilter(Process):
               cols: 
                 - col: <column_name>
                   val: ["value_to_exclude]
+                output_alias: <output_alias>
 
         This will keep all rows where <column_name> is NOT in ["value_to_exclude]
     """

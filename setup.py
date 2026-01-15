@@ -1,3 +1,6 @@
+#  Copyright (c) 2023 BlackRock, Inc.
+#  All Rights Reserved.
+
 import os
 
 import setuptools
@@ -8,7 +11,7 @@ MAIN_PKG = 'ingen'
 VERSION_PY_FILE = os.path.join(MAIN_PKG, 'version.py')
 
 setup(name=PKG_NAME,
-      version="0.0.1",
+      version='{{VERSION_PLACEHOLDER}}',
       packages=setuptools.find_packages(include=['ingen', 'ingen.*']),
       package_data={},
       description='A Python script suite that generates interface files based on the given interface metadata/config '

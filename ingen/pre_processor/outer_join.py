@@ -9,7 +9,7 @@ class OuterJoin(Process):
     Usage in YAML:
         pre_processing:
         - type: outer_join
-    source: «right_source_id> left_key: ‹left_column_name> right_key: <right_column_name> 
+    source: «right_source_id> left_key: ‹left_column_name> right_key: <right_column_name> output_alias: <output_alias>
     Columns from left source get '_x' suffix if duplicated.
     Columns from right source get '-y' suffix if duplicated.
 
