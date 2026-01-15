@@ -12,6 +12,8 @@ from ingen.pre_processor.mask import Mask
 from ingen.pre_processor.melt import Melt
 from ingen.pre_processor.merger import Merger
 from ingen.pre_processor.union import Union
+from ingen.pre_processor.not_equals_filter import NotEqualsFilter
+from ingen.pre_processor.outer_join import OuterJoin
 
 log = logging.getLogger()
 
@@ -25,7 +27,9 @@ class PreProcessor:
         "melt": Melt,
         "drop_duplicates": DropDuplicates,
         "filter": Filter,
-        "json_array_expander": JsonArrayExpander
+        "json_array_expander": JsonArrayExpander,
+        "not_equals_filter": NotEqualsFilter,
+        "outer_join": OuterJoin,
     }
 
     def __init__(self, pre_processes, source_data):
