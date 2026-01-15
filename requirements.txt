@@ -1,5 +1,5 @@
-aiohttp>=3.10.2
-great_expectations>=0.15.50
+aiohttp>=3.8.6
+great_expectations==0.15.50
 holidays>=0.27.1
 hvac>=0.11.2
 numpy>=1.26.4
