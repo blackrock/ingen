@@ -41,7 +41,8 @@ class CSVFileReader(Reader):
                 result = pd.DataFrame(columns=config['all_cols'])
             else:
                 raise
-
+        if src.get('convert_dtypes',False):
+            result=result.convert_dtypes()
         return result
 
 
