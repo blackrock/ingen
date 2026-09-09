@@ -7,9 +7,10 @@ from unittest.mock import patch, MagicMock
 
 from aiohttp import BasicAuth
 
+from ingen.utils.app_http.auth import basic_auth_handler, AuthResult
 from ingen.utils.app_http.http_request import HTTPRequest
 from ingen.utils.app_http.aiohttp_retry import HTTPResponse
-from ingen.utils.app_http.http_util import api_auth, execute_requests
+from ingen.utils.app_http.http_util import execute_requests
 from ingen.utils.app_http.success_criterias import get_criteria_by_name, DEFAULT_STATUS_CRITERIA_OPTIONS
 
 
@@ -48,7 +49,7 @@ class MyTestCase(unittest.TestCase):
     def tearDown(self) -> None:
         self.loop.close()
 
-    @patch('ingen.utils.app_http.http_util.Properties')
+    @patch('ingen.utils.app_http.auth.properties')
     def test_basic_auth(self, mock_properties):
         auth_config = {
             'type': 'BasicAuth',
@@ -56,8 +57,9 @@ class MyTestCase(unittest.TestCase):
             'pwd': 'password'
         }
         mock_properties.get_property.return_value = 'username'
-        auth = api_auth(auth_config)
-        self.assertIsInstance(auth, BasicAuth)
+        result = basic_auth_handler(auth_config)
+        self.assertIsInstance(result, AuthResult)
+        self.assertIsInstance(result.auth, BasicAuth)
 
     @patch('ingen.utils.app_http.http_util.http_retry_request')
     def test_single_request(self, mock_http_retry_request):
@@ -73,7 +75,7 @@ class MyTestCase(unittest.TestCase):
         # The mock should return a coroutine that resolves to the HTTPResponse
         async def mock_response(*args, **kwargs):
             return http_response
-        
+
         mock_http_retry_request.side_effect = mock_response
 
         parsed_data = execute_requests(requests, self.request_params)
@@ -101,7 +103,7 @@ class MyTestCase(unittest.TestCase):
         # The mock should return coroutines that resolve to HTTPResponse objects
         responses = [http_response_1, http_response_2]
         response_index = 0
-        
+
         async def mock_response(*args, **kwargs):
             nonlocal response_index
             result = responses[response_index]
