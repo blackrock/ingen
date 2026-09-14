@@ -1,9 +1,17 @@
 aiohttp>=3.10.2
-great_expectations>=0.15.50
+# Cap below 1.0: InGen uses the legacy great_expectations Dataset API (ge.from_pandas + the
+# expect_* methods on the returned object), which was removed in GE 1.0. The 0.18.x line is the
+# last to retain that API and also ships Python 3.12 wheels.
+great_expectations>=0.18.9,<1.0
 holidays>=0.27.1
 hvac>=0.11.2
 numpy>=1.26.4
-pandas>=2.2.2
+# pandas does not require openpyxl by default; ingen's own file_reader/writer call
+# pd.read_excel/to_excel(engine='openpyxl') for .xlsx, so it must be a direct dependency.
+openpyxl>=3.1.0
+# Cap below 3.0: pandas 3.0 is a breaking major (Copy-on-Write becomes the default, deprecated
+# APIs removed). InGen's formatters/readers are written against the pandas 2.x behaviour.
+pandas>=2.2.2,<3.0
 pycryptodome>=3.20.0
 PyMySQL>=1.1.1
 PyYAML>=6.0.2
