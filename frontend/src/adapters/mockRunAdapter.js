@@ -63,7 +63,7 @@ export class MockRunAdapter extends RunService {
       let interfaceAborted = false;
       for (const stage of order) {
         if (isCancelled?.()) { cancelled = true; break; }
-        if (interfaceAborted) { stages.push({ interface: name, stage, status: 'skipped', durationMs: 0 }); continue; }
+        if (interfaceAborted) { emit({ type: 'stage', interface: name, stage, status: 'skipped' }); stages.push({ interface: name, stage, status: 'skipped', durationMs: 0 }); continue; }
 
         const t0 = Date.now();
         emit({ type: 'stage', interface: name, stage, status: 'running' });
