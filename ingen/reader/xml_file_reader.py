@@ -4,7 +4,6 @@
 import collections
 import logging
 from pyexpat import ExpatError
-from xml.etree import ElementTree as et
 
 import pandas as pd
 import xmltodict
@@ -14,16 +13,13 @@ class XMLFileReader:
 
     def read(self, src):
         encoding = src.get('encoding', 'utf-8')
-        xml_file = open(src['file_path'], 'r', encoding=encoding)
         try:
-            data = xmltodict.parse(xml_file.read())
-            tree = et.parse(src['file_path'])
-            root = tree.getroot()
-            root_with_xmlns = root.tag.split('}')
-            if '}' in root.tag:
-                parent_tag = root_with_xmlns[1]
-            else:
-                parent_tag = root.tag
+            with open(src['file_path'], 'r', encoding=encoding) as xml_file:
+                data = xmltodict.parse(xml_file.read())
+            # Valid XML has exactly one root element; its key in the parsed dict is the
+            # parent tag. Using it directly (instead of re-parsing with ElementTree) avoids
+            # a second file read and a namespace-prefix mismatch against xmltodict's keys.
+            parent_tag = next(iter(data))
             root_tag = src['root_tag']
             columns = src['columns']
             if root_tag in data[parent_tag]:

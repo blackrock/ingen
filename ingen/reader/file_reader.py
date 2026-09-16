@@ -33,6 +33,8 @@ class CSVFileReader(Reader):
                                  names=config['all_cols'],
                                  dtype=dtype,
                                  encoding=encoding)
+            result=result.convert_dtypes()
+        
         except TypeError:
             logging.error(self.DTYPE_LOG_MSG)
             raise
@@ -41,7 +43,6 @@ class CSVFileReader(Reader):
                 result = pd.DataFrame(columns=config['all_cols'])
             else:
                 raise
-
         return result
 
 
