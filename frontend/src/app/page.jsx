@@ -52,15 +52,21 @@ export default function Home() {
   }, []);
   useEffect(() => { refresh(); }, [refresh]);
 
-  const createPipeline = () => {
+  const createPipeline = async () => {
     if (busy) return;
     setBusy(true);
+    setError(null);
     const id = makeId('cfg');
     let model = createEmptyConfig({ id, name: 'Untitled pipeline' });
     model = upsertInterface(model, 'interface_1', createEmptyInterface());
-    // Navigate optimistically, persist in the background.
-    getServices().config.create(model).catch(() => {}).finally(() => setBusy(false));
-    router.push(`/configs/${id}`);
+    try {
+      await getServices().config.create(model);
+      router.push(`/configs/${id}`);
+    } catch (err) {
+      setError({ label: 'Could not create pipeline', message: errMessage(err, 'Storage unavailable') });
+    } finally {
+      setBusy(false);
+    }
   };
 
   const requestDelete = (e, id, name) => {
@@ -221,14 +227,16 @@ export default function Home() {
                   </button>
                 </div>
               ) : (
-                <Link href={`/configs/${it.id}`} className="plx__row">
-                  <span className="plx__rank">{String(i + 1).padStart(2, '0')}</span>
-                  <span className="plx__info">
-                    <span className="plx__name">{it.name || 'Untitled pipeline'}</span>
-                    <span className="plx__meta">
-                      {it.interfaceCount} interface{it.interfaceCount === 1 ? '' : 's'} · edited {fmtDate(it.updatedAt)}
+                <div className="plx__row">
+                  <Link href={`/configs/${it.id}`} className="plx__row-link">
+                    <span className="plx__rank">{String(i + 1).padStart(2, '0')}</span>
+                    <span className="plx__info">
+                      <span className="plx__name">{it.name || 'Untitled pipeline'}</span>
+                      <span className="plx__meta">
+                        {it.interfaceCount} interface{it.interfaceCount === 1 ? '' : 's'} · edited {fmtDate(it.updatedAt)}
+                      </span>
                     </span>
-                  </span>
+                  </Link>
                   <button
                     className="plx__icon-btn"
                     onClick={(e) => startRename(e, it.id, it.name)}
@@ -254,7 +262,7 @@ export default function Home() {
                   >
                     <Trash2 size={15} />
                   </button>
-                </Link>
+                </div>
               )}
             </li>
           ))}

@@ -45,7 +45,7 @@ export default function SourceLoader({ existingIds = [], onSubmit, onCancel, sub
   const pickType = (t) => { setType(t); setFields({}); setColumns([]); setUpload(null); setError(''); setShowAdvanced(false); };
 
   const handleFile = async (file) => {
-    if (!file) return;
+    if (!file || busy) return;
     setBusy(true); setError('');
     try {
       const res = await uploadFile(file);
@@ -140,11 +140,11 @@ function Dropzone({ busy, upload, onFile }) {
   return (
     <div
       className={`dropzone${over ? ' dropzone--over' : ''}${upload ? ' dropzone--done' : ''}`}
-      onDragOver={(e) => { e.preventDefault(); setOver(true); }}
+      onDragOver={(e) => { if (busy) return; e.preventDefault(); setOver(true); }}
       onDragLeave={() => setOver(false)}
-      onDrop={(e) => { e.preventDefault(); setOver(false); onFile(e.dataTransfer.files?.[0]); }}
+      onDrop={(e) => { e.preventDefault(); setOver(false); if (busy) return; onFile(e.dataTransfer.files?.[0]); }}
     >
-      <input id="srcfile" type="file" className="dropzone__input" onChange={(e) => onFile(e.target.files?.[0])} />
+      <input id="srcfile" type="file" className="dropzone__input" disabled={busy} onChange={(e) => onFile(e.target.files?.[0])} />
       <label htmlFor="srcfile" className="dropzone__label">
         {busy ? <Loader2 size={22} className="spin" /> : <UploadCloud size={22} />}
         {busy ? (

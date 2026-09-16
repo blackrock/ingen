@@ -60,7 +60,7 @@ function tokens(line) {
 
 export default function YamlPreviewPanel() {
   const { yaml, model } = useConfig();
-  const [copied, setCopied] = useState(false);
+  const [copyStatus, setCopyStatus] = useState('idle'); // 'idle' | 'copied' | 'unavailable'
   const filename = `${model?.meta.id ?? 'config'}.yml`;
 
   const lines = useMemo(() => yaml.replace(/\n$/, '').split('\n'), [yaml]);
@@ -82,10 +82,15 @@ export default function YamlPreviewPanel() {
   }
 
   const copy = async () => {
+    if (!navigator.clipboard?.writeText) {
+      setCopyStatus('unavailable');
+      setTimeout(() => setCopyStatus('idle'), 1400);
+      return;
+    }
     try {
-      await navigator.clipboard?.writeText(yaml);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1400);
+      await navigator.clipboard.writeText(yaml);
+      setCopyStatus('copied');
+      setTimeout(() => setCopyStatus('idle'), 1400);
     } catch {
       /* clipboard blocked — no-op */
     }
@@ -97,8 +102,11 @@ export default function YamlPreviewPanel() {
         <span className="yamlpanel__title">{filename}</span>
         <span className="yamlpanel__live" title="Regenerated from the model on every edit">live</span>
         <div className="yamlpanel__actions">
-          <button className={`yamlpanel__btn${copied ? ' yamlpanel__btn--ok' : ''}`} onClick={copy}>
-            {copied ? 'Copied' : 'Copy'}
+          <button
+            className={`yamlpanel__btn${copyStatus === 'copied' ? ' yamlpanel__btn--ok' : ''}${copyStatus === 'unavailable' ? ' yamlpanel__btn--err' : ''}`}
+            onClick={copy}
+          >
+            {copyStatus === 'copied' ? 'Copied' : copyStatus === 'unavailable' ? 'Unavailable' : 'Copy'}
           </button>
           <button className="yamlpanel__btn" onClick={() => download(filename, yaml)}>
             Download

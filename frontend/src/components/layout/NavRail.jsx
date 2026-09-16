@@ -21,7 +21,7 @@ import { useChatSession } from '../../state/ChatSessionContext.jsx';
 import { useGraphSelection } from '../../state/GraphSelectionContext.jsx';
 import { getSessions } from '../../services/chatHistoryService.js';
 import { buildPalette } from './navPalette.js';
-import { upsertSource } from '../../models/configModel.js';
+import { upsertSource, removeSource } from '../../models/configModel.js';
 import { listAdd, setField } from '../../models/interfaceOps.js';
 import { setColumns } from '../../lib/columnStore.js';
 import InterfaceManager from '../editor/InterfaceManager.jsx';
@@ -236,7 +236,14 @@ function GraphPalette() {
         sourceId={pendingSourceAction?.sid ?? ''}
         onNewInterface={handleNewInterface}
         onMerge={handleMergeSource}
-        onCancel={() => setPendingSourceAction(null)}
+        onCancel={() => {
+          const sid = pendingSourceAction?.sid;
+          setPendingSourceAction(null);
+          if (sid) {
+            updateModel((m) => removeSource(m, sid));
+            setColumns(sid, []);
+          }
+        }}
       />
     </div>
   );

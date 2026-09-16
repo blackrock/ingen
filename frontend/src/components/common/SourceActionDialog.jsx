@@ -5,6 +5,7 @@
 
 import { useEffect, useRef } from 'react';
 import { GitMerge, Layers } from 'lucide-react';
+import { useFocusTrap } from '../../hooks/useFocusTrap.js';
 
 /**
  * @param {{
@@ -17,6 +18,7 @@ import { GitMerge, Layers } from 'lucide-react';
  */
 export default function SourceActionDialog({ open, sourceId, onNewInterface, onMerge, onCancel }) {
   const cancelRef = useRef(null);
+  const dialogRef = useFocusTrap(open);
 
   useEffect(() => {
     if (open) cancelRef.current?.focus();
@@ -34,6 +36,7 @@ export default function SourceActionDialog({ open, sourceId, onNewInterface, onM
   return (
     <div className="cdialog__backdrop" onClick={onCancel} role="presentation">
       <div
+        ref={dialogRef}
         className="cdialog cdialog--wide"
         role="dialog"
         aria-modal="true"

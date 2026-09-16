@@ -4,6 +4,7 @@
 //  and Cancel / Confirm buttons. Confirm button can be styled as danger (red) or default.
 
 import { useEffect, useRef } from 'react';
+import { useFocusTrap } from '../../hooks/useFocusTrap.js';
 
 /**
  * @param {{
@@ -18,6 +19,7 @@ import { useEffect, useRef } from 'react';
  */
 export default function ConfirmDialog({ open, title, message, confirmLabel = 'Confirm', danger = false, onConfirm, onCancel }) {
   const cancelRef = useRef(null);
+  const dialogRef = useFocusTrap(open);
 
   // Focus the cancel button when dialog opens (safe default).
   useEffect(() => {
@@ -37,6 +39,7 @@ export default function ConfirmDialog({ open, title, message, confirmLabel = 'Co
   return (
     <div className="cdialog__backdrop" onClick={onCancel} role="presentation">
       <div
+        ref={dialogRef}
         className="cdialog"
         role="alertdialog"
         aria-modal="true"
