@@ -45,6 +45,12 @@ class TestJsonSource(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.source.fetch()
 
+    def test_source_fetch_id_not_in_payload(self):
+        payload = """{"other_id": {"col1": "val1"}}"""
+        self.source = JsonSource(self._src, payload)
+        with self.assertRaises(ValueError):
+            self.source.fetch()
+
     def test_source_fetch_validations(self):
         self.assertEqual([], self.source.fetch_validations())
 

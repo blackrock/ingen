@@ -111,7 +111,9 @@ class KeyValue(argparse.Action):
         setattr(namespace, self.dest, dict())
 
         for value in values:
-            key, value = value.split('=')
+            # Split on the FIRST '=' only, so values may themselves contain '=' (tokens, URLs with
+            # query strings, SQL fragments like "col=1"). Matches KeyValueOrString's behaviour.
+            key, value = value.split('=', 1)
             getattr(namespace, self.dest)[key] = value
 
 
