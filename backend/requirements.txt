@@ -1,0 +1,7 @@
+# InGen FastAPI wrapper dependencies.
+# Install alongside InGen itself (pip install -e . from the repo root, or the built wheel).
+fastapi>=0.110
+uvicorn[standard]>=0.27
+pyyaml>=6.0
+python-multipart>=0.0.9  # multipart file upload (POST /api/files/upload)
+# InGen's own runtime deps (pandas, great_expectations, etc.) come from the InGen package.
