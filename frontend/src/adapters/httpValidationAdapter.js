@@ -28,13 +28,13 @@ export class HttpValidationAdapter extends ValidationService {
             column,
             expectation: v.type,
             severity: v.severity ?? 'warning',
-            status: 'passed', // preview only — real status comes from a run
+            status: 'pending', // preview only — real status comes from a run
             unexpectedCount: 0,
           });
         }
       }
     }
-    const summary = { passed: results.length, failed: 0, warning: 0, total: results.length };
+    const summary = { passed: 0, failed: 0, warning: 0, pending: results.length, total: results.length };
     return { results, summary };
   }
 }

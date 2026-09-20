@@ -10,7 +10,7 @@
  * @property {string} column
  * @property {string} expectation
  * @property {'blocker'|'critical'|'warning'} severity
- * @property {'passed'|'failed'|'warning'} status
+ * @property {'passed'|'failed'|'warning'|'pending'} status
  * @property {number} unexpectedCount
  */
 

@@ -13,7 +13,9 @@ export const MAX_HISTORY = 50;
  * @returns {object[]} the new past stack
  */
 export function pushSnapshot(past, model, max = MAX_HISTORY) {
-  return [...past.slice(-(max - 1)), model];
+  if (max < 1) max = 1;
+  const next = [...past, model];
+  return next.length > max ? next.slice(next.length - max) : next;
 }
 
 /**

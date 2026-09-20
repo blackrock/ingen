@@ -35,7 +35,7 @@ const API = [
   { key: 'data_node', label: 'data_node', kind: 'tags' },
   { key: 'data_key', label: 'data_key', kind: 'tags' },
   { key: 'success_criteria', label: 'Success criteria', kind: 'text' },
-  { key: 'criteria_option', label: 'Criteria option', kind: 'json', rows: 2, visibleIf: (v) => !!v.success_criteria },
+  { key: 'criteria_options', label: 'Criteria options', kind: 'json', rows: 2, visibleIf: (v) => !!v.success_criteria },
   // — retries (interval only matters once you retry) —
   { key: 'retries', label: 'Retries', kind: 'number' },
   { key: 'interval', label: 'Interval (s)', kind: 'number', visibleIf: (v) => v.retries != null },

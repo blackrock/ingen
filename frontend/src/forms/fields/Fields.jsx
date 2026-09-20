@@ -44,16 +44,27 @@ export function NumberField({ label, help, value, onChange, placeholder }) {
 }
 
 export function SelectField({ label, help, value, onChange, options, allowEmpty = true }) {
+  // Resolve a DOM string back to the original typed option value.
+  const resolve = (domValue) => {
+    if (domValue === '') return undefined;
+    const match = options.find((opt) => {
+      const v = typeof opt === 'string' ? opt : String(opt.value);
+      return v === domValue;
+    });
+    if (match != null && typeof match !== 'string') return match.value;
+    return domValue;
+  };
+
   return (
     <Field label={label} help={help}>
       <select
         className="field__input"
         value={value ?? ''}
-        onChange={(e) => onChange(e.target.value === '' ? undefined : e.target.value)}
+        onChange={(e) => onChange(resolve(e.target.value))}
       >
         {allowEmpty && <option value="">—</option>}
         {options.map((opt) => {
-          const v = typeof opt === 'string' ? opt : opt.value;
+          const v = typeof opt === 'string' ? opt : String(opt.value);
           const l = typeof opt === 'string' ? opt : opt.label;
           return <option key={v} value={v}>{l}</option>;
         })}

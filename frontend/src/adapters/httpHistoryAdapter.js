@@ -25,6 +25,7 @@ export class HttpHistoryAdapter extends HistoryService {
   }
 
   async clear() {
-    // No-op: no delete endpoint in scope; history is backend-owned in HTTP mode.
+    // No delete endpoint in scope; history is backend-owned in HTTP mode.
+    throw new Error('UnsupportedOperation: clearing history is not available in HTTP mode');
   }
 }

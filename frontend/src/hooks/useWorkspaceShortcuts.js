@@ -22,13 +22,15 @@ export function useWorkspaceShortcuts({ onSave, onUndo, onRedo } = {}) {
       const ctrl = e.ctrlKey || e.metaKey;
       if (!ctrl) return;
 
-      if (e.key === 's') {
+      const key = e.key.toLowerCase();
+
+      if (key === 's') {
         e.preventDefault();
         onSave?.();
-      } else if (e.key === 'z' && !e.shiftKey) {
+      } else if (key === 'z' && !e.shiftKey) {
         e.preventDefault();
         onUndo?.();
-      } else if (e.key === 'y' || (e.key === 'z' && e.shiftKey)) {
+      } else if (key === 'y' || (key === 'z' && e.shiftKey)) {
         e.preventDefault();
         onRedo?.();
       }
