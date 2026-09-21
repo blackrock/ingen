@@ -16,6 +16,7 @@ from .schema_validate import validate_yaml
 from .store import default_store
 from .files import save_and_parse
 from .columns import source_columns
+from .chat import interpret, warmup  # inChat: local HuggingFace model
 
 app = FastAPI(title="InGen Wrapper", version="1.0.0")
 
@@ -71,6 +72,30 @@ def fetch_source_columns(req: ColumnsRequest):
         return source_columns(req.source, req.run_date)
     except Exception as exc:  # missing file, bad query, auth, unknown type → client shows the message
         raise HTTPException(status_code=400, detail=f"Couldn't read columns: {exc}")
+
+
+class ChatRequest(BaseModel):
+    message: str
+    columns: list[str] | None = None
+    yaml: str | None = None        # current pipeline, so the model edits what exists
+    interface: str | None = None   # active interface name
+    history: list[dict] | None = None  # recent [{role, content}] turns for follow-up context
+
+
+@app.post("/api/chat")
+def chat(req: ChatRequest):
+    try:
+        return interpret(
+            req.message, req.columns or [], req.yaml or "", req.interface or "", req.history or []
+        )  # {"reply", "ops"}
+    except Exception as exc:  # model load/inference failed → client falls back to its own parser.
+        raise HTTPException(status_code=502, detail=f"LLM unavailable: {exc}")
+
+
+@app.post("/api/chat/warmup")
+def chat_warmup():
+    warmup()  # best-effort; loads the model so the first real message is fast
+    return {"ok": True}
 
 
 @app.post("/api/configs/validate")
