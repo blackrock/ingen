@@ -8,12 +8,15 @@
 import { upsertSource, upsertInterface, createEmptyInterface, removeSource } from './configModel.js';
 import { listAdd, listUpdate, listRemove, setField } from './interfaceOps.js';
 import { closest } from '../lib/fuzzy.js';
-import { SOURCE_TYPES, OUTPUT_TYPES } from './constants.js';
+import { SOURCE_TYPES, OUTPUT_TYPES, FORMATTER_TYPES, PRE_PROCESSOR_TYPES } from './constants.js';
 
 const SOURCE_TYPE_LIST = Object.values(SOURCE_TYPES);
 const OUTPUT_TYPE_LIST = Object.values(OUTPUT_TYPES);
 
 const colName = (c) => c.dest_col_name || c.src_col_name;
+// Optional structured args the model may attach. Only plain objects are merged — anything else is ignored.
+const obj = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
+const HEADER_TYPES = ['delimited_result_header', 'custom']; // ingen/writer/writer.py
 const noChange = (model, reply) => ({ model, reply, changed: false });
 
 /**
@@ -32,7 +35,7 @@ export function applyOp(model, interfaceName, knownColumns, op) {
       for (const c of want) if (!have.has(c)) { have.add(c); fresh.push(c); } // dedupe vs existing AND within the op
       if (!fresh.length) return noChange(model, `Those columns are already in the pipeline.`);
       let it = iface;
-      for (const c of fresh) it = listAdd(it, 'columns', { src_col_name: c, dest_col_name: c });
+      for (const c of fresh) it = listAdd(it, 'columns', { src_col_name: c }); // dest defaults to src in ingen
       const n = fresh.length;
       return {
         model: upsertInterface(model, interfaceName, it),
@@ -53,20 +56,27 @@ export function applyOp(model, interfaceName, knownColumns, op) {
     }
 
     case 'add_source': {
-      if (!SOURCE_TYPE_LIST.includes(op.type)) return noChange(model, `I can only create sources of type: ${SOURCE_TYPE_LIST.join(', ')}.`);
       const name = (op.name ?? '').trim();
       if (!name) return noChange(model, 'A new source needs a name.');
+      const existing = model.sourcesById[name];
+      // Updating an existing source keeps its type, so a garbled `type` from the model doesn't block the edit.
+      if (!existing && !SOURCE_TYPE_LIST.includes(op.type)) return noChange(model, `I can only create sources of type: ${SOURCE_TYPE_LIST.join(', ')}.`);
+      const fields = { ...obj(op.fields) };
+      delete fields.id; delete fields.type; // identity comes from name/type, not the free-form fields
       let m = upsertSource(model, {
-        id: name,
-        type: op.type,
-        ...(op.type === 'file' ? { file_type: 'delimited_file', file_path: `data/${name}.csv` } : {}),
-        ...(op.type === 'mysql' ? { database: 'default_db', query: 'SELECT * FROM table' } : {}),
+        id: name, // id/type first so the YAML reads like a hand-written source
+        type: existing?.type ?? op.type,
+        ...(existing ?? {
+          ...(op.type === 'file' ? { file_type: 'delimited_file', file_path: `data/${name}.csv` } : {}),
+          ...(op.type === 'mysql' ? { database: 'default_db', query: 'SELECT * FROM table' } : {}),
+        }),
+        ...fields,
       });
       const it = m.interfacesByName[interfaceName] ?? createEmptyInterface();
       const cur = it.sources ?? [];
       const it2 = cur.includes(name) ? it : { ...it, sources: [...cur, name] };
       m = upsertInterface(m, interfaceName, it2);
-      return { model: m, reply: `✅ Added source \`${name}\` (\`${op.type}\`). It's on the board and in the YAML.`, changed: true };
+      return { model: m, reply: existing ? `✅ Updated source \`${name}\`.` : `✅ Added source \`${name}\` (\`${op.type}\`). It's on the board and in the YAML.`, changed: true };
     }
 
     case 'add_filter': {
@@ -87,7 +97,10 @@ export function applyOp(model, interfaceName, knownColumns, op) {
       const props = (op.type === 'delimited_file' || op.type === 'excel')
         ? { path: `output/${interfaceName}.${op.type === 'excel' ? 'xlsx' : 'csv'}` }
         : { id: `out_${interfaceName}` };
-      const it = setField(iface, 'output', { type: op.type, props });
+      const extra = { ...obj(op.props) };
+      // ingen's writer only acts on these header types; anything else (e.g. {type: 'none'}) is noise in the YAML.
+      if (extra.header && !HEADER_TYPES.includes(obj(extra.header).type)) delete extra.header;
+      const it = setField(iface, 'output', { type: op.type, props: { ...props, ...extra } });
       return { model: upsertInterface(model, interfaceName, it), reply: `✅ Output set to \`${op.type}\`. Check the YAML panel.`, changed: true };
     }
 
@@ -114,11 +127,29 @@ export function applyOp(model, interfaceName, knownColumns, op) {
     }
 
     case 'add_transform': {
-      const validTypes = ['merge', 'outer_join', 'mask', 'not_equals_filter', 'union', 'melt', 'aggregate', 'drop_duplicates', 'json_array_expander'];
+      const validTypes = Object.values(PRE_PROCESSOR_TYPES);
       const ttype = (op.type ?? '').trim();
       if (!validTypes.includes(ttype)) return noChange(model, `I can add these transforms: ${validTypes.join(', ')}.`);
-      const it = listAdd(iface, 'pre_processing', { type: ttype });
-      return { model: upsertInterface(model, interfaceName, it), reply: `✅ Added a \`${ttype}\` transform. Open the graph editor to configure it.`, changed: true };
+      const config = { ...obj(op.config) };
+      delete config.type;
+      const it = listAdd(iface, 'pre_processing', { type: ttype, ...config });
+      const configured = Object.keys(config).length > 0;
+      return { model: upsertInterface(model, interfaceName, it), reply: `✅ Added a \`${ttype}\` transform${configured ? '' : '. Open the graph editor to configure it'}.`, changed: true };
+    }
+
+    case 'add_formatter': {
+      const col = (op.col ?? '').trim();
+      const ftype = (op.type ?? '').trim();
+      if (!col) return noChange(model, 'A formatter needs the column it applies to.');
+      if (!FORMATTER_TYPES.includes(ftype)) return noChange(model, `\`${ftype || '?'}\` isn't a formatter I know. Try: date, float, concat, constant, replace_value…`);
+      const cols = iface.columns ?? [];
+      let idx = cols.findIndex((c) => c.src_col_name === col || c.dest_col_name === col);
+      let it = iface;
+      if (idx < 0) { it = listAdd(iface, 'columns', { src_col_name: col }); idx = cols.length; } // derived column, e.g. a concat
+      const target = it.columns[idx];
+      const fmt = op.format === undefined ? { type: ftype } : { type: ftype, format: op.format };
+      it = listUpdate(it, 'columns', idx, { ...target, formatters: [...(target.formatters ?? []), fmt] });
+      return { model: upsertInterface(model, interfaceName, it), reply: `✅ Added a \`${ftype}\` formatter on \`${col}\`.`, changed: true };
     }
 
     case 'remove_source': {

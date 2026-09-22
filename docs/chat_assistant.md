@@ -47,10 +47,15 @@ a bad model response.
 |----|------|--------|
 | `add_columns`   | `cols: [str]`        | add each column (deduped against existing) |
 | `rename_column` | `from`, `to`         | rename, or add a src→dest mapping |
-| `add_source`    | `name`, `type`       | type ∈ file, mysql, api, json |
+| `add_source`    | `name`, `type`, `fields?` | type ∈ file, mysql, api, json. `fields` = ingen source keys (`file_path`, `delimiter`, `skip_header_size`, `query`…). An existing `name` is updated in place |
+| `add_transform` | `type`, `config?`    | pre-processing step; `config` = its ingen keys, e.g. aggregate `groupby`/`agg`, union `source` |
+| `add_formatter` | `col`, `type`, `format?` | append a formatter; a `col` not yet mapped becomes a derived column (e.g. a concat target) |
 | `add_filter`    | `col`, `val`         | drop rows where `col == val` (col must be a known column) |
-| `set_output`    | `type`               | type ∈ delimited_file, excel, json, json_writer |
+| `set_output`    | `type`, `props?`     | type ∈ delimited_file, excel, json, json_writer; `props` merged (`path`, `delimiter`, `header`) |
 | `none`          | —                    | nothing matched |
+
+Plus `remove_column`, `remove_source`, `remove_transform` and `explain`. The applier validates
+enum values (source/transform/formatter/header types) and ignores anything it can't place.
 
 One message can produce several ops, applied in order ("add columns A,B and drop status=inactive").
 
@@ -75,6 +80,14 @@ pip install torch --index-url https://download.pytorch.org/whl/cpu   # CPU build
 uvicorn backend.app.main:app --reload --port 8000                    # from repo root
 ```
 
+With an NVIDIA GPU, install a CUDA build instead and the model loads there in 4-bit (≈3 GB VRAM for the
+default; a multi-op reply takes ~5–12 s on a laptop RTX 4050, versus minutes on CPU):
+
+```bash
+pip install torch --index-url https://download.pytorch.org/whl/cu126 bitsandbytes accelerate
+pip install "numpy<2"   # the torch install can pull numpy 2.x, which great_expectations <1.0 can't use
+```
+
 On first use the model weights download from the HuggingFace Hub (a few GB) and load into RAM. If the
 backend is down, chat silently falls back to the regex parser (only a few exact patterns like
 `add columns ...` work).
@@ -84,7 +97,7 @@ the model so subsequent messages are fast. The model stays resident for the life
 
 ### Model choice & RAM
 
-Default is `Qwen/Qwen3-4B`. The model loads in **float32** (the fastest dtype on CPU — there are no
+Default is `Qwen/Qwen3-4B`. Without CUDA the model loads in **float32** (the fastest dtype on CPU — there are no
 fast bf16/fp16 CPU kernels in transformers), so RAM ≈ params × 4 bytes. Budget for a 24–32 GB machine
 at the default; 16 GB will swap. Override with `HF_CHAT_MODEL`:
 
@@ -101,14 +114,15 @@ and need an HF token + licence accept — avoid unless you have set that up.
 
 ### Getting good output from a small model
 
-The model is a 4B running on CPU, so the invocation is tuned to make it reliable rather than relying on
+The model is only 4B (and often on CPU), so the invocation is tuned to make it reliable rather than relying on
 raw capability (`backend/app/chat.py`):
 
-- **Few-shot prompt** — the system turn is followed by worked input→JSON examples (multi-op edit,
+- **Few-shot prompt** — the system turn is followed by worked input→JSON examples (multi-op edit, a fully configured edit, an output-only edit,
   greeting, unsupported request) so the model copies the exact `{reply, ops}` shape.
 - **Assistant prefill** — generation is seeded with `{"reply": "` so the model starts *inside* the JSON
   (no prose, no markdown fence, no stray `<think>`), then the prefill is stitched back before parsing.
-- **Short generation** — `max_new_tokens=192` with `repetition_penalty=1.05`; payloads are tiny and this
+- **Bounded generation** — `max_new_tokens=768` with `repetition_penalty=1.05`; configured multi-op
+  replies (formatters, output props, a 20-column source list) run a few hundred tokens, and the cap
   bounds latency and guards against greedy loops.
 - **Bounded context** — the request carries the current YAML (capped at ~2.5 KB) plus the last few chat
   turns as plain-text context, so follow-ups ("now also add a filter") resolve without re-stating.

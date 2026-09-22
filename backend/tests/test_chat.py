@@ -2,7 +2,9 @@
 #  We do NOT load the HF model here; we pin the contract that guards against the vocabulary drift
 #  the code review flagged (LLM vocabulary must equal what frontend/src/models/applyIntent.js runs).
 
+import re
 import unittest
+from pathlib import Path
 
 from backend.app.chat import _filter_ops, _extract_json, _build_user_content, _PREFILL, _YAML_CAP, OPS
 
@@ -19,13 +21,10 @@ class FilterOps(unittest.TestCase):
         self.assertEqual(_filter_ops(None), [])
 
     def test_vocabulary_matches_executor(self):
-        # If this fails, chat.py and applyIntent.js have drifted again. Re-sync them.
-        self.assertEqual(OPS, {
-            "add_columns", "remove_column", "rename_column",
-            "add_source", "remove_source",
-            "add_transform", "remove_transform",
-            "add_filter", "set_output", "explain", "none",
-        })
+        # Read the executor's `case '...'` labels directly, so this can't go stale like a pinned list.
+        # "none" is the model's explicit no-op; the executor handles it in `default`.
+        src = (Path(__file__).resolve().parents[2] / "frontend/src/models/applyIntent.js").read_text(encoding="utf-8")
+        self.assertEqual(OPS - {"none"}, set(re.findall(r"case '(\w+)'", src)))
 
 
 class ExtractJson(unittest.TestCase):

@@ -6,8 +6,9 @@
 #  The model is loaded once at first call and kept resident (lazy init).
 #
 #  Default model: Qwen/Qwen3-4B  (4B params, open licence, chat-template).
-#  Loaded in float32 (fastest dtype on CPU), so RAM ~= params x 4 bytes: ~16 GB for the 4B default.
-#  Budget for a 24-32 GB machine; 16 GB will swap.
+#  With a CUDA build of torch it loads in 4-bit on the GPU (~3 GB VRAM for the 4B default, ~12 s per
+#  multi-op reply on a laptop RTX 4050). Otherwise float32 on CPU, so RAM ~= params x 4 bytes: ~16 GB
+#  for the 4B default. Budget for a 24-32 GB machine; 16 GB will swap.
 #
 #  Other options (set HF_CHAT_MODEL env var), RAM in float32:
 #    Qwen/Qwen3-4B                    — default, best open model for structured JSON (~16 GB RAM)
@@ -31,7 +32,7 @@ HF_MODEL = os.environ.get("HF_CHAT_MODEL", "Qwen/Qwen3-4B")
 OPS = {
     "add_columns", "remove_column", "rename_column",
     "add_source", "remove_source",
-    "add_transform", "remove_transform",
+    "add_transform", "remove_transform", "add_formatter",
     "add_filter", "set_output", "explain", "none",
 }
 
@@ -46,14 +47,24 @@ SYSTEM_PROMPT = (
     '  {"op": "add_columns", "cols": ["c1", "c2"]}                 - add output columns\n'
     '  {"op": "remove_column", "name": "col"}                       - drop an output column\n'
     '  {"op": "rename_column", "from": "old", "to": "new"}          - rename a column\n'
-    '  {"op": "add_source", "name": "id", "type": "file|mysql|api|json"}  - add a data source\n'
+    '  {"op": "add_source", "name": "id", "type": "file|mysql|api|json", "fields": {...}}  - add a '
+    'data source, or update one that already exists. fields (optional) = ingen source keys, e.g. '
+    'file_path, file_type, delimiter, skip_header_size, skip_trailer_size, columns, database, query\n'
     '  {"op": "remove_source", "name": "id"}                        - remove a source everywhere\n'
     '  {"op": "add_transform", "type": "merge|outer_join|mask|not_equals_filter|union|melt|'
-    'aggregate|drop_duplicates|json_array_expander"}  - add a pre-processing step\n'
+    'aggregate|drop_duplicates|json_array_expander", "config": {...}}  - add a pre-processing step. '
+    'config (optional) = its ingen keys, e.g. aggregate {"groupby": {"cols": ["a"]}, "agg": '
+    '{"operation": "sum", "col": "b"}}; union {"source": ["src_a", "src_b"]}\n'
+    '  {"op": "add_formatter", "col": "column", "type": "date|float|concat|constant|...", "format": ...}'
+    '  - format a column (creates it if new, e.g. a concat target). format examples: date '
+    '{"src": "%Y-%m-%d", "des": "%m/%d/%y"}; float "${:,.2f}"; concat {"columns": ["a", "b"], '
+    '"separator": "_"}\n'
     '  {"op": "remove_transform", "type": "<transform type>"}       - remove a pre-processing step '
     '(or pass {"index": N})\n'
     '  {"op": "add_filter", "col": "column", "val": "value_to_drop"}  - drop rows where column == value\n'
-    '  {"op": "set_output", "type": "delimited_file|excel|json|json_writer"}  - set the output format\n'
+    '  {"op": "set_output", "type": "delimited_file|excel|json|json_writer", "props": {...}}  - set the '
+    'output. props (optional), e.g. {"path": "../output/x.csv", "delimiter": ",", "header": '
+    '{"type": "delimited_result_header"}}\n'
     '  {"op": "explain"}                                             - describe the current pipeline\n\n'
     "Guidelines:\n"
     "- Prefer column names from the provided known-columns list; if unsure, still emit the op and "
@@ -61,17 +72,44 @@ SYSTEM_PROMPT = (
     "- A greeting or a question that is not an edit -> ops=[] and a helpful reply.\n"
     "- If the request is NOT one of the ops above (e.g. train a model, draw a chart, export a PDF), "
     "return ops=[] and a reply that names what you CAN do — don't invent an op.\n"
-    "- One request may need several ops; emit them in order."
+    "- One request may need several ops; emit them in order.\n"
+    "- Copy names, paths, formats and separators exactly as the user wrote them, including symbols "
+    "like + and spaces.\n"
+    "- Only include fields, config and props the user actually asked for (no header unless asked).\n"
+    "- Source columns are always a list of names. \"The detected headers\" / \"the known columns\" means "
+    "copy the Known columns list.\n"
+    "- Joining/concatenating columns into a new column is add_formatter with type concat, never a "
+    "transform."
 )
 
 # A few worked examples, taught in-context. A 4B model extracts far more reliably from concrete
-# input->JSON pairs than from the schema prose alone. Cover: multi-op edit, greeting, unsupported.
+# input->JSON pairs than from the schema prose alone. Cover: multi-op edit, configured edit (formatters,
+# transform config, output props), output-only edit, greeting, unsupported.
 FEWSHOT = [
     {"role": "user", "content": "Known columns: ['id', 'status']\n\n"
         "Request: add columns amount and currency, then drop rows where status is inactive"},
     {"role": "assistant", "content": '{"reply": "Added two columns and a filter on status.", '
         '"ops": [{"op": "add_columns", "cols": ["amount", "currency"]}, '
         '{"op": "add_filter", "col": "status", "val": "inactive"}]}'},
+    {"role": "user", "content": "Known columns: ['trade_date', 'px', 'desk', 'book']\n\n"
+        "Request: show trade_date as TRADE DATE, reformatting it from %Y-%m-%d to %d/%m/%Y, format px "
+        "as {:.2f}, add a column desk_book joining desk and book with '-', sum px by desk, and write a "
+        "csv with a header row to ../output/trades.csv"},
+    {"role": "assistant", "content": '{"reply": "Mapped and formatted the columns, added the '
+        'aggregate, and set the csv output.", "ops": ['
+        '{"op": "rename_column", "from": "trade_date", "to": "TRADE DATE"}, '
+        '{"op": "add_formatter", "col": "trade_date", "type": "date", '
+        '"format": {"src": "%Y-%m-%d", "des": "%d/%m/%Y"}}, '
+        '{"op": "add_formatter", "col": "px", "type": "float", "format": "{:.2f}"}, '
+        '{"op": "add_formatter", "col": "desk_book", "type": "concat", '
+        '"format": {"columns": ["desk", "book"], "separator": "-"}}, '
+        '{"op": "add_transform", "type": "aggregate", '
+        '"config": {"groupby": {"cols": ["desk"]}, "agg": {"operation": "sum", "col": "px"}}}, '
+        '{"op": "set_output", "type": "delimited_file", "props": {"path": "../output/trades.csv", '
+        '"delimiter": ",", "header": {"type": "delimited_result_header"}}}]}'},
+    {"role": "user", "content": "Known columns: []\n\nRequest: write a pipe delimited file to out/x.txt"},
+    {"role": "assistant", "content": '{"reply": "Output set to a pipe-delimited file.", "ops": ['
+        '{"op": "set_output", "type": "delimited_file", "props": {"path": "out/x.txt", "delimiter": "|"}}]}'},
     {"role": "user", "content": "Known columns: []\n\nRequest: hi, what can you do?"},
     {"role": "assistant", "content": '{"reply": "I can add or rename columns, add sources and '
         'filters, add transforms, and set the output format — just describe the change.", "ops": []}'},
@@ -103,12 +141,24 @@ def _load_model():
 
         torch.set_num_threads(os.cpu_count() or 1)  # use all cores for CPU inference
         tok = AutoTokenizer.from_pretrained(HF_MODEL, trust_remote_code=False)
-        mdl = AutoModelForCausalLM.from_pretrained(
-            HF_MODEL,
-            dtype=torch.float32,    # CPU-safe; use bfloat16 if CUDA available
-            device_map="cpu",
-            trust_remote_code=False,
-        )
+        if torch.cuda.is_available():
+            # ponytail: 4-bit so a 4B model fits a 6 GB laptop GPU; drop quantization_config on >=10 GB cards
+            from transformers import BitsAndBytesConfig
+            mdl = AutoModelForCausalLM.from_pretrained(
+                HF_MODEL,
+                quantization_config=BitsAndBytesConfig(
+                    load_in_4bit=True, bnb_4bit_quant_type="nf4", bnb_4bit_compute_dtype=torch.float16,
+                ),
+                device_map="cuda",
+                trust_remote_code=False,
+            )
+        else:
+            mdl = AutoModelForCausalLM.from_pretrained(
+                HF_MODEL,
+                dtype=torch.float32,    # CPU-safe
+                device_map="cpu",
+                trust_remote_code=False,
+            )
         mdl.eval()
         _tokenizer = tok
         _model = mdl
@@ -223,13 +273,13 @@ def interpret(
 
     input_text += _PREFILL  # prefill the assistant turn so generation starts inside the JSON
 
-    inputs = tok(input_text, return_tensors="pt")
+    inputs = tok(input_text, return_tensors="pt").to(mdl.device)
     input_len = inputs["input_ids"].shape[1]
 
     with torch.no_grad():
         output_ids = mdl.generate(
             **inputs,
-            max_new_tokens=192,     # JSON payloads are tiny; 192 covers a multi-op reply with headroom
+            max_new_tokens=768,     # configured multi-op replies (formatters, output props) run ~400 tokens
             do_sample=False,        # greedy — deterministic, no randomness
             temperature=None,       # must be None when do_sample=False (transformers 5.x)
             top_p=None,             # same
