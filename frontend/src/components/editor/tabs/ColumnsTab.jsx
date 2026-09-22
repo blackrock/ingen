@@ -1,6 +1,7 @@
 //  Columns & Formatters editor — card-based layout with clear source → dest mapping.
-//  Source columns are chosen from a dropdown of headers detected for the interface's sources
-//  (files auto-detect on upload; SQL/API are fetched on demand via the "Fetch columns" button).
+//  Source columns are typed or picked from headers detected for the interface's sources (files
+//  auto-detect on upload; SQL/API are fetched on demand via the "Fetch columns" button). Detected
+//  headers are suggestions, not a whitelist: a derived column (e.g. a concat target) exists in no source.
 
 import { useReducer, useState } from 'react';
 import { Plus, ArrowRight, ChevronDown, ChevronUp, Columns, RefreshCw, AlertCircle, Loader2 } from 'lucide-react';
@@ -29,30 +30,30 @@ function FormatterRow({ formatter, index, count, onChange, onMove, onRemove }) {
   );
 }
 
-// Strict dropdown: choose a source column from detected headers. An already-saved value that isn't
-// in the detected list is kept as an option so editing a column never silently drops it.
-function SourceColSelect({ value, options, onChange, onFetch }) {
-  const opts = value && !options.includes(value) ? [value, ...options] : options;
-  if (opts.length === 0) {
-    return (
-      <button type="button" className="colcard__colpick-empty" onClick={onFetch}>
-        No columns detected — fetch
-      </button>
-    );
-  }
+// Cards are keyed by column name, so committing every keystroke would remount the card and drop
+// focus after one character. Edit a local draft; commit on blur, Enter, or a datalist pick.
+function DraftInput({ value, onCommit, list, ...rest }) {
+  const [draft, setDraft] = useState(value ?? '');
+  const commit = (v) => { if (v !== (value ?? '')) onCommit(v); };
   return (
-    <select
-      className="colcard__input colcard__input--select"
-      value={value ?? ''}
-      onChange={(e) => onChange(e.target.value)}
-    >
-      <option value="" disabled>Select a column…</option>
-      {opts.map((c) => <option key={c} value={c}>{c}</option>)}
-    </select>
+    <input
+      className="colcard__input"
+      list={list}
+      value={draft}
+      onChange={(e) => {
+        setDraft(e.target.value);
+        if (e.nativeEvent.inputType === 'insertReplacementText') commit(e.target.value); // datalist pick
+      }}
+      onBlur={(e) => commit(e.target.value)}
+      onKeyDown={(e) => { if (e.key === 'Enter') commit(e.currentTarget.value); }}
+      {...rest}
+    />
   );
 }
 
-function ColumnCard({ col, index, count, isExpanded, onToggle, onUpdate, onRemove, onMove, formatterTypes, onUpdateFmts, srcColumns, onFetch }) {
+const SRC_LIST_ID = 'colcard-src-options';
+
+function ColumnCard({ col, index, count, isExpanded, onToggle, onUpdate, onRemove, onMove, formatterTypes, onUpdateFmts }) {
   const fmts = col.formatters ?? [];
   const [addFmt, setAddFmt] = useState('date');
 
@@ -64,11 +65,11 @@ function ColumnCard({ col, index, count, isExpanded, onToggle, onUpdate, onRemov
         <div className="colcard__mapping">
           <div className="colcard__field">
             <label className="colcard__field-label">Source</label>
-            <SourceColSelect
-              value={col.src_col_name ?? ''}
-              options={srcColumns}
-              onChange={(v) => onUpdate({ ...col, src_col_name: v })}
-              onFetch={onFetch}
+            <DraftInput
+              list={SRC_LIST_ID}
+              placeholder="Pick or type a column…"
+              value={col.src_col_name}
+              onCommit={(v) => onUpdate({ ...col, src_col_name: v })}
             />
           </div>
 
@@ -78,11 +79,10 @@ function ColumnCard({ col, index, count, isExpanded, onToggle, onUpdate, onRemov
 
           <div className="colcard__field">
             <label className="colcard__field-label">Output</label>
-            <input
-              className="colcard__input"
+            <DraftInput
               placeholder={col.src_col_name || 'dest_col_name'}
-              value={col.dest_col_name ?? ''}
-              onChange={(e) => onUpdate({ ...col, dest_col_name: e.target.value || undefined })}
+              value={col.dest_col_name}
+              onCommit={(v) => onUpdate({ ...col, dest_col_name: v || undefined })}
             />
           </div>
         </div>
@@ -218,9 +218,12 @@ export default function ColumnsTab({ interfaceName, iface }) {
 
   return (
     <div className="tabcontent">
+      <datalist id={SRC_LIST_ID}>
+        {srcColumns.map((c) => <option key={c} value={c} />)}
+      </datalist>
       <div className="colcard-header">
         <p className="tabcontent__hint">
-          Map source columns to output columns. Pick the source column from its detected headers.
+          Map source columns to output columns. Pick a detected header, or type a new name for a derived column.
         </p>
         <div className="colcard-header__actions">
           {sources.length > 0 && (
@@ -262,8 +265,6 @@ export default function ColumnsTab({ interfaceName, iface }) {
               onMove={(d) => moveCol(i, d)}
               formatterTypes={formatterTypes}
               onUpdateFmts={(fmts) => updateFmts(i, col, fmts)}
-              srcColumns={srcColumns}
-              onFetch={fetchColumns}
             />
           ))}
         </div>
