@@ -52,9 +52,9 @@ class InterfaceWriter:
         sep = self._props['delimiter'] if 'delimiter' in self._props else ','
         encoding = self._props.get('encoding', 'utf-8')
         if self.header and self.header.get('type') == 'delimited_result_header':
-            self._df.to_csv(path, sep, index=InterfaceWriter.SHOW_DATAFRAME_INDEX, encoding=encoding)
+            self._df.to_csv(path, sep=sep, index=InterfaceWriter.SHOW_DATAFRAME_INDEX, encoding=encoding)
         else:
-            self._df.to_csv(path, sep, header=False, index=InterfaceWriter.SHOW_DATAFRAME_INDEX, encoding=encoding)
+            self._df.to_csv(path, sep=sep, header=False, index=InterfaceWriter.SHOW_DATAFRAME_INDEX, encoding=encoding)
 
     def file_writer(self):
         paths = self._props.get('path')
