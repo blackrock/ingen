@@ -11,6 +11,8 @@
 
 import re
 import sys
+import csv
+import itertools
 import tempfile
 import time
 import uuid
@@ -159,6 +161,33 @@ def _default_executor(cmd, cwd):
     return proc.returncode, (proc.stdout or "") + (proc.stderr or "")
 
 
+def output_previews(config: dict, interfaces, workdir, since: float, n: int = 8) -> list:
+    """First rows of each delimited_file output written during this run (mtime >= `since`), so the
+    console can show the result, not just the logs. Paths with unresolved interpolation don't exist
+    on disk and are skipped."""
+    # ponytail: delimited_file only; add excel/json previews when someone runs those in the console.
+    previews = []
+    for name in interfaces:
+        out = ((config.get("interfaces") or {}).get(name) or {}).get("output") or {}
+        if out.get("type") != "delimited_file":
+            continue
+        props = out.get("props") or {}
+        paths = props.get("path")
+        for p in paths if isinstance(paths, list) else [paths]:
+            f = Path(workdir) / str(p or "")
+            if not p or not f.is_file() or f.stat().st_mtime < since:
+                continue
+            with open(f, newline="", encoding=props.get("encoding", "utf-8"), errors="replace") as fh:
+                rows = list(itertools.islice(csv.reader(fh, delimiter=props.get("delimiter", ",")), n + 1))
+            has_header = (props.get("header") or {}).get("type") == "delimited_result_header"
+            previews.append({
+                "interface": name, "path": str(p),
+                "columns": rows[0] if has_header and rows else [],
+                "rows": rows[1:] if has_header else rows[:n],
+            })
+    return previews
+
+
 def execute_run(yaml_text: str, overrides: dict, config: dict, *,
                 workdir: str = ".", executor=_default_executor) -> dict:
     """Write YAML to a temp file, run `python -m ingen`, return a RunRecord dict.
@@ -199,8 +228,11 @@ def execute_run(yaml_text: str, overrides: dict, config: dict, *,
     finished_at = _now_iso()
     duration_ms = int((time.time() - t0) * 1000)
 
-    return build_run_record(
+    record = build_run_record(
         config_id=config_id, config_name=config_name, overrides=overrides,
         started_at=started_at, finished_at=finished_at, duration_ms=duration_ms,
         exit_code=exit_code, output=output, config=config,
     )
+    interfaces = overrides.get("interfaces") or list((config.get("interfaces") or {}).keys())
+    record["outputs"] = output_previews(config, interfaces, workdir, since=t0 - 1)  # 1 s slack for coarse mtimes
+    return record
