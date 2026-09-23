@@ -8,7 +8,7 @@
 import { upsertSource, upsertInterface, createEmptyInterface, removeSource } from './configModel.js';
 import { listAdd, listUpdate, listRemove, setField } from './interfaceOps.js';
 import { closest } from '../lib/fuzzy.js';
-import { SOURCE_TYPES, OUTPUT_TYPES, FORMATTER_TYPES, PRE_PROCESSOR_TYPES } from './constants.js';
+import { SOURCE_TYPES, OUTPUT_TYPES, FORMATTER_TYPES, PRE_PROCESSOR_TYPES, FILE_TYPES } from './constants.js';
 
 const SOURCE_TYPE_LIST = Object.values(SOURCE_TYPES);
 const OUTPUT_TYPE_LIST = Object.values(OUTPUT_TYPES);
@@ -63,6 +63,8 @@ export function applyOp(model, interfaceName, knownColumns, op) {
       if (!existing && !SOURCE_TYPE_LIST.includes(op.type)) return noChange(model, `I can only create sources of type: ${SOURCE_TYPE_LIST.join(', ')}.`);
       const fields = { ...obj(op.fields) };
       delete fields.id; delete fields.type; // identity comes from name/type, not the free-form fields
+      if (fields.file_type && !Object.values(FILE_TYPES).includes(fields.file_type)) delete fields.file_type; // e.g. "csv"
+      if (fields.columns !== undefined && !Array.isArray(fields.columns)) delete fields.columns; // e.g. "all the detected headers"
       let m = upsertSource(model, {
         id: name, // id/type first so the YAML reads like a hand-written source
         type: existing?.type ?? op.type,

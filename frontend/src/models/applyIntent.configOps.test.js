@@ -13,6 +13,11 @@ test('add_source merges fields, and updates an existing source without re-valida
   assert.equal(r1.model.sourcesById.f.type, 'file', 'fields cannot override identity');
   assert.equal(r1.model.sourcesById.f.delimiter, '|');
 
+  const csv = applyOp(base(), IFACE, [], { op: 'add_source', name: 'g', type: 'file', fields: { file_type: 'csv' } });
+  assert.equal(csv.model.sourcesById.g.file_type, 'delimited_file', 'unknown file_type falls back to the default');
+  const prose = applyOp(base(), IFACE, [], { op: 'add_source', name: 'h', type: 'file', fields: { columns: 'all the detected headers' } });
+  assert.equal(prose.model.sourcesById.h.columns, undefined, 'non-list columns are dropped');
+
   const r2 = applyOp(r1.model, IFACE, [], { op: 'add_source', name: 'f', type: 'file|mysql', fields: { skip_header_size: 1 } });
   assert.ok(r2.changed);
   assert.equal(r2.model.sourcesById.f.delimiter, '|', 'existing fields kept');
