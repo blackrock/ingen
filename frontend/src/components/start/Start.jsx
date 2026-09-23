@@ -1,5 +1,6 @@
-//  Start — the source-first entry. Shown by the config index when the first interface has no
-//  sources yet: describe a source → choose inFlow/inChat → the workspace powers up on that source.
+//  Start — the source-first entry. Shown for any interface with no sources yet (the config index
+//  for the first one, the interface editor for ones added later): describe a source → choose
+//  inFlow/inChat → the workspace powers up on that source.
 //  Supports adding MULTIPLE sources before entering the editor.
 
 import { useState } from 'react';
@@ -20,14 +21,14 @@ const TYPE_META = {
   json:         { icon: Braces,    color: '#10b981', label: 'JSON' },
 };
 
-export default function Start({ configId }) {
+export default function Start({ configId, interfaceName: forInterface }) {
   const { model, updateModel } = useConfig();
   const { setViewMode } = useViewMode();
   const router = useRouter();
   const [step, setStep] = useState('source');       // 'source' | 'adding' | 'entry'
   const [pendingSources, setPendingSources] = useState([]); // [{ source, columns }, ...]
 
-  const interfaceName = model?.interfaceOrder?.[0] ?? 'interface_1';
+  const interfaceName = forInterface ?? model?.interfaceOrder?.[0] ?? 'interface_1';
 
   const existingIds = [
     ...(model?.sourceOrder ?? []),

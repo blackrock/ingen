@@ -22,6 +22,19 @@ const SUBTITLE = {
   [ADAPTER_MODE.MOCK]: 'Simulated execution — no backend. Logs and results are mocked.',
 };
 
+// First rows of each file the run wrote (backend `record.outputs`; absent in mock mode).
+function OutputPreview({ outputs }) {
+  return outputs.map((o) => (
+    <div key={`${o.interface}:${o.path}`} className="outpreview">
+      <div className="outpreview__head"><strong>{o.interface}</strong> → <span className="mono">{o.path}</span></div>
+      <table>
+        {o.columns.length > 0 && <thead><tr>{o.columns.map((c, i) => <th key={i}>{c}</th>)}</tr></thead>}
+        <tbody>{o.rows.map((r, i) => <tr key={i}>{r.map((v, j) => <td key={j}>{v}</td>)}</tr>)}</tbody>
+      </table>
+    </div>
+  ));
+}
+
 function Console() {
   const { status, events, record, start, cancel } = useRun();
   const subtitle = SUBTITLE[getAdapterMode()] ?? SUBTITLE[ADAPTER_MODE.MOCK];
@@ -46,6 +59,13 @@ function Console() {
         <h2 className="runpanel__title">Stages</h2>
         <StageTimeline events={events} />
       </div>
+
+      {record?.outputs?.length > 0 && (
+        <div className="runpanel">
+          <h2 className="runpanel__title">Output preview</h2>
+          <OutputPreview outputs={record.outputs} />
+        </div>
+      )}
 
       <div className="runpanel">
         <h2 className="runpanel__title">Logs</h2>

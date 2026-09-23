@@ -616,7 +616,7 @@ function GraphEditorInner({ interfaceName, iface }) {
         <div className="grapheditor__drawer">
           <div className="grapheditor__drawer-head">
             <span className="grapheditor__drawer-title">{drawerContent.title}</span>
-            <button className="grapheditor__drawer-close" onClick={() => setSelectedNodeId(null)}>
+            <button className="grapheditor__drawer-close" aria-label="Close panel" onClick={() => setSelectedNodeId(null)}>
               <X size={16} />
             </button>
           </div>

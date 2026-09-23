@@ -2,11 +2,16 @@
 //
 //  Persists chat conversations per-interface in localStorage. Each interface can have multiple
 //  sessions; the active session is always the most recent. Provides CRUD for the sidebar
-//  history panel in Chat mode.
+//  history panel in Chat mode. Callers key sessions with chatScope(configId, interfaceName):
+//  interface names repeat across pipelines, and a bare name would hand one pipeline's
+//  conversation (and model context) to another.
 
 import { makeId } from '../utils/id.js';
 
 const STORAGE_KEY = 'ingen_chat_history';
+
+/** Storage key for one interface of one pipeline. */
+export const chatScope = (configId, interfaceName) => `${configId}/${interfaceName}`;
 
 function readAll() {
   try {

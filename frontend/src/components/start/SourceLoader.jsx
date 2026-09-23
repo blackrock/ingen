@@ -30,7 +30,7 @@ export default function SourceLoader({ existingIds = [], onSubmit, onCancel, sub
   const [fields, setFields] = useState({});       // type-specific body
   const [columns, setColumns] = useState([]);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [upload, setUpload] = useState(null);     // { name, rows, cached } | null
+  const [upload, setUpload] = useState(null);     // { name, columns, rows } | null
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -50,9 +50,9 @@ export default function SourceLoader({ existingIds = [], onSubmit, onCancel, sub
     try {
       const res = await uploadFile(file);
       const ext = file.name.split('.').pop().toLowerCase();
-      setFields((f) => ({ ...f, file_path: res.file_path, file_type: f.file_type || EXT_TO_FILETYPE[ext] }));
+      setFields((f) => ({ ...f, file_path: res.file_path, file_type: f.file_type || EXT_TO_FILETYPE[ext] || FILE_TYPES.DELIMITED_FILE }));
       setColumns(res.columns || []);
-      setUpload({ name: file.name, rows: res.preview || [], cached: res.cached });
+      setUpload({ name: file.name, columns: res.columns || [], rows: res.preview || [] });
       if (!id.trim()) setId(file.name.replace(/\.[^.]+$/, '').replace(/\W+/g, '_'));
     } catch (e) {
       setError(e.message || 'Upload failed. Is the backend reachable?');
@@ -150,21 +150,20 @@ function Dropzone({ busy, upload, onFile }) {
         {busy ? (
           <span>Parsing…</span>
         ) : upload ? (
-          <span><strong>{upload.name}</strong> — {upload.rows.length} rows {upload.cached ? '(cached)' : 'loaded'}</span>
+          <span><strong>{upload.name}</strong> — {upload.columns.length} columns · first rows below</span>
         ) : (
           <span>Drag a CSV/Excel here, or <u>browse</u></span>
         )}
       </label>
       {upload && upload.rows.length > 0 && (
         <div className="dropzone__preview">
+          {/* preview rows are data only — the header comes from the parsed column names */}
           <table>
-            {upload.rows.length > 1 && (
-              <thead>
-                <tr>{upload.rows[0].slice(0, 6).map((cell, j) => <th key={j}>{cell}</th>)}</tr>
-              </thead>
-            )}
+            <thead>
+              <tr>{upload.columns.slice(0, 6).map((c) => <th key={c}>{c}</th>)}</tr>
+            </thead>
             <tbody>
-              {upload.rows.slice(upload.rows.length > 1 ? 1 : 0, 6).map((row, i) => (
+              {upload.rows.slice(0, 5).map((row, i) => (
                 <tr key={i}>{row.slice(0, 6).map((cell, j) => <td key={j}>{cell}</td>)}</tr>
               ))}
             </tbody>

@@ -5,3 +5,13 @@ uvicorn[standard]>=0.27
 pyyaml>=6.0
 python-multipart>=0.0.9  # multipart file upload (POST /api/files/upload)
 # InGen's own runtime deps (pandas, great_expectations, etc.) come from the InGen package.
+
+# --- inChat: local HuggingFace inference. Model auto-downloads from HF Hub on first use. ---
+# torch CPU build:  pip install torch --index-url https://download.pytorch.org/whl/cpu
+# 5.x required: chat.py passes `dtype=` (replaced `torch_dtype=`) and `temperature=None`
+# alongside do_sample=False. Verified against 5.13.1.
+transformers>=5.0
+huggingface_hub>=0.23
+accelerate>=0.30
+safetensors>=0.4.3
+tokenizers>=0.19

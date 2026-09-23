@@ -87,8 +87,10 @@ export function ToggleField({ label, help, value, onChange }) {
 }
 
 /** Comma/whitespace separated string[] — used for column lists, keys, etc. */
+// Local text buffer: re-deriving the text from the parsed array would eat the trailing ", " as you
+// type it, making a second tag impossible to enter.
 export function TagsField({ label, help, value, onChange, placeholder }) {
-  const text = Array.isArray(value) ? value.join(', ') : '';
+  const [text, setText] = useState(Array.isArray(value) ? value.join(', ') : '');
   return (
     <Field label={label} help={help || 'comma-separated'}>
       <input
@@ -96,6 +98,7 @@ export function TagsField({ label, help, value, onChange, placeholder }) {
         value={text}
         placeholder={placeholder}
         onChange={(e) => {
+          setText(e.target.value);
           const arr = e.target.value.split(',').map((s) => s.trim()).filter(Boolean);
           onChange(arr.length ? arr : undefined);
         }}

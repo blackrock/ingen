@@ -9,6 +9,10 @@ import { FILE_TYPES } from '../../models/constants.js';
 const FILE = [
   { key: 'file_type', label: 'File type', kind: 'select', options: Object.values(FILE_TYPES), required: true },
   { key: 'file_path', label: 'File path', kind: 'text', placeholder: 'data/file_$date(%Y%m%d).csv', required: true },
+  { key: 'delimiter', label: 'Delimiter', kind: 'text', placeholder: ',' },
+  { key: 'skip_header_size', label: 'Skip header rows', kind: 'number' },
+  { key: 'skip_trailer_size', label: 'Skip trailer rows', kind: 'number' },
+  { key: 'columns', label: 'Column names', kind: 'tags', help: 'Names to assign when the file has no usable header row' },
 ];
 
 const MYSQL = [

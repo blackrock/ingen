@@ -12,6 +12,7 @@ import { useViewMode } from '../../state/ViewModeContext.jsx';
 
 import dynamic from 'next/dynamic';
 import InterfaceChatEditor from './chat/InterfaceChatEditor.jsx';
+import Start from '../start/Start.jsx';
 
 // Lazy-load the graph editor so reactflow (v11, not fully React 19 compatible) is only fetched
 // when the user switches to graph mode — keeps the initial bundle clean and avoids the webpack
@@ -22,7 +23,7 @@ const InterfaceGraphEditor = dynamic(
 );
 
 export default function InterfaceEditor() {
-  const { interfaceName } = useParams();
+  const { configId, interfaceName } = useParams();
   const { model } = useConfig();
   const { viewMode } = useViewMode();
 
@@ -31,6 +32,9 @@ export default function InterfaceEditor() {
   if (!iface) {
     return <div className="placeholder">Interface "{interfaceName}" not found in this config.</div>;
   }
+
+  // A newly added interface starts the same way the first one does: pick (and name) its source.
+  if ((iface.sources?.length ?? 0) === 0) return <Start configId={configId} interfaceName={interfaceName} />;
 
   return (
     <section className="editor editor--full">

@@ -166,5 +166,36 @@ class FurthestStage(unittest.TestCase):
         self.assertEqual(by_stage["write"], "skipped")
 
 
+class OutputPreviews(unittest.TestCase):
+    def test_reads_fresh_outputs_and_skips_stale_or_missing(self):
+        import os
+        import tempfile
+        import time
+        from backend.app.runner import output_previews
+
+        cfg = {"interfaces": {
+            "with_header": {"output": {"type": "delimited_file", "props": {
+                "path": "a.csv", "delimiter": "|", "header": {"type": "delimited_result_header"}}}},
+            "no_header": {"output": {"type": "delimited_file", "props": {"path": "b.csv"}}},
+            "stale": {"output": {"type": "delimited_file", "props": {"path": "old.csv"}}},
+            "missing": {"output": {"type": "delimited_file", "props": {"path": "nope_$date(%Y).csv"}}},
+        }}
+        with tempfile.TemporaryDirectory() as d:
+            with open(os.path.join(d, "old.csv"), "w") as fh:
+                fh.write("x\n")
+            os.utime(os.path.join(d, "old.csv"), (0, 0))
+            since = time.time() - 1
+            with open(os.path.join(d, "a.csv"), "w") as fh:
+                fh.write("ID|NAME\n1|ann\n2|bob\n")
+            with open(os.path.join(d, "b.csv"), "w") as fh:
+                fh.write("1,ann\n")
+            got = output_previews(cfg, list(cfg["interfaces"]), d, since=since)
+
+        self.assertEqual([p["interface"] for p in got], ["with_header", "no_header"])
+        self.assertEqual(got[0]["columns"], ["ID", "NAME"])
+        self.assertEqual(got[0]["rows"], [["1", "ann"], ["2", "bob"]])
+        self.assertEqual(got[1], {"interface": "no_header", "path": "b.csv", "columns": [], "rows": [["1", "ann"]]})
+
+
 if __name__ == "__main__":
     unittest.main()
