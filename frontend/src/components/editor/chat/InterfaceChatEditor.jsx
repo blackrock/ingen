@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useParams } from 'next/navigation';
 import { Bot, User, Sparkles } from 'lucide-react';
 import { useConfig } from '../../../state/ConfigContext.jsx';
 import { useChatSession } from '../../../state/ChatSessionContext.jsx';
@@ -12,6 +13,7 @@ import {
   getSessions,
   saveSession,
   createSession,
+  chatScope,
 } from '../../../services/chatHistoryService.js';
 
 function welcomeMessage(interfaceName) {
@@ -58,6 +60,8 @@ function suggestionsFor(iface, columns) {
 
 export default function InterfaceChatEditor({ interfaceName, iface }) {
   const { model, updateModel } = useConfig();
+  const { configId } = useParams();
+  const scope = chatScope(configId, interfaceName);
   const { setActiveSessionId, command, consumeCommand } = useChatSession();
   const [sessionId, setSessionId] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -74,9 +78,9 @@ export default function InterfaceChatEditor({ interfaceName, iface }) {
   //  rather than in an effect — React's "adjust state when a prop changes" pattern — so switching
   //  interfaces never paints one frame of the previous interface's messages.
   const [loadedFor, setLoadedFor] = useState(null);
-  if (loadedFor !== interfaceName) {
-    setLoadedFor(interfaceName);
-    const active = getActiveSession(interfaceName);
+  if (loadedFor !== scope) {
+    setLoadedFor(scope);
+    const active = getActiveSession(scope);
     if (active && active.messages.length > 0) {
       setSessionId(active.id);
       setMessages(active.messages);
@@ -105,21 +109,21 @@ export default function InterfaceChatEditor({ interfaceName, iface }) {
       setMessages([welcomeMessage(interfaceName)]);
       consumeCommand();
     } else if (command.kind === 'load' && command.interfaceName === interfaceName) {
-      const target = getSessions(interfaceName).find((s) => s.id === command.sessionId);
+      const target = getSessions(scope).find((s) => s.id === command.sessionId);
       if (target) {
         setSessionId(target.id);
         setMessages(target.messages.length ? target.messages : [welcomeMessage(interfaceName)]);
       }
       consumeCommand();
     }
-  }, [command, interfaceName, consumeCommand]);
+  }, [command, interfaceName, scope, consumeCommand]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     if (sessionId && messages.length > 0) {
-      saveSession(interfaceName, { id: sessionId, messages, createdAt: new Date().toISOString() });
+      saveSession(scope, { id: sessionId, messages, createdAt: new Date().toISOString() });
     }
-  }, [messages, sessionId, interfaceName]);
+  }, [messages, sessionId, scope]);
 
   const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   useEffect(() => { scrollToBottom(); }, [messages, isTyping]);

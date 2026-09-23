@@ -19,7 +19,7 @@ import { useSourceActions } from '../../hooks/useSourceActions.js';
 import { useViewMode } from '../../state/ViewModeContext.jsx';
 import { useChatSession } from '../../state/ChatSessionContext.jsx';
 import { useGraphSelection } from '../../state/GraphSelectionContext.jsx';
-import { getSessions } from '../../services/chatHistoryService.js';
+import { getSessions, chatScope } from '../../services/chatHistoryService.js';
 import { buildPalette } from './navPalette.js';
 import { upsertSource } from '../../models/configModel.js';
 import { listAdd, setField } from '../../models/interfaceOps.js';
@@ -254,7 +254,7 @@ function ChatHistory({ configId }) {
 
   // Aggregate sessions from all interfaces, newest first.
   const allSessions = interfaces.flatMap((name) =>
-    getSessions(name).map((s) => ({ ...s, interfaceName: name }))
+    getSessions(chatScope(configId, name)).map((s) => ({ ...s, interfaceName: name }))
   );
   allSessions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
