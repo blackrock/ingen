@@ -4,6 +4,7 @@
 #  pandas (already a dependency via InGen), and caches the parsed result keyed by content hash so a
 #  re-upload of the same bytes returns instantly without re-reading.
 
+import csv
 import hashlib
 import json
 from pathlib import Path
@@ -14,7 +15,6 @@ DATA_DIR = Path("Data")
 CACHE_DIR = DATA_DIR / ".cache"
 PREVIEW_ROWS = 10
 MAX_UPLOAD_BYTES = 50 * 1024 * 1024  # 50 MB — trusted-dev guard against accidental OOM
-ALLOWED_SUFFIXES = {".csv", ".tsv", ".txt", ".xlsx", ".xls", ".json"}
 
 
 def _parse(path: Path, n=PREVIEW_ROWS):
@@ -25,7 +25,15 @@ def _parse(path: Path, n=PREVIEW_ROWS):
     elif suffix == ".json":
         df = pd.read_json(path).head(n)
     else:
-        df = pd.read_csv(path, nrows=n, sep=None, engine="python")  # sep=None → csv.Sniffer auto-detects , ; \t |
+        # Sniff only among real delimiters: an unconstrained sniff (pandas sep=None) happily picks a
+        # letter like "c" on short samples.
+        with open(path, newline="", encoding="utf-8", errors="replace") as fh:
+            sample = fh.read(64 * 1024)
+        try:
+            sep = csv.Sniffer().sniff(sample, delimiters=",|;\t").delimiter
+        except csv.Error:
+            sep = ","
+        df = pd.read_csv(path, nrows=n, sep=sep, dtype=str, keep_default_na=False)  # raw text: keep leading zeros
     cols = [str(c) for c in df.columns]
     preview = df.fillna("").astype(str).values.tolist()
     return cols, preview
@@ -36,9 +44,6 @@ def save_and_parse(filename: str, content: bytes) -> dict:
     {file_path, columns, preview, cached}."""
     if len(content) > MAX_UPLOAD_BYTES:
         raise ValueError(f"File too large ({len(content)} bytes; max {MAX_UPLOAD_BYTES}).")
-    suffix = Path(filename).suffix.lower()
-    if suffix not in ALLOWED_SUFFIXES:
-        raise ValueError(f"Unsupported file type '{suffix}'. Allowed: {', '.join(sorted(ALLOWED_SUFFIXES))}.")
     DATA_DIR.mkdir(exist_ok=True)
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -51,7 +56,13 @@ def save_and_parse(filename: str, content: bytes) -> dict:
 
     dest = DATA_DIR / Path(filename).name  # ponytail: strip any path components from the client name
     dest.write_bytes(content)
-    cols, preview = _parse(dest)
+    # Any extension is accepted (feeds like OpenLot_10202020.mlm.1 are plain delimited text); what
+    # isn't Excel/JSON is sniffed as delimited, and a file that doesn't parse is rejected.
+    try:
+        cols, preview = _parse(dest)
+    except Exception as exc:
+        dest.unlink(missing_ok=True)
+        raise ValueError(f"Couldn't read '{dest.name}' as a delimited, Excel or JSON file: {exc}") from exc
     meta = {"file_path": dest.as_posix(), "columns": cols, "preview": preview, "cached": False}
     cache_file.write_text(json.dumps(meta))
     return meta
