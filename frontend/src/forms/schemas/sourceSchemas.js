@@ -2,7 +2,7 @@
 //  `id` and `type` are handled by the SourcesEditor outside SchemaForm (id is the key; type the
 //  discriminator). These schemas cover the type-specific body.
 
-import { FILE_TYPES } from '../../models/constants.js';
+import { FILE_TYPES, SNOWFLAKE_AUTHENTICATORS } from '../../models/constants.js';
 
 // Trimmed to the two essentials. Niche knobs (delimiter, encoding, sheet_name, skip rows, dtype,
 // col_specification, etc.) were removed from the builder — they're still settable via raw YAML.
@@ -14,6 +14,17 @@ const FILE = [
 const MYSQL = [
   { key: 'database', label: 'Database name', kind: 'text', help: 'Matches the database key in your properties file', required: true },
   { key: 'query', label: 'SQL query', kind: 'textarea', rows: 4, placeholder: 'SELECT col1, col2 FROM table WHERE date = {date}', required: true },
+];
+
+// Account + credentials come from config.properties (datasource.snowflake.*), never the YAML.
+// Session context is optional — Snowflake falls back to the user's defaults.
+const SNOWFLAKE = [
+  { key: 'query', label: 'SQL query', kind: 'textarea', rows: 4, placeholder: 'SELECT col1, col2 FROM table WHERE date = {date}', required: true },
+  { key: 'warehouse', label: 'Warehouse', kind: 'text' },
+  { key: 'database', label: 'Database', kind: 'text' },
+  { key: 'schema', label: 'Schema', kind: 'text' },
+  { key: 'role', label: 'Role', kind: 'text' },
+  { key: 'authenticator', label: 'Authenticator', kind: 'select', options: SNOWFLAKE_AUTHENTICATORS, help: 'Leave empty to infer from datasource.snowflake.* credentials in your properties file' },
 ];
 
 // Ordered by how often you reach for it: request → response shaping → retries.
@@ -44,7 +55,7 @@ const API = [
 // json has no body fields (payload supplied at runtime).
 const NONE = [];
 
-const SCHEMAS = { file: FILE, mysql: MYSQL, api: API, json: NONE };
+const SCHEMAS = { file: FILE, mysql: MYSQL, snowflake: SNOWFLAKE, api: API, json: NONE };
 
 export function sourceSchema(type) {
   return SCHEMAS[type] ?? [];

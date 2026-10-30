@@ -18,13 +18,15 @@
  *
  * @typedef {Object} Source
  * @property {string} id                       Unique source identifier (referenced by interfaces).
- * @property {'file'|'mysql'|'api'|'json'} type
+ * @property {'file'|'mysql'|'snowflake'|'api'|'json'} type
  * @property {string} [file_type]              file sources: delimited_file|excel|xml|json|fixed_width
  * @property {string} [file_path]
  * @property {string} [delimiter]
  * @property {string[]} [columns]
- * @property {string} [query]                  mysql sources (SQL with {param} placeholders)
+ * @property {string} [query]                  mysql/snowflake sources (SQL with {param} placeholders)
  * @property {string} [db_token]               mysql sources
+ * @property {string} [warehouse]              snowflake sources (also database, schema, role)
+ * @property {string} [authenticator]          snowflake sources: snowflake_jwt|snowflake|oauth|externalbrowser
  * @property {string} [url]                    api sources
  * @property {Object[]} [src_data_checks]      raw-data validations applied at the source
  * @property {*} [key]                         any additional backend field (passes through)

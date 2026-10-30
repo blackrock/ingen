@@ -4,7 +4,7 @@ The input to Interface Generator is a YAML file called metadata file which conta
 
 **Defining Data Sources**
 
-A Data Source is the location from where the data originates. It can be a database, file or an api. The following code snippet shows an example of a 'sources' array containing a data source - an excel file.
+A Data Source is the location from where the data originates. It can be a database (MySQL, Snowflake), file or an api. The following code snippet shows an example of a 'sources' array containing a data source - an excel file.
 
 	sources:
 	- id: restrictions_file
@@ -263,6 +263,52 @@ url_params: URL params can be fetched from a file, a database, or can be declare
     - id: json_payload
       type: json
 
+
+**Snowflake Source**
+
+  A Snowflake source is identified by setting type of the data source to snowflake. It uses the official
+  snowflake-connector-python library. As with the mysql source, the account and credentials are read from
+  config.properties and never from the metadata file; the metadata file only holds the query and the
+  (optional) session context.
+
+  Field Name	Type	Description
+  id	string	REQUIRED. Data Source identifier
+  type	string	REQUIRED. [snowflake] type of data source
+  query	string	REQUIRED. SQL query to be executed. Supports {param} substitution via --query_params
+  warehouse	string	Optional. Warehouse to use. Defaults to the user's default warehouse
+  database	string	Optional. Database to use. Defaults to the user's default database
+  schema	string	Optional. Schema to use. Defaults to the user's default schema
+  role	string	Optional. Role to assume. Defaults to the user's default role
+  authenticator	string	Optional. `snowflake_jwt` (key pair), `snowflake` (password), `oauth` or `externalbrowser`. Inferred from config.properties when not set
+  src_data_checks	array	Optional. Validations to apply on source data
+
+  temp_table_params is not supported for snowflake sources.
+
+  sources:
+    - id: positions
+      type: snowflake
+      warehouse: COMPUTE_WH
+      database: ANALYTICS
+      schema: PUBLIC
+      role: READER
+      query: "SELECT * FROM POSITIONS WHERE AS_OF_DATE = '{as_of_date}'"
+
+  **config.properties keys used by the Snowflake source:**
+  Key	Used by
+  datasource.snowflake.account	REQUIRED. Account identifier, e.g. `myorg-myaccount`
+  datasource.snowflake.user	Key pair, password and externalbrowser
+  datasource.snowflake.private_key_path	Key pair. Path to the PKCS#8 PEM private key file
+  datasource.snowflake.private_key_passphrase	Key pair. Optional, only if the private key is encrypted
+  datasource.snowflake.password	Password
+  datasource.snowflake.token	OAuth. Pre-obtained OAuth access token
+
+  **Authentication**
+  If `authenticator` is not set in the source, it is inferred from the configured properties in this order:
+  key pair (`private_key_path`) > OAuth (`token`) > password (`password`). If none are configured the run fails.
+  Key pair authentication is recommended for automated / production runs.
+
+  `externalbrowser` (SSO) opens a browser window to log in and is meant for local, interactive use only.
+  It is never inferred and must be set explicitly with `authenticator: externalbrowser`.
 
 **Defining Interfaces**
 

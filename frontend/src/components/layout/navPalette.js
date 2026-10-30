@@ -18,10 +18,11 @@ const OUTPUT_COLOR = '#ef4444';
 
 // Source order mirrors how often you reach for each (file first); `file` fans out to its file_type
 // variants inside the drawer rather than as separate leaves.
-const SOURCE_ORDER = ['file', 'mysql', 'api', 'json'];
+const SOURCE_ORDER = ['file', 'mysql', 'snowflake', 'api', 'json'];
 const SOURCE_LABELS = {
   file: 'File',
   mysql: 'Database (MySQL)',
+  snowflake: 'Snowflake',
   api: 'API',
   json: 'JSON payload',
 };

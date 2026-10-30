@@ -61,6 +61,7 @@ export function applyOp(model, interfaceName, knownColumns, op) {
         type: op.type,
         ...(op.type === 'file' ? { file_type: 'delimited_file', file_path: `data/${name}.csv` } : {}),
         ...(op.type === 'mysql' ? { database: 'default_db', query: 'SELECT * FROM table' } : {}),
+        ...(op.type === 'snowflake' ? { query: 'SELECT * FROM table' } : {}),
       });
       const it = m.interfacesByName[interfaceName] ?? createEmptyInterface();
       const cur = it.sources ?? [];

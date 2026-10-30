@@ -16,3 +16,4 @@ class DataSourceType(Enum):
     MYSQL = "mysql"
     RawDataStore = "rawdatastore"
     JSON = "json"
+    Snowflake = "snowflake"

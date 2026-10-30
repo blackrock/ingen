@@ -6,6 +6,7 @@ from ingen.data_source.file_source import FileSource
 from ingen.data_source.json_source import JsonSource
 from ingen.data_source.mysql_source import MYSQLSource
 from ingen.data_source.rawdata_source import RawDataSource
+from ingen.data_source.snowflake_source import SnowflakeSource
 
 
 class SourceFactory:
@@ -23,5 +24,7 @@ class SourceFactory:
             return RawDataSource(source)
         elif source['type'] == DataSourceType.JSON.value:
             return JsonSource(source, dynamic_data)
+        elif source['type'] == DataSourceType.Snowflake.value:
+            return SnowflakeSource(source, params_map)
         else:
             raise ValueError(f"Unknown source type {source.get('type')}.")

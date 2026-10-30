@@ -9,14 +9,27 @@
  * (ingen/data_source/source_factory.py).
  *
  * NOTE: `DataSourceType.DB = "db"` exists in the backend enum but is NOT wired into the
- * factory — it raises ValueError. The only relational source is `mysql`. Do not expose `db`.
+ * factory — it raises ValueError. The relational sources are `mysql` and `snowflake`. Do not expose `db`.
  */
 export const SOURCE_TYPES = Object.freeze({
   FILE: 'file',
   MYSQL: 'mysql',
+  SNOWFLAKE: 'snowflake',
   API: 'api',
   JSON: 'json',
 });
+
+/**
+ * Snowflake `authenticator` values accepted by SnowflakeSource (ingen/data_source/snowflake_source.py).
+ * Credentials live in config.properties (datasource.snowflake.*); when unset the backend infers the
+ * authenticator from them. `externalbrowser` (SSO) is local-only and must be chosen explicitly.
+ */
+export const SNOWFLAKE_AUTHENTICATORS = Object.freeze([
+  { value: 'snowflake_jwt', label: 'Key pair' },
+  { value: 'snowflake', label: 'Password' },
+  { value: 'oauth', label: 'OAuth token' },
+  { value: 'externalbrowser', label: 'Browser SSO (local only)' },
+]);
 
 /** File reader types from `ReaderFactory.get_reader` (ingen/reader/file_reader.py). */
 export const FILE_TYPES = Object.freeze({

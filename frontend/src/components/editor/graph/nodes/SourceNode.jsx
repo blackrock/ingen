@@ -9,6 +9,7 @@ export function SourceNode({ data }) {
   if (d.file_type) rows.push({ key: 'format', value: d.file_type });
   if (d.file_path) rows.push({ key: 'path', value: tr(d.file_path) });
   if (d.database || d.db_token) rows.push({ key: 'db', value: d.database || d.db_token });
+  if (d.warehouse) rows.push({ key: 'warehouse', value: d.warehouse });
   if (d.url) rows.push({ key: 'url', value: tr(d.url) });
 
   const cls =
