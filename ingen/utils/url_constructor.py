@@ -2,7 +2,7 @@
 #  All Rights Reserved.
 
 from datetime import date
-from urllib.parse import quote
+from urllib.parse import quote, urlsplit, urlunsplit
 
 from ingen.data_source.file_source import FileSource
 from ingen.data_source.source_factory import SourceFactory
@@ -69,11 +69,15 @@ class UrlConstructor:
             return self.append_query_params(urls)
 
     def append_query_params(self, urls):
-        if self.url_query_params is not None:
-            urls = [url + self.get_params() for url in urls]
+        if not self.url_query_params:
             return urls
-        else:
-            return urls
+        params = self.get_params()[1:]
+        result = []
+        for url in urls:
+            parts = urlsplit(url)
+            query = parts.query + ('&' if parts.query else '') + params
+            result.append(urlunsplit(parts._replace(query=query)))
+        return result
 
     def get_path_param_batch_urls(self, url, batch_config):
         source_config = batch_config.get('path_param_source')
