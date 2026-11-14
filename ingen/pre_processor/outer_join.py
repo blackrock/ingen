@@ -33,9 +33,9 @@ class OuterJoin(Process):
             raise KeyError("outer_join config is missing the 'source' to join against")
         if right_dataframe is None:
             raise KeyError(f"Source '{source_key}' not found in sources_data for outer_join")
-        if left_key is not None and left_key not in left_dataframe.columns:
+        if left_key is not None and not pd.Series(left_key).isin(left_dataframe.columns).all():
             raise KeyError(f"Column '{left_key}' not present in left dataframe")
-        if right_key is not None and right_key not in right_dataframe.columns:
+        if right_key is not None and not pd.Series(right_key).isin(right_dataframe.columns).all():
             raise KeyError(f"Column '{right_key}' not present in right dataframe")
 
         return self.outer_merge(left_dataframe, right_dataframe, left_key, right_key)
