@@ -211,7 +211,7 @@ def bucket_formatter(dataframe, col_name, config, runtime_params):
     buckets = config.get('buckets')
     bins = list(map(lambda x: float(x), buckets))
     labels = config.get('labels', False)
-    include_right = True if str.lower(config.get('include_right', 'true')) == 'true' else False
+    include_right = True if str(config.get('include_right', 'true')).lower() == 'true' else False
 
     categories = pd.cut(dataframe[col_name], bins=bins, labels=labels, right=include_right)
     dataframe[col_name] = categories.values.astype(str)
@@ -341,9 +341,10 @@ def split_column_formatter(dataframe, col_name, format_options, runtime_params):
 
     if dataframe[col_name].dtype == object and isinstance(dataframe.iloc[0][col_name], str):
         dataframe[format_options.get('new_col_names')] = dataframe[col_name].str.split(
-            format_options.get('delimiter', ','), expand=True)
+            format_options.get('delimiter', ','), expand=True, regex=False)
     else:
-        split_df = pd.DataFrame(dataframe[col_name].tolist(), columns=format_options.get('new_col_names'))
+        split_df = pd.DataFrame(dataframe[col_name].tolist(), index=dataframe.index,
+                                columns=format_options.get('new_col_names'))
         dataframe = pd.concat([dataframe, split_df], axis=1)
 
     return dataframe
