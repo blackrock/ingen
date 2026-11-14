@@ -26,7 +26,10 @@ def agg(config, data):
         once the aggregation is applied (example sum(quantity) here)
     :param data : data to be aggregated
     """
-    return data.agg(config['operation'], config['col'])
+    columns = config['col']
+    if isinstance(columns, str):
+        columns = [columns]
+    return data[columns].agg(config['operation'])
 
 
 aggregator_map = {

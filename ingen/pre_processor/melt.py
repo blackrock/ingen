@@ -21,7 +21,7 @@ class Melt:
         value_name = config.get('value_column')
         var_name = config.get('key_column')
         value_vars = config.get('include_keys')
-        if len(value_vars) == 0:
+        if not value_vars:
             dataframe = dataframe.melt(value_name=value_name, var_name=var_name)
         else:
             dataframe = dataframe.melt(value_vars=value_vars, value_name=value_name, var_name=var_name)
