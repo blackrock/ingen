@@ -250,5 +250,172 @@ class TestMetaData(unittest.TestCase):
         metadata = MetaData(self.test_md_name, metadata_config, self.params_map)
         self.assertEqual("utf-16", metadata.sources[0]._src["encoding"])
 
+
+class TestMetaDataOverrideParamsInPath(unittest.TestCase):
+    """Test $override(KEY) resolution in output paths via MetaData."""
+
+    def setUp(self):
+        self.test_md_name = "test interface"
+        self.test_date = date(2026, 11, 18)
+        self.file_source = {
+            "id": "sample_file_source",
+            "type": DataSourceType.File.value,
+            "file_type": "delimited_file",
+            "file_path": "customers.csv",
+            "delimiter": ",",
+            "columns": ["column", "names"],
+        }
+        self.params_map = {
+            "run_date": self.test_date,
+            "query_params": {"table_name": "positions"},
+            "override_params": {"CMS_CLIENT": "DYNASTY"},
+        }
+        self.params_map_no_overrides = {
+            "run_date": self.test_date,
+            "query_params": {"table_name": "positions"},
+        }
+
+    def _config(self, output):
+        return {
+            "output": output,
+            "columns": [{"id": "sample-col", "name": "SAMPLE"}],
+            "sources": [self.file_source],
+        }
+
+    def test_single_file_path_resolves_override(self):
+        config = self._config({
+            "type": "delimited_file",
+            "props": {
+                "path": "/d0/aw-cms/$date(%Y%m%d)/$override(CMS_CLIENT)_MODEL_INFO_$date(%Y%m%d).csv",
+                "delimiter": ",",
+            },
+        })
+        metadata = MetaData(self.test_md_name, config, self.params_map)
+        self.assertEqual(
+            ["/d0/aw-cms/20261118/DYNASTY_MODEL_INFO_20261118.csv"],
+            metadata.output["props"]["path"],
+        )
+
+    def test_splitted_file_paths_resolve_override(self):
+        config = self._config({
+            "type": "splitted_file",
+            "props": [
+                {
+                    "col": "col", "value": "val1", "type": "delimited_file",
+                    "props": {"delimiter": ",",
+                              "path": "/d0/aw-cms/$override(CMS_CLIENT)_val1_$date(%Y%m%d).csv"},
+                },
+                {
+                    "col": "col", "value": "val2", "type": "delimited_file",
+                    "props": {"delimiter": ",",
+                              "path": "/d0/aw-cms/$override(CMS_CLIENT)_val2_$date(%Y%m%d).csv"},
+                },
+            ],
+        })
+        metadata = MetaData(self.test_md_name, config, self.params_map)
+        paths = [entry["props"]["path"] for entry in metadata.output["props"]]
+        self.assertEqual(
+            [["/d0/aw-cms/DYNASTY_val1_20261118.csv"],
+             ["/d0/aw-cms/DYNASTY_val2_20261118.csv"]],
+            paths,
+        )
+
+    def test_json_writer_file_destination_resolves_override(self):
+        config = self._config({
+            "type": "json_writer",
+            "props": {
+                "destination": "file",
+                "destination_props": {
+                    "path": "/d0/aw-cms/$override(CMS_CLIENT)_MODEL_INFO_$date(%Y%m%d).json",
+                },
+            },
+        })
+        metadata = MetaData(self.test_md_name, config, self.params_map)
+        self.assertEqual(
+            ["/d0/aw-cms/DYNASTY_MODEL_INFO_20261118.json"],
+            metadata.output["props"]["destination_props"]["path"],
+        )
+
+    def test_missing_override_params_single_file_raises(self):
+        config = self._config({
+            "type": "delimited_file",
+            "props": {
+                "path": "/d0/aw-cms/$override(CMS_CLIENT)_MODEL_INFO_$date(%Y%m%d).csv",
+                "delimiter": ",",
+            },
+        })
+        with self.assertRaises(ValueError) as ctx:
+            MetaData(self.test_md_name, config, self.params_map_no_overrides)
+        self.assertIn("CMS_CLIENT", str(ctx.exception))
+
+    def test_missing_override_params_splitted_file_raises(self):
+        config = self._config({
+            "type": "splitted_file",
+            "props": [
+                {
+                    "col": "col", "value": "val1", "type": "delimited_file",
+                    "props": {"delimiter": ",",
+                              "path": "/d0/aw-cms/$override(CMS_CLIENT)_val1_$date(%Y%m%d).csv"},
+                },
+            ],
+        })
+        with self.assertRaises(ValueError):
+            MetaData(self.test_md_name, config, self.params_map_no_overrides)
+
+    def test_empty_override_param_value_raises(self):
+        params_map = dict(self.params_map_no_overrides, override_params={"CMS_CLIENT": ""})
+        config = self._config({
+            "type": "delimited_file",
+            "props": {
+                "path": "/d0/aw-cms/$override(CMS_CLIENT)_MODEL_INFO_$date(%Y%m%d).csv",
+                "delimiter": ",",
+            },
+        })
+        with self.assertRaises(ValueError) as ctx:
+            MetaData(self.test_md_name, config, params_map)
+        self.assertIn("CMS_CLIENT", str(ctx.exception))
+
+    def test_override_param_value_with_parent_dir_raises(self):
+        params_map = dict(self.params_map_no_overrides, override_params={"CMS_CLIENT": "../other"})
+        config = self._config({
+            "type": "delimited_file",
+            "props": {
+                "path": "/d0/aw-cms/$override(CMS_CLIENT)_MODEL_INFO_$date(%Y%m%d).csv",
+                "delimiter": ",",
+            },
+        })
+        with self.assertRaises(ValueError) as ctx:
+            MetaData(self.test_md_name, config, params_map)
+        self.assertIn("CMS_CLIENT", str(ctx.exception))
+
+    def test_override_param_full_path_resolves(self):
+        full_path = "/d0/aw-cms/20261118/DYNASTY_MODEL_INFO_20261118.csv"
+        params_map = dict(self.params_map_no_overrides,
+                          override_params={"MODEL_INFO_PATH": full_path})
+        config = self._config({
+            "type": "delimited_file",
+            "props": {
+                "path": "$override(MODEL_INFO_PATH)",
+                "delimiter": ",",
+            },
+        })
+        metadata = MetaData(self.test_md_name, config, params_map)
+        self.assertEqual([full_path], metadata.output["props"]["path"])
+
+    def test_missing_override_params_path_without_override_unchanged(self):
+        config = self._config({
+            "type": "delimited_file",
+            "props": {
+                "path": "/d0/aw-cms/MODEL_INFO_$date(%Y%m%d).csv",
+                "delimiter": ",",
+            },
+        })
+        metadata = MetaData(self.test_md_name, config, self.params_map_no_overrides)
+        self.assertEqual(
+            ["/d0/aw-cms/MODEL_INFO_20261118.csv"],
+            metadata.output["props"]["path"],
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

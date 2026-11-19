@@ -89,7 +89,8 @@ class MetaData:
             path = [path]
 
         run_date = self._params_map.get("run_date", date.today())
-        path_parser = PathParser(run_date)
+        path_parser = PathParser(run_date, override_params=self._params_map.get("override_params"),
+                                 strict_overrides=True)
         parsed_paths = [path_parser.parse(p) for p in path]
         props["path"] = parsed_paths
 

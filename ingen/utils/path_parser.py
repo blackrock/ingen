@@ -3,6 +3,7 @@
 
 import logging
 import os
+import re
 from datetime import date
 
 from ingen.utils.interpolators.Interpolator import Interpolator
@@ -15,11 +16,19 @@ class PathParser:
     PathParser is a utility class that provides methods to parse file paths and replace
     the dynamic fields in it with appropriate values. A replaceable item can be one of the following:
         1. date - $date(<FORMAT>) - it will be replaced by the date provided in the constructor in the given format
+        2. override - $override(<KEY>) - replaced by the value of KEY from --override_params
     """
 
-    def __init__(self, run_date=date.today(), interpolator=Interpolator()):
+    def __init__(self, run_date=date.today(), interpolator=None, override_params=None,
+                 strict_overrides=False):
         self.run_date = run_date
-        self.interpolator = interpolator
+        self.override_params = override_params
+        self.strict_overrides = strict_overrides
+        if interpolator is not None:
+            self.interpolator = interpolator
+        else:
+            params = {'override_params': override_params} if override_params is not None else None
+            self.interpolator = Interpolator(params=params)
         self.item_name_method_map = {
             'date': self.get_formatted_run_date
         }
@@ -31,7 +40,24 @@ class PathParser:
         :return: path with tokens and date values. e.g, "u1/ftp/some/path/file_name_12092020.csv"
         """
         path = self.parse_env_variable(path)
+        if self.strict_overrides:
+            self._validate_override_keys(path)
         return self.interpolator.interpolate(path, self.item_name_method_map)
+
+    def _validate_override_keys(self, path):
+        keys = list(dict.fromkeys(re.findall(r"\$override\((.*?)\)", path)))
+        supplied = self.override_params or {}
+        missing = [key for key in keys
+                   if key not in supplied or str(supplied[key]).strip() == '']
+        if missing:
+            raise ValueError(f"Path '{path}' uses $override({', '.join(missing)}) but no value was supplied. "
+                             f"Pass --override_params {missing[0]}=<value>.")
+        for key in keys:
+            value = str(supplied[key])
+            if '..' in value:
+                raise ValueError(f"Path '{path}' uses $override({key}) with value '{value}', "
+                                 f"which contains '..'. "
+                                 f"Parent-directory references are not allowed in override values.")
 
     def parse_env_variable(self, path):
         if path.startswith(ENVIRONMENT_VAR_PATTERN):
