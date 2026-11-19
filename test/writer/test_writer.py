@@ -1,7 +1,10 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
+import csv
+import io
 import os
+import tempfile
 import unittest
 from datetime import datetime
 from unittest.mock import Mock, patch, mock_open
@@ -308,6 +311,151 @@ class TestWriter(unittest.TestCase):
         self.assertEqual(mock_json_writer.call_count, 1)
         mock_json_writer.assert_any_call(df, output_type, props)
         mock_json_writer.return_value.write.assert_called()
+
+    def test_csv_quote_all_with_header(self):
+        df = Mock()
+        df.to_csv = Mock()
+
+        props = {
+            'delimiter': ',',
+            'path': '../output/positions.csv',
+            'header': {'type': 'delimited_result_header'},
+            'quote_all': True,
+        }
+
+        writer = InterfaceWriter(df, 'delimited_file', props, {})
+        writer.write()
+        df.to_csv.assert_called_with(props['path'], ',', index=InterfaceWriter.SHOW_DATAFRAME_INDEX,
+                                     encoding='utf-8', quoting=csv.QUOTE_ALL)
+
+    def test_csv_quote_all_without_header(self):
+        df = Mock()
+        df.to_csv = Mock()
+
+        props = {
+            'path': '../output/positions.csv',
+            'quote_all': True,
+        }
+
+        writer = InterfaceWriter(df, 'delimited_file', props, {})
+        writer.write()
+        df.to_csv.assert_called_with(props['path'], ',', header=False,
+                                     index=InterfaceWriter.SHOW_DATAFRAME_INDEX,
+                                     encoding='utf-8', quoting=csv.QUOTE_ALL)
+
+    def test_csv_quote_all_accepts_string_true(self):
+        for value in ('true', 'True', ' TRUE '):
+            with self.subTest(value=value):
+                df = Mock()
+                df.to_csv = Mock()
+
+                props = {
+                    'delimiter': ',',
+                    'path': '../output/positions.csv',
+                    'header': {'type': 'delimited_result_header'},
+                    'quote_all': value,
+                }
+
+                writer = InterfaceWriter(df, 'delimited_file', props, {})
+                writer.write()
+                self.assertEqual(df.to_csv.call_args.kwargs['quoting'], csv.QUOTE_ALL)
+
+    def test_csv_quote_all_disabled_keeps_default_call(self):
+        for value in (False, 'false', None, 'key-absent'):
+            with self.subTest(value=value):
+                df = Mock()
+                df.to_csv = Mock()
+
+                props = {
+                    'delimiter': ',',
+                    'path': '../output/positions.csv',
+                    'header': {'type': 'delimited_result_header'},
+                }
+                if value != 'key-absent':
+                    props['quote_all'] = value
+
+                writer = InterfaceWriter(df, 'delimited_file', props, {})
+                writer.write()
+                df.to_csv.assert_called_with(props['path'], ',',
+                                             index=InterfaceWriter.SHOW_DATAFRAME_INDEX,
+                                             encoding='utf-8')
+                self.assertNotIn('quoting', df.to_csv.call_args.kwargs)
+
+    def test_csv_default_quoting_output_unchanged(self):
+        df = pd.DataFrame({
+            'name': ['Growth, Balanced', 'He said "hi"',
+                     '<b>bold</b> &amp; <a href="x">link</a>', 'line1\nline2',
+                     "Zoë O'Brien", None],
+            'amount': [1, 2, 3, 4, 5, 6],
+        })
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, 'out.csv')
+            props = {
+                'delimiter': ',',
+                'path': path,
+                'header': {'type': 'delimited_result_header'},
+            }
+            InterfaceWriter(df, 'delimited_file', props, {}).write()
+            with open(path, encoding='utf-8') as f:
+                text = f.read()
+        self.assertEqual(
+            text,
+            'name,amount\n"Growth, Balanced",1\n"He said ""hi""",2\n'
+            '"<b>bold</b> &amp; <a href=""x"">link</a>",3\n"line1\nline2",4\n'
+            "Zoë O'Brien,5\n,6\n")
+
+    def test_csv_quote_all_output(self):
+        df = pd.DataFrame({
+            'name': ['Growth, Balanced', 'He said "hi"',
+                     '<b>bold</b> &amp; <a href="x">link</a>', 'line1\nline2',
+                     "Zoë O'Brien", None],
+            'amount': [1, 2, 3, 4, 5, 6],
+        })
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, 'out.csv')
+            props = {
+                'delimiter': ',',
+                'path': path,
+                'header': {'type': 'delimited_result_header'},
+                'quote_all': True,
+            }
+            InterfaceWriter(df, 'delimited_file', props, {}).write()
+            with open(path, encoding='utf-8') as f:
+                text = f.read()
+        self.assertEqual(
+            text,
+            '"name","amount"\n"Growth, Balanced","1"\n"He said ""hi""","2"\n'
+            '"<b>bold</b> &amp; <a href=""x"">link</a>","3"\n"line1\nline2","4"\n'
+            '"Zoë O\'Brien","5"\n"","6"\n')
+
+    def test_csv_quote_all_round_trips_values(self):
+        df = pd.DataFrame({
+            'name': ['Growth, Balanced', 'He said "hi"',
+                     '<b>bold</b> &amp; <a href="x">link</a>', 'line1\nline2',
+                     "Zoë O'Brien", None],
+            'amount': [1, 2, 3, 4, 5, 6],
+        })
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, 'out.csv')
+            props = {
+                'delimiter': ',',
+                'path': path,
+                'header': {'type': 'delimited_result_header'},
+                'quote_all': True,
+            }
+            InterfaceWriter(df, 'delimited_file', props, {}).write()
+            with open(path, encoding='utf-8') as f:
+                text = f.read()
+        rows = list(csv.reader(io.StringIO(text)))
+        self.assertEqual(rows, [
+            ['name', 'amount'],
+            ['Growth, Balanced', '1'],
+            ['He said "hi"', '2'],
+            ['<b>bold</b> &amp; <a href="x">link</a>', '3'],
+            ['line1\nline2', '4'],
+            ["Zoë O'Brien", '5'],
+            ['', '6'],
+        ])
 
 if __name__ == '__main__':
     unittest.main()
