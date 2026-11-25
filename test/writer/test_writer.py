@@ -1,7 +1,9 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
+import json
 import os
+import tempfile
 import unittest
 from datetime import datetime
 from unittest.mock import Mock, patch, mock_open
@@ -289,8 +291,9 @@ class TestWriter(unittest.TestCase):
         writer.file_writer()
 
         self.assertEqual(mock_json_writer.call_count, 2)
-        mock_json_writer.assert_any_call(df, output_type, props)
-        mock_json_writer.return_value.write_assert_called()
+        mock_json_writer.assert_any_call(df, output_type, {**props, 'path': '../output/file1.json'})
+        mock_json_writer.assert_any_call(df, output_type, {**props, 'path': '../output/file2.json'})
+        self.assertEqual(mock_json_writer.return_value.write.call_count, 2)
 
     @patch('ingen.writer.writer.OldJSONWriter')
     def test_file_writer_single_path(self, mock_json_writer):
@@ -308,6 +311,76 @@ class TestWriter(unittest.TestCase):
         self.assertEqual(mock_json_writer.call_count, 1)
         mock_json_writer.assert_any_call(df, output_type, props)
         mock_json_writer.return_value.write.assert_called()
+
+
+class TestWriterListPaths(unittest.TestCase):
+    """Real-file tests for list-valued props['path']."""
+
+    def setUp(self) -> None:
+        self.df = pd.DataFrame({
+            'name': ['Ramesh', 'Suresh', 'Jaya', 'Rekha'],
+            'marks': [20, 40, 50, 30]
+        })
+        self.json_config = {
+            'orient': 'records',
+            'indent': 2,
+            'column_details': {
+                'schema': [
+                    {'field_name': 'name', 'field_type': 'str'},
+                    {'field_name': 'marks', 'field_type': 'str'},
+                ],
+                'resultant_columns': ['name', 'marks'],
+            },
+        }
+
+    def test_json_writer_writes_all_listed_paths(self):
+        """The legacy 'json' type writes to every path in a list."""
+        with tempfile.TemporaryDirectory() as tmp:
+            paths = [os.path.join(tmp, 'a.json'), os.path.join(tmp, 'b.json')]
+            props = {'path': paths, 'config': self.json_config}
+            InterfaceWriter(self.df, 'json', props, {}).file_writer()
+            for path in paths:
+                self.assertTrue(os.path.exists(path))
+                with open(path) as f:
+                    records = json.load(f)
+                self.assertEqual(4, len(records))
+                self.assertEqual('Ramesh', records[0]['name'])
+
+    def test_add_header_footer_list_path(self):
+        """Header/footer are applied to a one-element list path."""
+        with tempfile.TemporaryDirectory() as tmp:
+            out = os.path.join(tmp, 'out.csv')
+            self.df.to_csv(out, ',', index=False)
+            InterfaceWriter(self.df, 'delimited_file', {'path': [out]}, {}).add_header_footer('HDR', 'TRL')
+            with open(out) as f:
+                lines = f.readlines()
+            self.assertEqual('HDR', lines[0].strip())
+            self.assertEqual('TRL', lines[-1].strip())
+
+    def test_add_header_footer_multi_element_list_path(self):
+        """Header/footer are applied to every path in a list."""
+        with tempfile.TemporaryDirectory() as tmp:
+            paths = [os.path.join(tmp, 'a.csv'), os.path.join(tmp, 'b.csv')]
+            for p in paths:
+                self.df.to_csv(p, ',', index=False)
+            InterfaceWriter(self.df, 'delimited_file', {'path': paths}, {}).add_header_footer('HDR', 'TRL')
+            for path in paths:
+                with open(path) as f:
+                    lines = f.readlines()
+                self.assertEqual('HDR', lines[0].strip())
+                self.assertEqual('TRL', lines[-1].strip())
+
+    def test_add_header_footer_str_path(self):
+        """A plain string path still works (backward compatible)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            out = os.path.join(tmp, 'out.csv')
+            self.df.to_csv(out, ',', index=False)
+            InterfaceWriter(self.df, 'delimited_file', {'path': out}, {}).add_header_footer('HDR', 'TRL')
+            with open(out) as f:
+                lines = f.readlines()
+            self.assertEqual('HDR', lines[0].strip())
+            self.assertEqual('TRL', lines[-1].strip())
+
 
 if __name__ == '__main__':
     unittest.main()
