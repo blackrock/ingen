@@ -124,8 +124,25 @@ class SnowflakeSourceTest(unittest.TestCase):
 
         assert data.size == 0
         mock_connect.assert_called_once_with(**source._connection_params)
-        mock_reader.assert_called_once_with(mock_connect.return_value)
+        mock_reader.assert_called_once_with(mock_connect.return_value, 100000)
         mock_reader.return_value.execute.assert_called_once_with('select * from SAMPLE_TABLE')
+
+    @patch('ingen.data_source.snowflake_source.SnowflakeReader')
+    @patch('snowflake.connector.connect')
+    def test_fetch_uses_configured_batch_size(self, mock_connect, mock_reader, props):
+        props.get_property.side_effect = mock_properties(account='acc', user='u', password='p')
+        self.input_source['batch_size'] = 500
+
+        SnowflakeSource(self.input_source, self.params_map).fetch()
+
+        mock_reader.assert_called_once_with(mock_connect.return_value, 500)
+
+    def test_invalid_batch_size(self, props):
+        props.get_property.side_effect = mock_properties(account='acc', user='u', password='p')
+        for invalid in (0, -1, '100', 1.5, True):
+            self.input_source['batch_size'] = invalid
+            with self.assertRaisesRegex(ValueError, 'batch_size must be a positive integer'):
+                SnowflakeSource(self.input_source, self.params_map)
 
     def test_fetch_validations(self, props):
         props.get_property.side_effect = mock_properties(account='acc', user='u', password='p')

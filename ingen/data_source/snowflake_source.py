@@ -4,7 +4,7 @@
 import logging
 
 from ingen.data_source.source import DataSource
-from ingen.reader.snowflake_reader import SnowflakeReader
+from ingen.reader.snowflake_reader import DEFAULT_BATCH_SIZE, SnowflakeReader
 from ingen.utils.properties import properties
 from ingen.utils.sql_query_parser import SqlQueryParser
 from ingen.utils.timer import log_time
@@ -47,6 +47,9 @@ class SnowflakeSource(DataSource):
         if source.get('temp_table_params'):
             # SqlQueryParser builds Sybase-style temp tables (#name, multiple statements), which Snowflake rejects.
             raise ValueError("temp_table_params is not supported for snowflake sources")
+        self._batch_size = source.get('batch_size', DEFAULT_BATCH_SIZE)
+        if isinstance(self._batch_size, bool) or not isinstance(self._batch_size, int) or self._batch_size <= 0:
+            raise ValueError(f"batch_size must be a positive integer, got '{self._batch_size}'")
         self._src_data_checks = source.get('src_data_checks', [])
         self._query = SqlQueryParser().parse_query(source['query'], params_map)
         self._connection_params = self._build_connection_params(source)
@@ -109,7 +112,7 @@ class SnowflakeSource(DataSource):
         """
         # Imported lazily: the connector is slow to import and only needed when a snowflake source is used.
         import snowflake.connector
-        reader = SnowflakeReader(snowflake.connector.connect(**self._connection_params))
+        reader = SnowflakeReader(snowflake.connector.connect(**self._connection_params), self._batch_size)
         return self.fetch_data(reader)
 
     @log_time

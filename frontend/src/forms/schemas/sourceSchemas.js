@@ -25,6 +25,7 @@ const SNOWFLAKE = [
   { key: 'schema', label: 'Schema', kind: 'text' },
   { key: 'role', label: 'Role', kind: 'text' },
   { key: 'authenticator', label: 'Authenticator', kind: 'select', options: SNOWFLAKE_AUTHENTICATORS, help: 'Leave empty to infer from datasource.snowflake.* credentials in your properties file' },
+  { key: 'batch_size', label: 'Batch size', kind: 'number', placeholder: '100000', help: 'Rows fetched per round trip' },
 ];
 
 // Ordered by how often you reach for it: request → response shaping → retries.

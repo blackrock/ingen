@@ -27,6 +27,7 @@
  * @property {string} [db_token]               mysql sources
  * @property {string} [warehouse]              snowflake sources (also database, schema, role)
  * @property {string} [authenticator]          snowflake sources: snowflake_jwt|snowflake|oauth|externalbrowser
+ * @property {number} [batch_size]             snowflake sources: rows fetched per round trip (default 100000)
  * @property {string} [url]                    api sources
  * @property {Object[]} [src_data_checks]      raw-data validations applied at the source
  * @property {*} [key]                         any additional backend field (passes through)

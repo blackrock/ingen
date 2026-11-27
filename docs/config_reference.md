@@ -280,6 +280,7 @@ url_params: URL params can be fetched from a file, a database, or can be declare
   schema	string	Optional. Schema to use. Defaults to the user's default schema
   role	string	Optional. Role to assume. Defaults to the user's default role
   authenticator	string	Optional. `snowflake_jwt` (key pair), `snowflake` (password), `oauth` or `externalbrowser`. Inferred from config.properties when not set
+  batch_size	integer	Optional. Number of rows fetched from Snowflake per round trip (default 100000). Rows are converted to a data frame batch by batch to limit peak memory
   src_data_checks	array	Optional. Validations to apply on source data
 
   temp_table_params is not supported for snowflake sources.
