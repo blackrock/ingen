@@ -1083,6 +1083,36 @@ output:
 			type: delimited_result_header
 
 
+**Quote all values**
+
+By default, delimited files use minimal quoting: only values that contain the delimiter, a double quote or a line break are wrapped in double quotes, and embedded double quotes are escaped by doubling them (`"` becomes `""`). To wrap every value in double quotes, including the header row, numbers and empty values, set `quote_all: true` in the output props. This is opt-in. When `quote_all` is absent or `false`, the output is unchanged.
+
+```
+output:
+  type: delimited_file
+  props:
+    delimiter: ','
+    path: 'path/to/write/file.csv'
+    quote_all: true
+    header:
+      type: delimited_result_header
+```
+
+For a row containing a plain value (`Alice`), a value with a comma (`Growth, Balanced`), a value with a double quote (`He said "hi"`) and an empty value:
+
+	default:         Alice,"Growth, Balanced","He said ""hi""",
+	quote_all: true: "Alice","Growth, Balanced","He said ""hi""",""
+
+| Value | default | quote_all: true |
+|:------|:--------|:----------------|
+| `Alice` | `Alice` | `"Alice"` |
+| `Growth, Balanced` | `"Growth, Balanced"` | `"Growth, Balanced"` |
+| `He said "hi"` | `"He said ""hi"""` | `"He said ""hi"""` |
+| *(empty)* | *(nothing)* | `""` |
+
+Values are written verbatim inside the quotes. HTML or other special characters (`<`, `>`, `&`, `'`) are not escaped or altered. Lines produced by `custom` header/footer functions are written as-is and are not quoted. For `splitted_file` output, set `quote_all` in each file's `props`.
+
+
 **Custom Header/Footer**
 
 To have custom footer/headers in the output csv files, header/footer are initialised with type = 'custom' . Different custom values can be achieved using this. There are 5 custom functions which can be used to get the header/footer of the output file.

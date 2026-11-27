@@ -1,6 +1,7 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
+import csv
 import logging
 
 from ingen.writer.dataframe_writer import DataFrameWriter
@@ -51,10 +52,13 @@ class InterfaceWriter:
         logger.info(f"writing file to {path}")
         sep = self._props['delimiter'] if 'delimiter' in self._props else ','
         encoding = self._props.get('encoding', 'utf-8')
+        csv_options = {'index': InterfaceWriter.SHOW_DATAFRAME_INDEX, 'encoding': encoding}
+        if str(self._props.get('quote_all', False)).strip().lower() == 'true':
+            csv_options['quoting'] = csv.QUOTE_ALL
         if self.header and self.header.get('type') == 'delimited_result_header':
-            self._df.to_csv(path, sep, index=InterfaceWriter.SHOW_DATAFRAME_INDEX, encoding=encoding)
+            self._df.to_csv(path, sep, **csv_options)
         else:
-            self._df.to_csv(path, sep, header=False, index=InterfaceWriter.SHOW_DATAFRAME_INDEX, encoding=encoding)
+            self._df.to_csv(path, sep, header=False, **csv_options)
 
     def file_writer(self):
         paths = self._props.get('path')
