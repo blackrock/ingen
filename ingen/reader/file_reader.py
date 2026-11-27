@@ -33,8 +33,8 @@ class CSVFileReader(Reader):
                                  names=config['all_cols'],
                                  dtype=dtype,
                                  encoding=encoding)
-            result=result.convert_dtypes()
-        
+            if src.get('convert_dtypes', False):
+                result = result.convert_dtypes()
         except TypeError:
             logging.error(self.DTYPE_LOG_MSG)
             raise
