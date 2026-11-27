@@ -17,6 +17,12 @@ class MyTestCase(unittest.TestCase):
         self.assertDictEqual({'date': '12/09/1995', 'table': 'position'}, args.query_params)
         return parser
 
+    def test_command_line_key_value_args_value_contains_equals(self):
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--override_params', nargs='*', action=KeyValue)
+        args = parser.parse_args(['--override_params', 'query=col1=val1'])
+        self.assertDictEqual({'query': 'col1=val1'}, args.override_params)
+
     def test_key_value_or_string_single_value(self):
         parser = argparse.ArgumentParser()
         parser.add_argument('--infile', nargs='*', action=KeyValueOrString)

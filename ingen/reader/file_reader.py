@@ -43,7 +43,6 @@ class CSVFileReader(Reader):
                 result = pd.DataFrame(columns=config['all_cols'])
             else:
                 raise
-
         return result
 
 

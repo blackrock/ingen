@@ -21,6 +21,8 @@ def get_custom_value(props, df, run_date):
     for prop in props:
         for key, value in prop.items():
             custom_function = get_type(key)
+            if custom_function is None:
+                raise ValueError(f"Unknown header/footer prop type: '{key}'")
             custom_string = custom_string + custom_function(value, df=df, run_date=run_date)
     return custom_string
 
@@ -103,8 +105,8 @@ def get_new_line(line, **kwargs):
     Takes a boolean input and adds a new line if bool value is true
     """
     if line:
-        newline = '\n'
-        return newline
+        return '\n'
+    return ''
 
 
 def sum_of_substr(props, **kwargs):

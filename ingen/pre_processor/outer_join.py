@@ -24,10 +24,15 @@ class OuterJoin(Process):
         :return: A Pandas dataframe which is the result of the outer join process
         """
         left_dataframe = data
-        right_dataframe = sources_data.get(config.get('source'))
+        source_key = config.get('source')
+        right_dataframe = sources_data.get(source_key)
         left_key = config.get('left_key')
         right_key = config.get('right_key')
-        
+
+        if source_key is None:
+            raise KeyError("outer_join config is missing the 'source' to join against")
+        if right_dataframe is None:
+            raise KeyError(f"Source '{source_key}' not found in sources_data for outer_join")
         if left_key is not None and left_key not in left_dataframe.columns:
             raise KeyError(f"Column '{left_key}' not present in left dataframe")
         if right_key is not None and right_key not in right_dataframe.columns:

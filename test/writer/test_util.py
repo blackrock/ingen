@@ -71,6 +71,13 @@ class TestUtil(unittest.TestCase):
         new_line = '\n'
         self.assertEqual(get_new_line(line), new_line)
 
+    def test_get_newline_false(self):
+        self.assertEqual(get_new_line(False), '')
+
+    def test_get_custom_value_unknown_prop_type(self):
+        with self.assertRaises(ValueError):
+            get_custom_value([{'not_a_real_type': 'x'}], df=pd.DataFrame(), run_date=datetime.now())
+
     def test_col_sum(self):
         mock_df = pd.DataFrame({'row': ['1', '2', '3', '4', '5', '6', '7']})
         sum = col_sum('row', df=mock_df)

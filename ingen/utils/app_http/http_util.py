@@ -6,11 +6,11 @@ import logging
 from asyncio import CancelledError
 
 import aiohttp
-from aiohttp import ClientSession, BasicAuth
+from aiohttp import ClientSession
 
+from ingen.utils.app_http.auth import get_auth
 from ingen.utils.app_http.aiohttp_retry import http_retry_request, HTTPResponse
 from ingen.utils.app_http.success_criterias import status_criteria, DEFAULT_STATUS_CRITERIA_OPTIONS
-from ingen.utils.properties import Properties
 
 log = logging.getLogger()
 
@@ -86,6 +86,8 @@ async def fetch(session, queue, request_params, results):
     while True:
         try:
             request = await queue.get()
+            auth_result = await get_auth(session, request.auth)
+            merged_headers = {**(request.headers or {}), **(auth_result.headers or {})}
             response = await http_retry_request(session,
                                                 request.method,
                                                 request.url,
@@ -96,8 +98,8 @@ async def fetch(session, queue, request_params, results):
                                                                                     status_criteria),
                                                 criteria_options=request_params.get('criteria_options',
                                                                                     DEFAULT_STATUS_CRITERIA_OPTIONS),
-                                                auth=api_auth(request.auth),
-                                                headers=request.headers,
+                                                auth=auth_result.auth,
+                                                headers=merged_headers,
                                                 data=request.data)
         except CancelledError:
             log.info("Task cancelled.")
@@ -110,17 +112,3 @@ async def fetch(session, queue, request_params, results):
             log.info(f"Processed request {len(results)} / {request_params.get('size')}")
             queue.task_done()
 
-
-def api_auth(auth):
-    """
-    Method responsible for authenticating API. aiohttp.BasicAuth is used for it.
-    :param auth: Dictionary that contains auth.type, auth.username and auth.pwd.
-    :return: aiohttp.BasicAuth if auth.type is BasicAuth, None otherwise.
-    """
-    if auth and auth.get('type') == 'BasicAuth':
-        try:
-            user = Properties.get_property('api_auth.username')
-            password = Properties.get_property('api_auth.password')
-            return BasicAuth(user, password)
-        except Exception as e:
-            log.exception(f"Error while getting the property username/pwd for api call: {e} ")

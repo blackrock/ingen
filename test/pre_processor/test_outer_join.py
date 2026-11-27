@@ -70,3 +70,15 @@ class TestOuterJoin(unittest.TestCase):
         expected_df = pd.DataFrame(expected_data)
 
         pd.testing.assert_frame_equal(result, expected_df)
+
+    def test_outer_join_missing_source_key_in_config(self):
+        """Config has no 'source' key at all."""
+        config = {'left_key': 'id1', 'right_key': 'id'}
+        with self.assertRaises(KeyError):
+            self.outer_join.execute(config, {'test-users': self.right_data}, self.left_data)
+
+    def test_outer_join_source_not_in_sources_data(self):
+        """Config names a source that was never fetched."""
+        config = {'source': 'missing-source', 'left_key': 'id1', 'right_key': 'id'}
+        with self.assertRaises(KeyError):
+            self.outer_join.execute(config, {'test-users': self.right_data}, self.left_data)

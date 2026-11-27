@@ -1,0 +1,30 @@
+{
+  "name": "ingen-studio",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "test": "node --test \"src/**/*.test.js\""
+  },
+  "dependencies": {
+    "@dagrejs/dagre": "^3.0.0",
+    "js-yaml": "^4.2.0",
+    "lucide-react": "^1.18.0",
+    "next": "^15.5.4",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "reactflow": "^11.11.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^10.3.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.6.0"
+  }
+}

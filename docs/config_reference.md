@@ -4,7 +4,7 @@ The input to Interface Generator is a YAML file called metadata file which conta
 
 **Defining Data Sources**
 
-A Data Source is the location from where the data originates. It can be a database, file or an api. The following code snippet shows an example of a 'sources' array containing a data source - an excel file. 
+A Data Source is the location from where the data originates. It can be a database, file or an api. The following code snippet shows an example of a 'sources' array containing a data source - an excel file.
 
 	sources:
 	- id: restrictions_file
@@ -22,11 +22,11 @@ The following table shows all the fields available to describe a DB source.
 	  type	string	REQUIRED. [db] type of data source
 	  db_token	string	REQUIRED. Sybase DB token
 	  query	string	REQUIRED. SQL query to fetch data from db
-	  temp_table_params 	array<string>	
+	  temp_table_params 	array<string>
 	  Optional: params to create temp table from file source
 
 The following table shows all the fields available to describe a temp_table parameters  from file source
-  
+
 	  Field Name	Type	Description
 	  id	string	REQUIRED. Data Source identifier. Used to refer to a source while defining interfaces.
 	  type	string	REQUIRED. [db] type of data source
@@ -34,16 +34,16 @@ The following table shows all the fields available to describe a temp_table para
 	  delimiter	string	Type of delimiter. Default: ','
 	  file_path	string	REQUIRED. Path of file
 	  temp_table_name	string	REQUIRED. Name of temp table
-	  temp_table_cols	array<string>	Return the array of temp table column name, type, size and file column to be used from the source file 
-   
-	  Eg: 
+	  temp_table_cols	array<string>	Return the array of temp table column name, type, size and file column to be used from the source file
+
+	  Eg:
 	  temp_table_cols: [
 	        { "name": "client_id","type": "varchar", "size": 50,"file_col": "no_hold",default:"temP-string"},
 	        { "name": "ticker", "type": "int", "file_col": "Ticker", default: 0},
 	        { "name": "cusip", "type": "varchar", "size": 50, "file_col": "cusip"},
 	      ]
 
-       
+
 **Passing run-time parameters to SQL queries**
 
 SQL Queries defined in the data source can contain dynamic replaceable elements. These replaceable elements are written within curly braces and the actual values with which it will be replaced can be set via command-line arguments.
@@ -73,13 +73,13 @@ The following table describes all the available fields to describe a file source
 	  skip_header_size	integer	Number of lines to be skipped from the top of the file
 	  skip_trailer_size	integer	Number of lines to be skipped at the bottom of the file
 	  return_empty_if_not_exist	boolean	Return empty dataframe if the file is not present instead of throwing FileNotFoundError exception
-	  col_specification	list of tuple (int, int) or string	Tuple defining the fixed width indices of columns. 
-   
+	  col_specification	list of tuple (int, int) or string	Tuple defining the fixed width indices of columns.
+
 String value 'infer' can be used to instruct the parser to try detecting the column specifications from the first 100 rows of
 the data which are not being skipped via skiprows (default='infer')
 
 
-The following code snippet shows an example of a 'source' array containing a file source which points to an excel file stored at this hypothetical location 
+The following code snippet shows an example of a 'source' array containing a file source which points to an excel file stored at this hypothetical location
 	  sources:
 	      - id: file_excel
 	        type: file
@@ -93,21 +93,21 @@ The following code snippet shows an example of a 'source' array containing a fil
 Source file_path can be set via command-line argument --infile
 Also add new field in Source object in config yml
 use_infile : true
-So only the specific source will utilize the command line file_path 
+So only the specific source will utilize the command line file_path
 i.e. --infile filelLoc/sample.xlsx will overwrite the file_path value in source during runtime.
 
 **API Source**
 
 An API source is identified by setting type of the data source to api. Interface Generator supports reading data from more than one URLs at a time.
 The following table describes all the available fields to describe an API source.
-  
+
 		Field Name	Type	Description
 		id	string	REQUIRED. Data Source identifier. Used to refer to a source while defining interfaces.
 		type	string	REQUIRED. [api] type of data source
 		url	string	REQUIRED. base url to access data from.
 		method	string	HTTP method. Default GET.
-		request_body	string	JSON String for HTTP request body. 
-		headers	json object	HTTP headers as key values. 
+		request_body	string	JSON String for HTTP request body.
+		headers	json object	HTTP headers as key values.
 		batch		REQUIRED. More than one URL can be constructed from the base url depending on batch size and the parameter that needs batching.
 		url_params		REQUIRED. query parameters that can be fetched from different sources(DB, File or can be constant)
 		data_node	list	REQUIRED. end point of a list in api
@@ -120,7 +120,7 @@ The following table describes all the available fields to describe an API source
 		success_criteria	string	Name of the success_criteria function. See 'success criteria' below for more info
 		criteria_option	json_object	Params of success_criteria function. See 'success criteria' below for more info
 		queue_size	int	When a queue size is given, a queue is created with maxsize = 'queue_size'. See 'throttling' below for more.
-		tasks_len	int	Number of concurrent requests to fetch. 
+		tasks_len	int	Number of concurrent requests to fetch.
 
 (Note: The colored fields are explained below in detail.)
 Success Criteria
@@ -132,7 +132,7 @@ The following functions can be used to define the success criteria of the http r
 
 	  Function Name	Parameters	Description
 	  status_criteria	{'status': 200}	Checks if the response status code is equal to the expected code passed in options
-	  payload_criteria	{'key': 'done', 'value': 'True'}	Checks if a given field is present in the response and is equal to the provided value. 
+	  payload_criteria	{'key': 'done', 'value': 'True'}	Checks if a given field is present in the response and is equal to the provided value.
 
 If payload contains a key called 'done' and its values is 'True', then this function returns true
 batch: The "batch" field consists of 2 fields:
@@ -143,14 +143,14 @@ batch: The "batch" field consists of 2 fields:
 	  batch:
 	      size: 2
 	      id: tickerIds
-       
+
  **Throttling**
- 
-When multiple requests are created using 'batch'-ing. Users have an option to run these requests concurrently. InGen stores all the HTTP Request objects in a list and creates a queue. A producer task picks one request from the list and adds it to the queue if the queue is not full. Multiple consumer tasks concurrently read from the queue and fetch data from API by executing the HTTP request. To control the number of concurrent requests, users can set the max size of the queue (queue_size) and max number of consumer tasks to be created (tasks_len). 
+
+When multiple requests are created using 'batch'-ing. Users have an option to run these requests concurrently. InGen stores all the HTTP Request objects in a list and creates a queue. A producer task picks one request from the list and adds it to the queue if the queue is not full. Multiple consumer tasks concurrently read from the queue and fetch data from API by executing the HTTP request. To control the number of concurrent requests, users can set the max size of the queue (queue_size) and max number of consumer tasks to be created (tasks_len).
 Example:
-If an API has a rate limit of 1000 requests per minute and each request takes on average 1 second to complete. 
+If an API has a rate limit of 1000 requests per minute and each request takes on average 1 second to complete.
 So we can run ~16 requests parallelly. Hence `tasks_len` = 16  and `queue_size` can be more than 16.
-By default, both these parameters will be set to 1,  which basically means all requests will run synchronously. 
+By default, both these parameters will be set to 1,  which basically means all requests will run synchronously.
 url_params: URL params can be fetched from a file, a database, or can be declared as a constant in the configuration file. It consists of fields depending on the type from which the params are fetched.
 
 	  ...
@@ -176,16 +176,65 @@ url_params: URL params can be fetched from a file, a database, or can be declare
 	        delimiter	string	Type of delimiter. Default: ','
 	        columns	list	REQUIRED list of all columns in the file.
 	        dest_column	string	name of the column to be fetched and mapped in the url param.( can skip this filed if file has only one column)
-	    auth: The "auth" field consists of tokens needed to authenticate the urls. There are 3 fields:
-	        1.	type: "BasicAuth" (by default as of now).
-	        2.	username: Service-account/API Token for username 
-	        3.	pwd: Service-account/API Token for password.
+	    auth: The "auth" field configures how API requests are authenticated. InGen supports BasicAuth and OAuth2.
+	    All credentials are read from config.properties (never placed directly in YAML).
+
+	    **BasicAuth**
+	    Uses HTTP Basic Authentication. Credentials are read from config.properties keys:
+	    `api_auth.username` and `api_auth.password`.
 	    ...
 	    auth:
 	        type: 'BasicAuth'
 	        username: 'TOKEN'
 	        pwd: 'TOKEN'
-	        
+
+	    **OAuth2 (Client Credentials)**
+	    Uses OAuth 2.0 Client Credentials grant (RFC 6749 section 4.4). Fetches an access token from
+	    the token endpoint and sends it as a Bearer token. Credentials are read from config.properties
+	    keys: `api_auth.client_id` and `api_auth.client_secret`.
+	    ...
+	    auth:
+	        type: OAuth2
+	        grant_type: client_credentials
+	        token_url: "https://example.com/oauth2/token"
+	        scope:
+	            - scope1
+	            - scope2
+	        method: client_secret_post
+
+	    Field Name	Type	Description
+	    type	string	REQUIRED. `OAuth2`
+	    grant_type	string	REQUIRED. `client_credentials` or `password`
+	    token_url	string	REQUIRED. Token endpoint URL
+	    scope	string or list	Optional. OAuth2 scope(s). Lists are joined with spaces.
+	    method	string	Optional. `client_secret_basic` (default) or `client_secret_post`
+
+	    **OAuth2 (Password Grant)**
+	    Uses OAuth 2.0 Resource Owner Password Credentials grant (RFC 6749 section 4.3). In addition to
+	    `api_auth.client_id` and `api_auth.client_secret`, reads `api_auth.username` and
+	    `api_auth.password` from config.properties.
+	    ...
+	    auth:
+	        type: OAuth2
+	        grant_type: password
+	        token_url: "https://example.com/oauth2/token"
+	        scope: read
+
+	    **OAuth2 (Pre-obtained Token)**
+	    Uses a pre-obtained Bearer token read from config.properties key `api_auth.access_token`.
+	    ...
+	    auth:
+	        type: OAuth2
+	        grant_type: token
+
+	    **config.properties keys used by auth:**
+	    Key	Used by
+	    api_auth.username	BasicAuth, OAuth2 password grant
+	    api_auth.password	BasicAuth, OAuth2 password grant
+	    api_auth.client_id	OAuth2 client_credentials, OAuth2 password
+	    api_auth.client_secret	OAuth2 client_credentials, OAuth2 password
+	    api_auth.access_token	OAuth2 pre-obtained token
+
 	    headers: HTTP Headers
 	    Header values can also contain dynamic fields, similar to file paths. Dynamic values are written in this format - $function(args) - where `function` is the name of interpolator function and `args` is argument to the function.
 	        headers:
@@ -198,7 +247,7 @@ url_params: URL params can be fetched from a file, a database, or can be declare
   Field Name	Type	Description
   id	string	REQUIRED. ID of the dataframe
   Type	string	REQUIRED.  Type of data, in this case, RawDataStore source
-  		
+
   So here, A dictionary named Store contains IDs and Data Frames as key-value pairs, Which can be read from and written into the dictionary using the ID.
   sources:
   	- id: DF2
@@ -207,7 +256,7 @@ url_params: URL params can be fetched from a file, a database, or can be declare
 **Json Source**
 
   A Json source represents a JSON string payload. The payload itself is given alongside the metadata file.
-  Field Name	Type	
+  Field Name	Type  
   id	string	REQUIRED. Data source identifier
   type	string	REQUIRED. Data source type
   sources:
@@ -225,13 +274,13 @@ url_params: URL params can be fetched from a file, a database, or can be declare
           ...
       accounts:
           ...
-  
+
   Each interface object is defined using four properties:
-  •	Sources 
+  •	Sources
   •	Preprocessing
   •	Output
   •	Columns
-  
+
 **Sources**
 
   The "sources" field is an array of source IDs. Each source ID points to the data source defined in the metadata file. In the following example, the metadata file contains two sources - file_source and db_source. To declare that the "positions" interface will fetch data from both these sources, a sources array is declared containing IDs of the data sources.
@@ -240,18 +289,18 @@ url_params: URL params can be fetched from a file, a database, or can be declare
       	sources: [source1, source2]
   		...
   		...
-  
+
   sources:
       - id: file_source
         ...
       - id: db_source
-        ... 
+        ...
 
 **Preprocessing**
 
   Pre-processing steps are supposed to work like a pipeline. The output of one pre-processor would be the input to the next pre-processor. The input of the first pre-processor in the pipeline would be the first source from the sources array. Pre-processing steps are for row-wise operations on the dataframe.
   Merge
-  Merge is used to merge data from multiple sources. In the following example, source1 (first element in the sources array, also called as left source) will be merged with the given source, source2 (also called as right source).  If the merge pre-process step appears after another pre-process step, then the output of the previous step is considered as the left source. The name of the column to use while merging, is given by - left_key and right_key. merge_type indicates the type of merge - left, right, inner (default). These types work like SQL left outer join, right outer join, and inner join.  
+  Merge is used to merge data from multiple sources. In the following example, source1 (first element in the sources array, also called as left source) will be merged with the given source, source2 (also called as right source).  If the merge pre-process step appears after another pre-process step, then the output of the previous step is considered as the left source. The name of the column to use while merging, is given by - left_key and right_key. merge_type indicates the type of merge - left, right, inner (default). These types work like SQL left outer join, right outer join, and inner join.
 	  interfaces:
 	    interface_name:
 	      sources: [ source1,source2 ]
@@ -262,13 +311,13 @@ url_params: URL params can be fetched from a file, a database, or can be declare
 	          right_key: bfm_cusip
 	          merge_type: left
 	  		...
-	  
+
 	  sources:
 	      - id: source1
 	        ...
 	      - id: source2
-	        ... 
-      
+	        ...
+
 		      Field Name	Type	Description
 		      type	string	REQUIRED. merge
 		      source	string	REQUIRED. identifier of the right data source. This identifier must be present
@@ -282,14 +331,14 @@ url_params: URL params can be fetched from a file, a database, or can be declare
 		      Ankur	45	49
 		      Sakshi	37	40
 		      Peter	44	48
-		      
+
 		      Source 2 (right source) - marks2
 		      name	science	french
 		      Ankur	48	39
 		      James	44	45
 		      Arthur	39	47
-		      
-      
+
+
 		      Left Merge
 		      sources: [ marks1,marks2 ]
 		          pre_processing:
@@ -302,9 +351,9 @@ url_params: URL params can be fetched from a file, a database, or can be declare
 		      Output
 		      name	english	maths	science	french
 		      Ankur	45	49	48	39
-		      Sakshi	37	40		
-		      Peter	44	48		
-      
+		      Sakshi	37	40
+		      Peter	44	48
+
 		      Inner Merge
 		      sources: [ marks1,marks2 ]
 		          pre_processing:
@@ -314,11 +363,11 @@ url_params: URL params can be fetched from a file, a database, or can be declare
 		              right_key: name
 		              merge_type: inner
 		      		...
-      
+
 		      Output
 		      name	english	maths	science	french
 		      Ankur	45	49	48	39
-      
+
 		      Right Merge
 		      sources: [ marks1,marks2 ]
 		          pre_processing:
@@ -328,7 +377,7 @@ url_params: URL params can be fetched from a file, a database, or can be declare
 		              right_key: name
 		              merge_type: right
 		      		...
-		      
+
 		Output
 		      name	english	maths	science	french
 		      Ankur	45	49	48	39
@@ -350,15 +399,15 @@ url_params: URL params can be fetched from a file, a database, or can be declare
               	    - source1
               		- source2
     		...
-    
+
     sources:
         - id: source1
           ...
         - id: source2
-          ... 
-    
+          ...
+
     Aggregation
-    
+
     Aggregation can be used to perform operations like grouping and performing aggregation operations like sum, count, min, max and mean. This does not work on multiple sources, it would only work on one single unit of data
     interfaces:
     	positions:
@@ -371,30 +420,30 @@ url_params: URL params can be fetched from a file, a database, or can be declare
     				operation: 'sum'
               		col: 'face'
     		...
-    
+
     sources:
         - id: source1
           ...
         - id: source2
-          ... 
+          ...
 
 **Mask**
 
-  Mask allows filtering a data source wrt to another data source. 
-  
+  Mask allows filtering a data source wrt to another data source.
+
 	  sources: [ 'taxlot', 'accounts' ]
 	  pre_processing:
 	  	- type: mask
 	          on_col: 'Account Number'
 	          masking_source: account_info
 	          masking_col: ACCOUNT_ID
-	   
-  In this example, we are applying mask on column 'Account Number' of 'taxlot' source, using column 'ACCOUNT_ID' of 'accounts' as the masking source. So if taxlot contains data of 10 different account numbers, out of which only 4 are present in accounts file, then after applying the mask operation, only 4 accounts data will be present in tax_lot. 
+
+  In this example, we are applying mask on column 'Account Number' of 'taxlot' source, using column 'ACCOUNT_ID' of 'accounts' as the masking source. So if taxlot contains data of 10 different account numbers, out of which only 4 are present in accounts file, then after applying the mask operation, only 4 accounts data will be present in tax_lot.
 
 **Melt**
 
   Melt is used to convert rows into columns. If the dataframe contains one header row and one data row. It'll be converted into a dataframe containing two columns.
-  
+
 	      pre_processing:
 	        - type: melt
 	          key_column: TICKER
@@ -402,7 +451,7 @@ url_params: URL params can be fetched from a file, a database, or can be declare
 	          include_keys: []
 	          source:
 	               - portfolio_id
-  
+
 	  In the above example, let's say your data frame looks like this:
 	  A	B	C	D
 	  1	2	3	4
@@ -424,7 +473,7 @@ url_params: URL params can be fetched from a file, a database, or can be declare
 	                val: [ 'Ashish' ]
 	              - col: 'score'
 	                val: [ 82 ]
-    
+
 	    In the above example, let's say your data frame looks like this:
 	    name	score	subject
 	    Ashish	50	Science
@@ -439,13 +488,13 @@ url_params: URL params can be fetched from a file, a database, or can be declare
 	    name	score	subject
 	    Ashish	50	Science
 	    Ashish	82	Hindi
-    
+
     Multiple filters can be configured, it works like a pipleline first filter output will be the input of the next filter
-    
+
     Columns
-    
+
     Columns field represents the columns of the final data that will be persisted. It is a mapping of source column name and destination column name. It also includes details of any formatter that is to be applied on a column.
-    
+
 		    interfaces:
 		        positions:
 		            ...
@@ -477,8 +526,8 @@ url_params: URL params can be fetched from a file, a database, or can be declare
 
 **JSON Array Expander**
 
-JSON Array Expander is used to expand JSON arrays stored as strings in a column into multiple rows (cartesian product). 
-For each JSON array, it creates separate rows for each object while preserving existing columns. The JSON column is 
+JSON Array Expander is used to expand JSON arrays stored as strings in a column into multiple rows (cartesian product).
+For each JSON array, it creates separate rows for each object while preserving existing columns. The JSON column is
 replaced with new columns from the parsed JSON objects.
 
 * `column`: *REQUIRED* column name containing JSON strings to expand
@@ -523,17 +572,17 @@ After applying json_array_expander:
 
 **Available formatters:**
 
-**Date** 
+**Date**
 
-Change format of date strings. 
+Change format of date strings.
 	formatters:
 		- type: date
 		  format:
 	      	src: "%m%d%Y"
 	        des: "%Y-%m-%d"
 
-		`src` is the format of the existing column.`des` is the format you want to apply. 
-		Check out the table at the end of this page for accepted values: https://www.w3schools.com/python/python_datetime.asp 
+		`src` is the format of the existing column.`des` is the format you want to apply.
+		Check out the table at the end of this page for accepted values: https://www.w3schools.com/python/python_datetime.asp
 		Float
 		Change format of decimal numbers. InGen uses python's string format function to apply the format, therefore any valid python format string can be passed. Refer this page to know more about python's format function https://docs.python.org/2/library/string.html#format-specification-mini-language
 		formatters:
@@ -546,7 +595,7 @@ Concatenate multiple columns into a new column and separate it via separator:
 	      - src_col_name: final_column
 	        formatters:
 	          - type: concat
-	            format: 
+	            format:
 				  columns: ['column1','column2','column3']
 	              separator: '_'
 
@@ -555,7 +604,7 @@ Note: if the separator is not provided the columns would be concatenated without
 
 **Constant**
 
-Add a new column with a constant value 
+Add a new column with a constant value
       - src_col_name: "country"
         formatters:
           - type: constant
@@ -570,12 +619,12 @@ Add a new column with a date
             format: [ 0,  "%Y-%m-%d", "EMPTY" ]
 `format` accepts a list with 3 items:
 1.	offest - 0 indicates today's date, a positive value will add that number of days to today's date, similarly a negative value. will decrease the date. So use -1 to get yesterday's date
-2.	date format 
+2.	date format
 3.	BLK calendar - <todo: add link to BLK calendar wiki>
-   
+
 **Duplicate Column**
 
-Add a new column. by coying an existing one. 
+Add a new column. by coying an existing one.
       - src_col_name: newcolumn
         formatters:
           - type: duplicate
@@ -590,9 +639,9 @@ In the above example, a new column `newcolumn` will be created by copying the va
             format:
               of: 'Market Value'
               in: 'Account Number'
-In the above example, a new column `WEIGHT` will be created by calculating the percentage of 'Market Value' in 'Account Number'. 
+In the above example, a new column `WEIGHT` will be created by calculating the percentage of 'Market Value' in 'Account Number'.
 
-**Sum** 
+**Sum**
 
 Adds a new column by adding values of two columns
       - src_col_name: marks
@@ -614,7 +663,7 @@ The above example adds a new column called 'duration' by calculating the differe
 
 Bucket formatter is used to group numerical values into ranges by creating range intervals called buckets and labelling them. In the below example 'GAIN_LOSS_TYPE' column originally contains non-negative numerical values. We need to group these values into two labels :
 1.	short_term: 0 to 365
-2.	long_term: >=366 
+2.	long_term: >=366
 
 
       - src_col_name: GAIN_LOSS_TYPE
@@ -627,13 +676,13 @@ Bucket formatter is used to group numerical values into ranges by creating range
 **Format options:**
 
 format	description
-buckets	REQUIRED. A list representing increasing ranges.  
+buckets	REQUIRED. A list representing increasing ranges.
 labels	List of labels to be applied on each bucket range
 include_right	'true' or 'false'.  Indicates whether bucketsincludes the rightmost edge or not. If include_right=='true' (the default), then the buckets [1, 2, 3, 4] indicate (1,2], (2,3], (3,4].
 
 **Business Day Formatter**
 
-Business day formatter is used to add another column named billing date to the input data frame. The input data frame contains 'date' column consisting of some dates. After applying this formatter, a new billing date column will be created, which will contain previous business day for the corresponding date, That is, if the date is a business day, it will give the same date, but if it is a holiday, it will give previous business day. The user can choose the calendar from HolidayCalendar. 
+Business day formatter is used to add another column named billing date to the input data frame. The input data frame contains 'date' column consisting of some dates. After applying this formatter, a new billing date column will be created, which will contain previous business day for the corresponding date, That is, if the date is a business day, it will give the same date, but if it is a holiday, it will give previous business day. The user can choose the calendar from HolidayCalendar.
 
   - src_col_name: date
   - src_col_name: business_date
@@ -647,10 +696,10 @@ Business day formatter is used to add another column named billing date to the i
 **Split Formatter**
 Takes a column having array values and splits it into multiple columns equal to the number of elements in the array. The user can give the names of new columns and choose which column to display finally. This works on both the list and string type values in the column.
 For example, we have a 'Subjects' column in a dataframe containing a list of subjects. This formatter will create a separate column for each subject in that list as follows:
-		Input Dataframe- 
-		 
+		Input Dataframe-
+
 		Output Dataframe-
-		 
+
 		-src_col_name: name
 		-src_col_name: subject
 		 formatters:
@@ -664,8 +713,8 @@ For example, we have a 'Subjects' column in a dataframe containing a list of sub
 
 Replaces the NaN values in a column by a value specified in the config
 
-	- src_col_name: grade         
-	  formatters: 
+	- src_col_name: grade
+	  formatters:
 		- type: fill_empty_values_with_custom_value
 	      format:
 	         value: 0
@@ -781,7 +830,7 @@ columns:
 	  - src_col_name: random_id
 	    formatters:
 	      - type: uuid
-       
+
 **Conditional Formatter:**
 
 The purpose of this formatter is  based on a condition replaces the row value with another column value.
@@ -822,7 +871,7 @@ The purpose of this formatter is to drop rows with duplicate ID values from a da
 **Prefix_string**
 
 The purpose of this formatter is to append string and multiple column data into a single column
-The following example concatenates "161"+fc_ofc_no + fc_no 
+The following example concatenates "161"+fc_ofc_no + fc_no
 
 	 - src_col_name: 'Unique_ID__c'
 	   formatters:
@@ -834,7 +883,7 @@ The following example concatenates "161"+fc_ofc_no + fc_no
 **Suffix_string**
 
 The purpose of this formatter is to append string and multiple column data into a single column with the string appended at the end.
-The following example concatenates fc_ofc_no + fc_no + "2025" 
+The following example concatenates fc_ofc_no + fc_no + "2025"
 
 	 - src_col_name: 'Unique_ID__c'
 	   formatters:
@@ -978,8 +1027,8 @@ Post processing is used to apply operations on the data frame after all the tran
 
 ####  Pivot
 
-The `pivot` function pivots a DataFrame based on a specified column (`pivot_col`) 
-to create dynamic columns, using another column (`value_col`) to fill the values. It preserves rows 
+The `pivot` function pivots a DataFrame based on a specified column (`pivot_col`)
+to create dynamic columns, using another column (`value_col`) to fill the values. It preserves rows
 without dynamic attributes.
 
 ```
@@ -987,7 +1036,7 @@ interfaces:
   interface_name:
     post_processing:
       - type: pivot
-        processing_values: 
+        processing_values:
           pivot_col: defn_name
           value_col: defn_value
 ```
@@ -1024,7 +1073,7 @@ output:
 
 **Header & Footer**
 
-CSV files by default do not write the column names in the file. To add the column names in the output file an extra property called 'header'/'footer' should be provided in the output. 
+CSV files by default do not write the column names in the file. To add the column names in the output file an extra property called 'header'/'footer' should be provided in the output.
 output:
 	type: file
 	props:
@@ -1041,7 +1090,7 @@ To have custom footer/headers in the output csv files, header/footer are initial
 	filler Takes integer as input and adds the string containing equivalent number of empty spaces to header/footer.
 	get_new_line Takes boolean input from the user and if true, adds a new line after any value.
 	col_sum Takes column name as input and returns the sum of values of that column.
-	sum_of_substr Takes column name, starting index, ending index for the substring, and the number of characters from the user, and returns the sum of all substring values of that column. The number of characters is the total characters user wants in the final output. The extra characters apart from sum value are fulfilled by leading zeros. 
+	sum_of_substr Takes column name, starting index, ending index for the substring, and the number of characters from the user, and returns the sum of all substring values of that column. The number of characters is the total characters user wants in the final output. The extra characters apart from sum value are fulfilled by leading zeros.
 
 	Field Name	Type	Description
 	col_name	string	column on which user wants to apply this function
@@ -1064,7 +1113,7 @@ row_count Takes dictionary as input which refers to left padding needed(for eg i
 	date Takes the date format as input and adds today's date to header/footer.
 	run_date Takes the date format as input and adds the run_date(date used in cli) to header/footer.
 
-These custom functions can be used together to generate the header/footer as required. In the functions tag  we need to mention the custom functions in the order you need them in the header/footer. Therefore in below case the 
+These custom functions can be used together to generate the header/footer as required. In the functions tag  we need to mention the custom functions in the order you need them in the header/footer. Therefore in below case the
 resultant header = constant + filler + constant + run_date =  H          MRC20211203
 resultant footer = constant + row_count(with left padding as 7 and include header + include footer) = TRECORD COUNT0000010
 
@@ -1088,7 +1137,7 @@ resultant footer = constant + row_count(with left padding as 7 and include heade
 		            - add_new_line: true
 		            - filler: 231
 		            - constant: X
-		
+
 		        footer:
 		          type: custom
 		          function:
@@ -1151,7 +1200,7 @@ In the below sample YAML, the column names are- Name and Gender and the datafram
 		    columns:
 		      - src_col_name: Name
 		      - src_col_name: gender
-		
+
 		  Dataframefinal:
 		    sources: [DF2]
 		    output:
@@ -1164,7 +1213,7 @@ In the below sample YAML, the column names are- Name and Gender and the datafram
 		    columns:
 		      - src_col_name: Name
 		      - src_col_name: gender
-		
+
 		sources:
 		  - id: DF1
 		    type: file
@@ -1173,14 +1222,14 @@ In the below sample YAML, the column names are- Name and Gender and the datafram
 		    file_path: PATH\sampledf.csv
 		    columns: [ Name, gender]
 		    skip_header_size: 1
-		
+
 		  - id: DF2
 		    type: rawdatastore
 
- 
+
 **JSON Writer**
 
-JSON Writer can be used to transform the data stored in a dataframe into JSON format and then store in a file or can be sent to an API as request body. There can be different ways to transform a dataframe into JSON. Currently, InGen provides two convertors - i) Single and ii) Multiple. The choice of convertor can be declared in the YAML config as shown in the below example. In a similar way, the destination, i.e where to send the JSONs can be declared in the config file. There are two possible destinations - i) File and ii) API. 
+JSON Writer can be used to transform the data stored in a dataframe into JSON format and then store in a file or can be sent to an API as request body. There can be different ways to transform a dataframe into JSON. Currently, InGen provides two convertors - i) Single and ii) Multiple. The choice of convertor can be declared in the YAML config as shown in the below example. In a similar way, the destination, i.e where to send the JSONs can be declared in the config file. There are two possible destinations - i) File and ii) API.
 JSON Writer accepts four top-level configs:
 	output:
 		type: json_writer
@@ -1190,15 +1239,15 @@ JSON Writer accepts four top-level configs:
 			destination: ...
 			destination_props: ...
 
-Converter: 
+Converter:
 
-Converters are used to convert the dataframes into JSONs. Users can declare the converter function they want to use and also pass the properties that the function needs. 
+Converters are used to convert the dataframes into JSONs. Users can declare the converter function they want to use and also pass the properties that the function needs.
 Single converter
 
 JSON writer allows the final output dataframe to be written as a JSON file on the configured path. This writer works with two optional arguments.
-1.	Indent(int) to define the indentation of the JSON in terms of spaces. 
+1.	Indent(int) to define the indentation of the JSON in terms of spaces.
 2.	Orient decides the orientation of the JSON document.
-1.	The orient options are : 
+1.	The orient options are :
 	‘split’ : dict like {‘index’ -> [index], ‘columns’ -> [columns], ‘data’ -> [values]}
 	‘records’ : list like [{column -> value}, … , {column -> value}]
 	‘index’ : dict like {index -> {column -> value}}
@@ -1293,7 +1342,7 @@ The above YAML for json_writer is equivalent to old JSON writer as shown below.
 		              - field_name: accountName
 		                field_type: str
 		            resultant_columns: [ advisorId, clientsSummary ]
-		
+
 		    columns:
 		      - src_col_name: "start_date"
 		        dest_col_name: "START DATE"
@@ -1316,11 +1365,11 @@ and a json template like this:
 {"name": "Amit", "subject": "maths", "marks": 35}
 {"name": "Arya", "subject": "maths", "marks": 45}
 Destination
-A converter produces a list of JSON strings that are ready to be written to a file or to be sent as request payload to an API. 
+A converter produces a list of JSON strings that are ready to be written to a file or to be sent as request payload to an API.
 File destination
  Writes the JSON string to a file.
  API Destination
-For each row (or each JSON string in the list created by the converter) a single API call is made as per the given configuration. The result of the API call is written to the dataframe store. (InMemory). 
+For each row (or each JSON string in the list created by the converter) a single API call is made as per the given configuration. The result of the API call is written to the dataframe store. (InMemory).
 
 Sample API destination and its props:
           destination: api
@@ -1388,7 +1437,7 @@ sources:
 
 Attaching the input (json) and output (csv) files
 
-          
+
 **XMLReader:**
 
 Xml Reader helps to read an xml file and convert it to CSV file. It generates csv on the basis of column names we provide in the yml file. We also have to provide the root tag in the yml itself which is the main tag which has sub tags and its data.
@@ -1416,8 +1465,8 @@ In this example cusip tag has text with value 123456789 and assigned_to tag has 
 	      - src_col_name: 'MODIFIED_BY.@name'
 	        dest_col_name: 'MODIFIED_BY'
 	      - src_col_name: 'TRAN_TYPE'
-	     
-	
+
+
 	sources:
 	    - id: input_account
 	      type: file
@@ -1435,7 +1484,7 @@ In this example cusip tag has text with value 123456789 and assigned_to tag has 
 	      root_tag: 'ORDER'
 
 
-The important thing to note here is that nested tags can be accessed via '.' operator. The other thing to note is to the attribute tag is accessed via '.@' operator. 
+The important thing to note here is that nested tags can be accessed via '.' operator. The other thing to note is to the attribute tag is accessed via '.@' operator.
 Some tags have multiple nested tags for them 2 rows would be created in CSV with the duplicate data from the parent tag.
 
 drop_null
