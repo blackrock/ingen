@@ -15,4 +15,5 @@ pandas>=2.2.2,<3.0
 pycryptodome>=3.20.0
 PyMySQL>=1.1.1
 PyYAML>=6.0.2
+snowflake-connector-python>=3.12.0
 xmltodict>=0.12.0

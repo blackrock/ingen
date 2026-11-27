@@ -9,7 +9,7 @@ test('palette enumerates exactly the schema-supported types', () => {
 
   assert.deepEqual(
     groups.Sources.nodes.map((n) => n.subtype),
-    ['file', 'mysql', 'api', 'json'],
+    ['file', 'mysql', 'snowflake', 'api', 'json'],
   );
   assert.deepEqual(groups.Transforms.nodes.map((n) => n.subtype), PRE_PROCESSOR_ORDER);
   assert.deepEqual(groups.Output.nodes.map((n) => n.subtype), OUTPUT_TYPE_OPTIONS);

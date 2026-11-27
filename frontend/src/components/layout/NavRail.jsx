@@ -12,7 +12,7 @@ import { useRouter, useParams } from 'next/navigation';
 import {
   Database, FileOutput, Filter, ArrowRightLeft, ShieldCheck,
   Columns, Layers, Copy, GitMerge, Scissors, Table2, ListFilter, Plug,
-  Plus, ChevronLeft, ChevronRight, MessageSquare, ChevronDown, X, Search
+  Plus, ChevronLeft, ChevronRight, MessageSquare, ChevronDown, X, Search, Snowflake
 } from 'lucide-react';
 import { useConfig } from '../../state/ConfigContext.jsx';
 import { useSourceActions } from '../../hooks/useSourceActions.js';
@@ -39,8 +39,8 @@ const TRANSFORM_ICONS = {
   drop_duplicates: <Copy size={15} />, json_array_expander: <Columns size={15} />,
 };
 const SOURCE_ICONS = {
-  file: <FileOutput size={15} />, mysql: <Database size={15} />, api: <Plug size={15} />,
-  json: <Columns size={15} />,
+  file: <FileOutput size={15} />, mysql: <Database size={15} />, snowflake: <Snowflake size={15} />,
+  api: <Plug size={15} />, json: <Columns size={15} />,
 };
 const ACTION_ICONS = {
   add_column: <Columns size={15} />, add_validation: <ShieldCheck size={15} />,
@@ -65,6 +65,7 @@ function nextSourceId(model) {
 const SOURCE_DEFAULTS = {
   file: (id) => ({ id, type: 'file', file_type: 'delimited_file', file_path: `data/${id}.csv` }),
   mysql: (id) => ({ id, type: 'mysql', database: '', query: 'SELECT * FROM table' }),
+  snowflake: (id) => ({ id, type: 'snowflake', query: 'SELECT * FROM table' }),
   api: (id) => ({ id, type: 'api', url: '', method: 'GET' }),
   json: (id) => ({ id, type: 'json' }),
 };

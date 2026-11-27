@@ -50,6 +50,13 @@ test('applyOps threads the model so later ops see earlier ones', () => {
   assert.equal(it.output.type, 'excel');
 });
 
+test('add_source creates a snowflake source with a default query and wires it in', () => {
+  const { model, changed } = applyOp(baseModel(), IFACE, [], { op: 'add_source', type: 'snowflake', name: 'sf_positions' });
+  assert.ok(changed);
+  assert.deepEqual(model.sourcesById.sf_positions, { id: 'sf_positions', type: 'snowflake', query: 'SELECT * FROM table' });
+  assert.deepEqual(model.interfacesByName[IFACE].sources, ['sf_positions']);
+});
+
 test('set_output accepts every OUTPUT_TYPES value from constants (incl. splitted_file)', () => {
   const { model, changed } = applyOp(baseModel(), IFACE, [], { op: 'set_output', type: 'splitted_file' });
   assert.ok(changed);

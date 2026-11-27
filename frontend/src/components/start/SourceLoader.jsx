@@ -3,7 +3,7 @@
 //  Calls onSubmit(sourceObject, columns) once a valid source is described.
 
 import { useState } from 'react';
-import { FileText, Database, Globe, Braces, UploadCloud, ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
+import { FileText, Database, Globe, Braces, Snowflake, UploadCloud, ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
 
 import SchemaForm from '../../forms/SchemaForm.jsx';
 import { requiredSourceFields, advancedSourceFields } from '../../forms/schemas/sourceSchemas.js';
@@ -13,6 +13,7 @@ import { uploadFile } from '../../services/fileService.js';
 const TYPE_META = {
   file:         { icon: FileText,  color: '#3b82f6', label: 'File',          desc: 'CSV, Excel, XML, or JSON' },
   mysql:        { icon: Database,  color: '#f59e0b', label: 'MySQL',         desc: 'SQL query against a database' },
+  snowflake:    { icon: Snowflake, color: '#29b5e8', label: 'Snowflake',     desc: 'SQL query against Snowflake' },
   api:          { icon: Globe,     color: '#8b5cf6', label: 'API',           desc: 'HTTP endpoint (REST / SOAP)' },
   json:         { icon: Braces,    color: '#10b981', label: 'JSON',          desc: 'Runtime JSON payload' },
 };

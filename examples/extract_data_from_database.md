@@ -86,6 +86,28 @@ In the above example, output properties contains `type` and `props`.
 The output will be written to a file called `customer_orders.psv` which is a pipe separated file. The file will also 
 contain a header row, which will be just the column names in our example. 
 
+### Using Snowflake instead of MySQL
+The same interface can read from Snowflake by switching the source `type` to `snowflake`. Connection details go in
+`config.properties` (key pair shown; see the [config reference](../docs/config_reference.md) for password, OAuth and
+local browser SSO):
+```config.properties
+datasource.snowflake.account=<org>-<account>
+datasource.snowflake.user=<username>
+datasource.snowflake.private_key_path=<path_to_rsa_key.p8>
+datasource.snowflake.private_key_passphrase=<passphrase_if_key_is_encrypted>
+```
+```yaml
+sources:
+  - id: SAMPLE
+    type: snowflake
+    warehouse: COMPUTE_WH
+    database: SAMPLE_DATABASE
+    schema: PUBLIC
+    query: 'select
+    o.order_id, o.customer_id, o.order_date, o.total_amount, c.customer_name, c.customer_address
+    from ORDERS o inner join CUSTOMERS c on o.customer_id = c.customer_id'
+```
+
 Here's the complete yaml file with interface and source definition:
 ```yaml
 interfaces:

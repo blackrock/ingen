@@ -49,7 +49,7 @@ class ValidateYaml(unittest.TestCase):
         self.assertIn("UNKNOWN_SOURCE_REF", codes(res))
 
     def test_all_supported_source_types_accepted(self):
-        for t in ("file", "mysql", "api", "json"):
+        for t in ("file", "mysql", "api", "json", "snowflake"):
             res = validate_yaml(f"sources:\n  - id: s1\n    type: {t}\ninterfaces:\n  A: {{}}\n")
             self.assertNotIn("UNKNOWN_SOURCE_TYPE", codes(res), t)
 
