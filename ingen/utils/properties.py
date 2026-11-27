@@ -17,11 +17,12 @@ class Properties:
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             cls._instance = super(Properties, cls).__new__(cls)
-            return cls._instance
+        return cls._instance
 
     def __init__(self):
-        self.property_map = None
-        self.initialize_properties()
+        if not hasattr(self, 'property_map'):
+            self.property_map = None
+            self.initialize_properties()
 
     def initialize_properties(self):
         """
@@ -36,7 +37,7 @@ class Properties:
                         properties_line = file.read().splitlines()
                         for prop in properties_line:
                             if prop.strip():
-                                list_property = prop.split("=")
+                                list_property = prop.split("=", 1)
                                 if len(list_property) == 2:
                                     self.property_map[list_property[0].strip()] = list_property[1].strip()
                                 else:
