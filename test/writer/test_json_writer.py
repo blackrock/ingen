@@ -1,6 +1,9 @@
 #  Copyright (c) 2023 BlackRock, Inc.
 #  All Rights Reserved.
 
+import json
+import os
+import tempfile
 import unittest
 from unittest.mock import Mock
 
@@ -98,6 +101,75 @@ class MyTestCase(unittest.TestCase):
         destination_name = 'file'
         destination = get_json_destination(destination_name)
         self.assertIsInstance(destination, FileDestination)
+
+
+class TestFileDestination(unittest.TestCase):
+    """Test FileDestination with str and list-valued paths."""
+
+    def setUp(self) -> None:
+        self.json_strings = ['{"name": "piyush", "age": "26"}']
+
+    def test_str_path_writes_file(self):
+        """A plain string path is written (backward compatible)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            out = os.path.join(tmp, 'out.json')
+            FileDestination().handle(self.json_strings, {'path': out})
+            with open(out) as f:
+                self.assertEqual(self.json_strings, f.readlines())
+
+    def test_single_element_list_path_writes_file(self):
+        """A one-element list path writes the file."""
+        with tempfile.TemporaryDirectory() as tmp:
+            out = os.path.join(tmp, 'out.json')
+            FileDestination().handle(self.json_strings, {'path': [out]})
+            with open(out) as f:
+                self.assertEqual(self.json_strings, f.readlines())
+
+    def test_multi_element_list_path_writes_all_files(self):
+        """A multi-element list path writes identical content to each file."""
+        with tempfile.TemporaryDirectory() as tmp:
+            paths = [os.path.join(tmp, 'a.json'), os.path.join(tmp, 'b.json')]
+            FileDestination().handle(self.json_strings, {'path': paths})
+            for path in paths:
+                self.assertTrue(os.path.exists(path))
+                with open(path) as f:
+                    self.assertEqual(self.json_strings, f.readlines())
+
+    def test_json_writer_end_to_end_with_list_path(self):
+        """JSONWriter writes to a list-valued destination path, as produced by MetaData."""
+        df = pd.DataFrame({
+            'name': ['Ramesh', 'Suresh', 'Jaya', 'Rekha'],
+            'marks': [20, 40, 50, 30]
+        })
+        with tempfile.TemporaryDirectory() as tmp:
+            out = os.path.join(tmp, 'out.json')
+            props = {
+                'convertor': 'single',
+                'convertor_props': {
+                    'orient': 'records',
+                    'indent': 2,
+                    'column_details': {
+                        'schema': [
+                            {'field_name': 'name', 'field_type': 'str'},
+                            {'field_name': 'marks', 'field_type': 'str'},
+                        ],
+                        'resultant_columns': ['name', 'marks'],
+                    },
+                },
+                'destination': 'file',
+                'destination_props': {'path': [out]},
+            }
+            JSONWriter(df, props).write()
+            self.assertTrue(os.path.exists(out))
+            with open(out) as f:
+                records = json.load(f)
+            self.assertEqual(
+                [{'name': 'Ramesh', 'marks': 20},
+                 {'name': 'Suresh', 'marks': 40},
+                 {'name': 'Jaya', 'marks': 50},
+                 {'name': 'Rekha', 'marks': 30}],
+                records,
+            )
 
 
 if __name__ == '__main__':

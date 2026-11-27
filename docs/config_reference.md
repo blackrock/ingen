@@ -1557,7 +1557,9 @@ $function_name(args)
 	token_secret	token name containing the path of the secret file	Reads the token value to get the path of the secret file and decrypts its content using tsgops private keys	$token_secret(TOKEN_NAME)
 	timestamp	format of date	Takes the date format and returns the current timestamp	$timestamp(FORMAT)
 	uuid	NA	Generates random UUID using uuid4() inbuilt function	$uuid()
+	override**	key name	Returns the value of KEY from --override_params KEY=VALUE	$override(KEY)
 	*only available in file path names
+	**in output file paths a missing or empty key fails the run; values may contain directories or a full path, '..' is rejected. e.g. path '/out/$override(CLIENT)_INFO_$date(%Y%m%d).csv' with --override_params CLIENT=ACME -> /out/ACME_INFO_<date>.csv
 
 
 **Command-line Overrides**
@@ -1579,9 +1581,9 @@ New interpolators have been added to support dynamic values in the configuration
 1. `infile`: Retrieves a filename from the `--infile` argument
     - If `--infile` is a single value: Returns the basename of the file
     - If `--infile` contains key-value pairs: Uses the provided key to look up the corresponding file path
-    - Example: `{infile:source1}` would return `data1.json` when run with `--infile source1=data1.json`
+    - Example: `$infile(source1)` would return `data1.json` when run with `--infile source1=data1.json`
     - Infile is supported for sourceId, url_params->Ids and output keys.
 
 2. `override`: Retrieves values from the `--override_params` argument
-    - Example: `{override:env}` would return `prod` when run with `--override_params env=prod`
+    - Example: `$override(env)` would return `prod` when run with `--override_params env=prod`
     - Returns an empty string if the key is not found

@@ -3,6 +3,9 @@
 
 class FileDestination:
     def handle(self, json_strings, destination_props):
-        file_path = destination_props.get('path')
-        with open(file_path, 'w') as file:
-            file.writelines(json_strings)
+        paths = destination_props.get('path')
+        if not isinstance(paths, list):
+            paths = [paths]
+        for file_path in paths:
+            with open(file_path, 'w') as file:
+                file.writelines(json_strings)

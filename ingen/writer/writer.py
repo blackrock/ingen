@@ -67,7 +67,7 @@ class InterfaceWriter:
 
         for path in paths:
             if self._type == 'json':
-                json_writer = OldJSONWriter(self._df, self._type, self._props)
+                json_writer = OldJSONWriter(self._df, self._type, {**self._props, 'path': path})
                 json_writer.write()
             elif self._type == 'json_writer':
                 writer = JSONWriter(self._df, self._props, self._params)
@@ -96,19 +96,21 @@ class InterfaceWriter:
         return footer_string
 
     def add_header_footer(self, header, footer):
-        path = self._props['path']
+        paths = self._props['path']
+        if not isinstance(paths, list):
+            paths = [paths]
         encoding = self._props.get('encoding', 'utf-8')
-        file = open(path, 'r+', encoding=encoding)
-        if header != '':
-            lines = file.readlines()
-            file.seek(0)
-            file.writelines(header + '\n')
-            for line in lines:
-                file.write(line)
-        if footer != '':
-            file.read()
-            file.write(footer)
-        file.close()
+        for path in paths:
+            with open(path, 'r+', encoding=encoding) as file:
+                if header != '':
+                    lines = file.readlines()
+                    file.seek(0)
+                    file.writelines(header + '\n')
+                    for line in lines:
+                        file.write(line)
+                if footer != '':
+                    file.read()
+                    file.write(footer)
 
     def custom_function(self, value):
         run_date = self._params['run_date']
